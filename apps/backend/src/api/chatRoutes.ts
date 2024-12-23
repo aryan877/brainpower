@@ -1,16 +1,16 @@
-import { Express, Request, Response } from "express";
+import { Router, Request, Response } from "express";
 import OpenAI from "openai";
 import { Assistant } from "openai/resources/beta/assistants";
 import { createThread } from "../core/createThread.js";
 import { createRun } from "../core/createRun.js";
 import { performRun } from "../core/performRun.js";
 import { ChatThread } from "../models/ChatThread.js";
-import { authenticateUser, AuthenticatedRequest } from "../middleware/auth.js";
 import {
   sendMessageValidator,
   threadHistoryValidator,
   deleteThreadValidator,
 } from "../validators/chatValidators.js";
+import { authenticateUser, AuthenticatedRequest } from "../middleware/auth.js";
 
 interface SendMessageRequest extends AuthenticatedRequest {
   body: {
@@ -20,65 +20,71 @@ interface SendMessageRequest extends AuthenticatedRequest {
 }
 
 export function setupChatRoutes(
-  app: Express,
+  router: Router,
   client: OpenAI,
   assistant: Assistant
-) {
-  // Create a new chat thread
-  app.post(
-    "/api/chat/thread",
-    authenticateUser,
-    async (req: AuthenticatedRequest, res: Response) => {
-      try {
-        if (!req.user?.walletAddress) {
-          return res.status(401).json({ error: "Authentication required" });
-        }
+): Router {
+  // Apply authentication middleware to all routes
+  router.use(authenticateUser);
 
-        // Create OpenAI thread
-        const openAiThread = await createThread(client);
-        if (!openAiThread?.id) {
-          throw new Error("Failed to create OpenAI thread");
-        }
+  // Get user's chat threads
+  router.get("/threads", async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const threads = await ChatThread.find(
+        { userId: req.user?.walletAddress, isActive: true },
+        { threadId: 1, createdAt: 1, updatedAt: 1 }
+      ).sort({ updatedAt: -1 });
 
-        // Create MongoDB thread
-        const chatThread = await ChatThread.create({
-          userId: req.user.walletAddress,
-          threadId: openAiThread.id,
-          messages: [],
-        });
-
-        res.json({
-          threadId: chatThread.threadId,
-          createdAt: chatThread.createdAt,
-        });
-      } catch (error) {
-        console.error("Error creating thread:", error);
-        res.status(500).json({
-          error: "Failed to create chat thread",
-          details: error instanceof Error ? error.message : "Unknown error",
-        });
-      }
+      res.json({ threads });
+    } catch (error) {
+      console.error("Error fetching threads:", error);
+      res.status(500).json({
+        error: "Failed to fetch chat threads",
+        details: error instanceof Error ? error.message : "Unknown error",
+      });
     }
-  );
+  });
+
+  // Create a new chat thread
+  router.post("/thread", async (req: SendMessageRequest, res: Response) => {
+    try {
+      // Create OpenAI thread
+      const openAiThread = await createThread(client);
+      if (!openAiThread?.id) {
+        throw new Error("Failed to create OpenAI thread");
+      }
+
+      // Create MongoDB thread
+      const chatThread = await ChatThread.create({
+        userId: req.user?.walletAddress,
+        threadId: openAiThread.id,
+        messages: [],
+      });
+
+      res.json({
+        threadId: chatThread.threadId,
+        createdAt: chatThread.createdAt,
+      });
+    } catch (error) {
+      console.error("Error creating thread:", error);
+      res.status(500).json({
+        error: "Failed to create chat thread",
+        details: error instanceof Error ? error.message : "Unknown error",
+      });
+    }
+  });
 
   // Send a message and get a response
-  app.post(
-    "/api/chat/message",
-    authenticateUser,
+  router.post(
+    "/message",
     sendMessageValidator,
     async (req: SendMessageRequest, res: Response) => {
-      // Create an AbortController for this request
-      const abortController = new AbortController();
-
-      // Handle client disconnection
-      req.on("close", () => {
-        abortController.abort();
-      });
+      let abortController: AbortController | null = null;
 
       try {
         const { message, threadId } = req.body;
 
-        // Find the thread in MongoDB and verify ownership
+        // Find the thread in MongoDB
         const chatThread = await ChatThread.findOne({
           threadId,
           userId: req.user?.walletAddress,
@@ -86,9 +92,7 @@ export function setupChatRoutes(
         });
 
         if (!chatThread) {
-          return res
-            .status(404)
-            .json({ error: "Thread not found or unauthorized" });
+          return res.status(404).json({ error: "Thread not found" });
         }
 
         // Verify thread exists in OpenAI
@@ -121,6 +125,18 @@ export function setupChatRoutes(
         // Create and perform the run with abort signal
         const openAiThread = await client.beta.threads.retrieve(threadId);
         const run = await createRun(client, openAiThread, assistant.id);
+
+        // Create new AbortController for this run
+        abortController = new AbortController();
+
+        // Handle client disconnection
+        req.on("close", () => {
+          if (abortController) {
+            abortController.abort();
+            abortController = null;
+          }
+        });
+
         const result = await performRun(
           run,
           client,
@@ -153,40 +169,18 @@ export function setupChatRoutes(
           error: "Failed to process message",
           details: error instanceof Error ? error.message : "Unknown error",
         });
-      }
-    }
-  );
-
-  // Get user's chat threads
-  app.get(
-    "/api/chat/threads",
-    authenticateUser,
-    async (req: AuthenticatedRequest, res: Response) => {
-      try {
-        if (!req.user?.walletAddress) {
-          return res.status(401).json({ error: "Authentication required" });
+      } finally {
+        // Clean up abort controller
+        if (abortController) {
+          abortController = null;
         }
-
-        const threads = await ChatThread.find(
-          { userId: req.user.walletAddress, isActive: true },
-          { threadId: 1, createdAt: 1, updatedAt: 1 }
-        ).sort({ updatedAt: -1 });
-
-        res.json({ threads });
-      } catch (error) {
-        console.error("Error fetching threads:", error);
-        res.status(500).json({
-          error: "Failed to fetch chat threads",
-          details: error instanceof Error ? error.message : "Unknown error",
-        });
       }
     }
   );
 
   // Get thread history
-  app.get(
-    "/api/chat/history/:threadId",
-    authenticateUser,
+  router.get(
+    "/history/:threadId",
     threadHistoryValidator,
     async (req: AuthenticatedRequest, res: Response) => {
       try {
@@ -197,9 +191,7 @@ export function setupChatRoutes(
         });
 
         if (!chatThread) {
-          return res
-            .status(404)
-            .json({ error: "Thread not found or unauthorized" });
+          return res.status(404).json({ error: "Thread not found" });
         }
 
         res.json({
@@ -219,9 +211,8 @@ export function setupChatRoutes(
   );
 
   // Delete a thread
-  app.delete(
-    "/api/chat/thread/:threadId",
-    authenticateUser,
+  router.delete(
+    "/thread/:threadId",
     deleteThreadValidator,
     async (req: AuthenticatedRequest, res: Response) => {
       try {
@@ -231,9 +222,7 @@ export function setupChatRoutes(
         });
 
         if (!chatThread) {
-          return res
-            .status(404)
-            .json({ error: "Thread not found or unauthorized" });
+          return res.status(404).json({ error: "Thread not found" });
         }
 
         try {
@@ -257,4 +246,6 @@ export function setupChatRoutes(
       }
     }
   );
+
+  return router;
 }

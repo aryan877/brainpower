@@ -15,7 +15,18 @@ export const getWalletAddressTool: ToolConfig = {
     },
   },
   handler: async () => {
-    const agent = createSolanaAgent();
-    return { wallet: agent.wallet_address.toString() };
+    console.log("🔍 Starting getWalletAddress handler");
+    try {
+      const agent = createSolanaAgent();
+      const walletAddress = agent.wallet_address.toString();
+      console.log(`✅ Wallet address retrieved: ${walletAddress}`);
+      return { wallet: walletAddress };
+    } catch (error) {
+      console.error("❌ Error in getWalletAddress:", error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : String(error),
+      };
+    }
   },
 };

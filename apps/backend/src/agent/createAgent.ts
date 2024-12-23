@@ -7,7 +7,6 @@ export function createSolanaAgent(): SolanaAgentKit {
   if (!process.env.PRIVATE_KEY_BASE58) {
     throw new Error("⛔ Missing PRIVATE_KEY_BASE58 in .env");
   }
-
   if (!process.env.HELIUS_API_KEY) {
     throw new Error("⛔ Missing HELIUS_API_KEY in .env");
   }

@@ -9,6 +9,7 @@ import { createAssistant } from "./core/createAssistant.js";
 import { createThread } from "./core/createThread.js";
 import { startTerminalChat } from "./terminal/terminalChat.js";
 import { setupChatRoutes } from "./api/chatRoutes.js";
+import { setupToolRoutes } from "./api/toolsRoutes.js";
 
 const client = new OpenAI();
 const app = express();
@@ -24,50 +25,47 @@ app.use(
   cors({
     origin:
       process.env.NODE_ENV === "production"
-        ? ["https://yourdomain.com"]
-        : ["http://localhost:3000"],
+        ? process.env.FRONTEND_URL
+        : ["http://localhost:3000", "http://localhost:5000"],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type"],
+    allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
   })
 );
 
 // Rate limiting
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
+  windowMs: 15 * 60 * 1000,
+  max: 100,
   message: "Too many requests from this IP, please try again later.",
 });
 app.use(limiter);
 
-// Body parser middleware with error handling
+// Body parser middleware
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
-// JSON parsing error handler
+// Error handling middleware
 app.use(
   (
-    err: Error,
+    err: any,
     req: express.Request,
     res: express.Response,
     next: express.NextFunction
   ) => {
-    if (err instanceof SyntaxError && "body" in err) {
-      return res.status(400).json({
-        error: "Invalid JSON in request body",
-        details: err.message,
-      });
-    }
-    next(err);
+    console.error("Error:", err);
+    res
+      .status(500)
+      .json({ error: "Internal Server Error", details: err.message });
   }
 );
 
 // Connect to MongoDB
 mongoose
   .connect(MONGODB_URI)
-  .then(() => console.log("Connected to MongoDB"))
+  .then(() => console.log("📦 Connected to MongoDB"))
   .catch((error) => {
-    console.error("MongoDB connection error:", error);
+    console.error("❌ MongoDB connection error:", error);
     process.exit(1);
   });
 
@@ -75,45 +73,31 @@ async function main() {
   try {
     // Initialize OpenAI assistant
     const assistant = await createAssistant(client);
+    console.log("🤖 OpenAI Assistant initialized");
 
     // Setup routes
-    setupChatRoutes(app, client, assistant);
+    const chatRouter = express.Router();
+    const chatRoutes = setupChatRoutes(chatRouter, client, assistant);
+    const toolsRouter = setupToolRoutes();
 
-    // General error handling middleware
-    app.use(
-      (
-        err: Error,
-        req: express.Request,
-        res: express.Response,
-        next: express.NextFunction
-      ) => {
-        console.error("Error details:", {
-          message: err.message,
-          stack: err.stack,
-          name: err.name,
-        });
-
-        // Send appropriate error response
-        res.status(500).json({
-          error: "An error occurred while processing your request",
-          details: err.message,
-          type: err.name,
-          ...(process.env.NODE_ENV === "development" && { stack: err.stack }),
-        });
-      }
-    );
+    app.use("/api/chat", chatRoutes);
+    app.use("/api/tools", toolsRouter);
+    console.log("🛠️ Routes configured");
 
     // 404 handler
     app.use((req: express.Request, res: express.Response) => {
       res.status(404).json({
         error: "Not Found",
-        details: `Cannot ${req.method} ${req.url}`,
+        path: req.path,
+        method: req.method,
       });
     });
 
     // Start Express server
     app.listen(PORT, () => {
-      console.log(`Server is running on port ${PORT}`);
+      console.log(`🚀 Server running on port ${PORT}`);
+      console.log(`📝 API Documentation: http://localhost:${PORT}/api-docs`);
+      console.log(`🔧 Environment: ${process.env.NODE_ENV || "development"}`);
     });
 
     // Start terminal chat if CLI_MODE is enabled
@@ -125,10 +109,7 @@ async function main() {
       await startTerminalChat(thread, assistant, client);
     }
   } catch (error) {
-    console.error(
-      "Error in main:",
-      error instanceof Error ? error.message : "Unknown error"
-    );
+    console.error("Error in main:", error);
     process.exit(1);
   }
 }
@@ -146,9 +127,6 @@ process.on("SIGINT", async () => {
 });
 
 main().catch((error) => {
-  console.error(
-    "Unhandled error:",
-    error instanceof Error ? error.message : "Unknown error"
-  );
+  console.error("Unhandled error:", error);
   process.exit(1);
 });

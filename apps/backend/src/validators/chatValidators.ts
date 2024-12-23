@@ -1,42 +1,55 @@
-import { body, param, ValidationChain } from "express-validator";
-import { validateRequest } from "./validateRequest.js";
+import { Request, Response, NextFunction } from "express";
 
-export const createThreadValidator = [validateRequest];
+export function sendMessageValidator(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  const { message, threadId } = req.body;
 
-export const sendMessageValidator = [
-  body("message")
-    .trim()
-    .notEmpty()
-    .withMessage("Message is required")
-    .isString()
-    .withMessage("Message must be a string")
-    .isLength({ max: 4000 })
-    .withMessage("Message cannot exceed 4000 characters"),
-  body("threadId")
-    .trim()
-    .notEmpty()
-    .withMessage("Thread ID is required")
-    .isString()
-    .withMessage("Thread ID must be a string"),
-  validateRequest,
-];
+  if (!message || typeof message !== "string") {
+    return res
+      .status(400)
+      .json({ error: "Message is required and must be a string" });
+  }
 
-export const threadHistoryValidator = [
-  param("threadId")
-    .trim()
-    .notEmpty()
-    .withMessage("Thread ID is required")
-    .isString()
-    .withMessage("Thread ID must be a string"),
-  validateRequest,
-];
+  if (!threadId || typeof threadId !== "string") {
+    return res
+      .status(400)
+      .json({ error: "Thread ID is required and must be a string" });
+  }
 
-export const deleteThreadValidator = [
-  param("threadId")
-    .trim()
-    .notEmpty()
-    .withMessage("Thread ID is required")
-    .isString()
-    .withMessage("Thread ID must be a string"),
-  validateRequest,
-];
+  next();
+}
+
+export function threadHistoryValidator(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  const { threadId } = req.params;
+
+  if (!threadId || typeof threadId !== "string") {
+    return res
+      .status(400)
+      .json({ error: "Thread ID is required and must be a string" });
+  }
+
+  next();
+}
+
+export function deleteThreadValidator(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  const { threadId } = req.params;
+
+  if (!threadId || typeof threadId !== "string") {
+    return res
+      .status(400)
+      .json({ error: "Thread ID is required and must be a string" });
+  }
+
+  next();
+}
