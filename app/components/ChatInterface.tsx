@@ -34,17 +34,12 @@ export default function ChatInterface({
     adjustTextareaHeight();
   };
 
-  useEffect(() => {
-    if (!input.trim()) {
-      const textarea = textareaRef.current;
-      if (textarea) {
-        textarea.style.height = "48px";
-      }
-    }
-  }, [input]);
-
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
+    if (e.key === "Enter") {
+      if (e.shiftKey) {
+        requestAnimationFrame(adjustTextareaHeight);
+        return;
+      }
       e.preventDefault();
       if (!isLoading && input.trim()) {
         sendMessage(e);
@@ -154,6 +149,12 @@ export default function ChatInterface({
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "48px";
+    }
+  }, [messages.length]);
 
   if (!publicKey) {
     return (
