@@ -11,7 +11,7 @@ async function uploadMetadata(
   tokenTicker: string,
   description: string,
   imageUrl: string,
-  options?: PumpFunTokenOptions,
+  options?: PumpFunTokenOptions
 ): Promise<any> {
   // Create metadata object
   const formData = new URLSearchParams();
@@ -58,7 +58,7 @@ async function createTokenTransaction(
   agent: SolanaAgentKit,
   mintKeypair: Keypair,
   metadataResponse: any,
-  options?: PumpFunTokenOptions,
+  options?: PumpFunTokenOptions
 ) {
   const payload = {
     publicKey: agent.wallet_address.toBase58(),
@@ -87,7 +87,7 @@ async function createTokenTransaction(
   if (!response.ok) {
     const errorText = await response.text();
     throw new Error(
-      `Transaction creation failed: ${response.status} - ${errorText}`,
+      `Transaction creation failed: ${response.status} - ${errorText}`
     );
   }
 
@@ -97,7 +97,7 @@ async function createTokenTransaction(
 async function signAndSendTransaction(
   kit: SolanaAgentKit,
   tx: VersionedTransaction,
-  mintKeypair: Keypair,
+  mintKeypair: Keypair
 ) {
   try {
     // Get the latest blockhash
@@ -154,7 +154,7 @@ export async function launchPumpFunToken(
   tokenTicker: string,
   description: string,
   imageUrl: string,
-  options?: PumpFunTokenOptions,
+  options?: PumpFunTokenOptions
 ): Promise<PumpfunLaunchResponse> {
   try {
     const mintKeypair = Keypair.generate();
@@ -163,17 +163,17 @@ export async function launchPumpFunToken(
       tokenTicker,
       description,
       imageUrl,
-      options,
+      options
     );
     const response = await createTokenTransaction(
       agent,
       mintKeypair,
       metadataResponse,
-      options,
+      options
     );
     const transactionData = await response.arrayBuffer();
     const tx = VersionedTransaction.deserialize(
-      new Uint8Array(transactionData),
+      new Uint8Array(transactionData)
     );
     const signature = await signAndSendTransaction(agent, tx, mintKeypair);
 

@@ -27,6 +27,7 @@ import {
   createOrcaSingleSidedWhirlpool,
   FEE_TIERS,
   pythFetchPrice,
+  create_image,
 } from "../tools";
 import {
   CollectionDeployment,
@@ -275,5 +276,13 @@ export class SolanaAgentKit {
 
   async pythFetchPrice(priceFeedID: string) {
     return pythFetchPrice(this, priceFeedID);
+  }
+
+  async createImage(
+    prompt: string,
+    size: "256x256" | "512x512" | "1024x1024" = "1024x1024",
+    n: number = 1
+  ) {
+    return create_image(this, prompt, size, n);
   }
 }

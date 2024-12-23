@@ -6,6 +6,7 @@ import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { Message, ChatInterfaceProps } from "../types";
+import TemplatesPanel from "./TemplatesPanel";
 
 export default function ChatInterface({
   selectedChat,
@@ -14,6 +15,7 @@ export default function ChatInterface({
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [showTemplates, setShowTemplates] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -45,6 +47,8 @@ export default function ChatInterface({
   };
 
   const fetchMessages = useCallback(async () => {
+    if (!selectedChat) return;
+
     try {
       const { data } = await api.get(`/api/chat/history/${selectedChat}`);
       if (data.messages) {
@@ -52,6 +56,13 @@ export default function ChatInterface({
       }
     } catch (error) {
       console.error("Error fetching messages:", error);
+      setMessages([
+        {
+          role: "assistant",
+          content: "Failed to load chat history. Please try again later.",
+          createdAt: new Date(),
+        },
+      ]);
     }
   }, [selectedChat]);
 
@@ -80,12 +91,13 @@ export default function ChatInterface({
 
   const sendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || !selectedChat) return;
+    if (!input.trim() || !selectedChat || isLoading) return;
 
     if (abortControllerRef.current) {
       cancelRequest();
     }
 
+    const messageText = input.trim();
     setInput("");
     const textarea = textareaRef.current;
     if (textarea) {
@@ -96,7 +108,7 @@ export default function ChatInterface({
       ...prev,
       {
         role: "user",
-        content: input,
+        content: messageText,
         createdAt: new Date(),
       },
       {
@@ -112,36 +124,57 @@ export default function ChatInterface({
       abortControllerRef.current = new AbortController();
 
       const { data } = await api.post(
-        "api/chat/message",
+        "/api/chat/message",
         {
-          message: input,
+          message: messageText,
           threadId: selectedChat,
         },
-        { signal: abortControllerRef.current.signal }
+        {
+          signal: abortControllerRef.current.signal,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
       );
 
-      if (data.response) {
-        setMessages((prev) => {
-          const newMessages = [...prev];
+      setMessages((prev) => {
+        const newMessages = [...prev];
+        if (newMessages[newMessages.length - 1]?.isLoading) {
           newMessages.pop();
-          newMessages.push({
-            role: "assistant",
-            content: data.response,
-            createdAt: new Date(),
-          });
-          return newMessages;
+        }
+        newMessages.push({
+          role: "assistant",
+          content: data.response || "Sorry, I couldn't process that request.",
+          createdAt: new Date(),
         });
-      }
+        return newMessages;
+      });
     } catch (error) {
       console.error("Error sending message:", error);
       setMessages((prev) => {
         const newMessages = [...prev];
-        newMessages.pop();
+        if (newMessages[newMessages.length - 1]?.isLoading) {
+          newMessages.pop();
+        }
+        newMessages.push({
+          role: "assistant",
+          content:
+            "Sorry, there was an error processing your request. Please try again.",
+          createdAt: new Date(),
+        });
         return newMessages;
       });
     } finally {
       setIsLoading(false);
       abortControllerRef.current = null;
+    }
+  };
+
+  const handleTemplateSelect = (template: string) => {
+    setInput(template);
+    setShowTemplates(false);
+    if (textareaRef.current) {
+      textareaRef.current.focus();
     }
   };
 
@@ -176,7 +209,7 @@ export default function ChatInterface({
   }
 
   return (
-    <div className="flex-1 flex flex-col bg-[var(--background)] h-[calc(100vh-64px)] overflow-hidden">
+    <div className="flex-1 flex flex-col bg-[var(--background)] h-[calc(100vh-64px)] overflow-hidden relative">
       <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-[var(--border-color)] scrollbar-track-transparent">
         {messages.map((message, index) => (
           <div
@@ -250,8 +283,37 @@ export default function ChatInterface({
         ))}
         <div ref={messagesEndRef} />
       </div>
-      <form onSubmit={sendMessage} className="p-4 gradient-panel">
+
+      {/* Templates Panel */}
+      <div className="relative">
+        {showTemplates && (
+          <TemplatesPanel
+            onSelectTemplate={handleTemplateSelect}
+            onClose={() => setShowTemplates(false)}
+          />
+        )}
+      </div>
+
+      <form
+        onSubmit={sendMessage}
+        className="p-4 gradient-panel relative z-[1]"
+      >
         <div className="flex space-x-4">
+          <button
+            type="button"
+            onClick={() => setShowTemplates(!showTemplates)}
+            className="px-3 py-2 rounded-xl bg-[var(--background)] text-[var(--text-primary)] hover:bg-[var(--background-hover)] transition-colors"
+            title="Show Templates"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" />
+            </svg>
+          </button>
           <div className="flex-1 relative">
             <textarea
               ref={textareaRef}

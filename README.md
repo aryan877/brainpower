@@ -4,7 +4,7 @@ An AI-powered blockchain agent that can interact with the Solana blockchain. Bui
 
 ## Project Structure
 
-This is a monorepo using Turborepo and PNPM workspaces containing:
+This is a monorepo using Turborepo and Yarn workspaces containing:
 
 - `apps/frontend`: Next.js web interface
 - `apps/backend`: Express.js API server with AI capabilities
@@ -25,8 +25,8 @@ This is a monorepo using Turborepo and PNPM workspaces containing:
 
 ## Prerequisites
 
-- Node.js (v18 or higher)
-- PNPM package manager
+- Node.js (v23.1.0 or higher)
+- Yarn package manager
 - TypeScript
 - An OpenAI API key
 - A wallet private key for the agent
@@ -43,7 +43,7 @@ cd brainpower
 2. Install dependencies:
 
 ```bash
-pnpm install
+yarn install
 ```
 
 3. Create `.env` files in respective app directories:
@@ -65,16 +65,16 @@ NEXT_PUBLIC_API_URL=http://localhost:3001
 4. Run the development environment:
 
 ```bash
-pnpm dev
+yarn dev
 ```
 
-This will start both the backend (on port 3001) and frontend (on port 3000) in development mode.
+This will start both the backend (on port 5000) and frontend (on port 3000) in development mode.
 
 ## Development Commands
 
-- `pnpm dev` - Start all applications in development mode
-- `pnpm build` - Build all applications
-- `pnpm lint` - Lint all applications
+- `yarn dev` - Start all applications in development mode
+- `yarn build` - Build all applications
+- `yarn lint` - Lint all applications
 
 ## Acknowledgments
 
