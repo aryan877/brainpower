@@ -10,9 +10,7 @@ export interface Message {
 
 export interface ChatInterfaceProps {
   selectedChat: string | null;
-  isAuthenticated: boolean;
-  authSignature?: string | null;
-  onError: (error: unknown) => Promise<void>;
+  threads?: Thread[];
 }
 
 // Modal types
@@ -39,11 +37,6 @@ export interface SidebarProps {
   onCreateThread: () => void;
   onDeleteThread: (threadId: string) => void;
   isLoading: boolean;
-}
-
-// WalletContextProvider types
-export interface WalletContextProviderProps {
-  children: ReactNode;
 }
 
 // API Error types

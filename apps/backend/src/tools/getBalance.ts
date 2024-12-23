@@ -11,8 +11,7 @@ export const getBalanceTool: ToolConfig<GetBalanceArgs> = {
     type: "function",
     function: {
       name: "get_balance",
-      description:
-        "Get the balance of SOL or an SPL token for the agent's wallet.",
+      description: "Get the balance of SOL or an SPL token for your wallet.",
       parameters: {
         type: "object",
         properties: {

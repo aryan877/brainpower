@@ -12,11 +12,12 @@ export class SolanaBalanceTool extends Tool {
   name = "solana_balance";
   description = `Get the balance of a Solana wallet or token account.
 
-  If you want to get the balance of your wallet, you don't need to provide the tokenAddress.
-  If no tokenAddress is provided, the balance will be in SOL.
-
-  Inputs:
-  tokenAddress: string, eg "So11111111111111111111111111111111111111112" (optional)`;
+  Input should be a JSON string with:
+  tokenAddress: string - The token mint address to check balance for (optional)
+  
+  Example inputs:
+  {}
+  {"tokenAddress": "So11111111111111111111111111111111111111112"}`;
 
   constructor(private solanaKit: SolanaAgentKit) {
     super();
@@ -24,13 +25,18 @@ export class SolanaBalanceTool extends Tool {
 
   protected async _call(input: string): Promise<string> {
     try {
-      const tokenAddress = input ? new PublicKey(input) : undefined;
+      const parsedInput = JSON.parse(input);
+
+      const tokenAddress = parsedInput.tokenAddress
+        ? new PublicKey(parsedInput.tokenAddress)
+        : undefined;
+
       const balance = await this.solanaKit.getBalance(tokenAddress);
 
       return JSON.stringify({
         status: "success",
         balance: balance,
-        token: input || "SOL",
+        token: parsedInput.tokenAddress || "SOL",
       });
     } catch (error: any) {
       return JSON.stringify({
@@ -776,7 +782,11 @@ export class SolanaCreateSingleSidedWhirlpoolTool extends Tool {
       const feeTier = inputFormat.feeTier;
 
       if (!feeTier || !(feeTier in FEE_TIERS)) {
-        throw new Error(`Invalid feeTier. Available options: ${Object.keys(FEE_TIERS).join(", ")}`);
+        throw new Error(
+          `Invalid feeTier. Available options: ${Object.keys(FEE_TIERS).join(
+            ", "
+          )}`
+        );
       }
 
       const txId = await this.solanaKit.createOrcaSingleSidedWhirlpool(
@@ -785,7 +795,7 @@ export class SolanaCreateSingleSidedWhirlpoolTool extends Tool {
         otherTokenMint,
         initialPrice,
         maxPrice,
-        feeTier,
+        feeTier
       );
 
       return JSON.stringify({
@@ -802,7 +812,6 @@ export class SolanaCreateSingleSidedWhirlpoolTool extends Tool {
     }
   }
 }
-
 
 export class SolanaRaydiumCreateAmmV4 extends Tool {
   name = "raydium_create_ammV4";
@@ -821,13 +830,13 @@ export class SolanaRaydiumCreateAmmV4 extends Tool {
 
   async _call(input: string): Promise<string> {
     try {
-      let inputFormat = JSON.parse(input)
+      let inputFormat = JSON.parse(input);
 
       const tx = await this.solanaKit.raydiumCreateAmmV4(
         new PublicKey(inputFormat.marketId),
         new BN(inputFormat.baseAmount),
         new BN(inputFormat.quoteAmount),
-        new BN(inputFormat.startTime),
+        new BN(inputFormat.startTime)
       );
 
       return JSON.stringify({
@@ -863,7 +872,7 @@ export class SolanaRaydiumCreateClmm extends Tool {
 
   async _call(input: string): Promise<string> {
     try {
-      let inputFormat = JSON.parse(input)
+      let inputFormat = JSON.parse(input);
 
       const tx = await this.solanaKit.raydiumCreateClmm(
         new PublicKey(inputFormat.mint1),
@@ -872,7 +881,7 @@ export class SolanaRaydiumCreateClmm extends Tool {
         new PublicKey(inputFormat.configId),
 
         new Decimal(inputFormat.initialPrice),
-        new BN(inputFormat.startTime),
+        new BN(inputFormat.startTime)
       );
 
       return JSON.stringify({
@@ -909,7 +918,7 @@ export class SolanaRaydiumCreateCpmm extends Tool {
 
   async _call(input: string): Promise<string> {
     try {
-      let inputFormat = JSON.parse(input)
+      let inputFormat = JSON.parse(input);
 
       const tx = await this.solanaKit.raydiumCreateCpmm(
         new PublicKey(inputFormat.mint1),
@@ -920,7 +929,7 @@ export class SolanaRaydiumCreateCpmm extends Tool {
         new BN(inputFormat.mintAAmount),
         new BN(inputFormat.mintBAmount),
 
-        new BN(inputFormat.startTime),
+        new BN(inputFormat.startTime)
       );
 
       return JSON.stringify({
@@ -955,14 +964,14 @@ export class SolanaOpenbookCreateMarket extends Tool {
 
   async _call(input: string): Promise<string> {
     try {
-      let inputFormat = JSON.parse(input)
+      let inputFormat = JSON.parse(input);
 
       const tx = await this.solanaKit.openbookCreateMarket(
         new PublicKey(inputFormat.baseMint),
         new PublicKey(inputFormat.quoteMint),
 
         inputFormat.lotSize,
-        inputFormat.tickSize,
+        inputFormat.tickSize
       );
 
       return JSON.stringify({
@@ -1042,4 +1051,3 @@ export function createSolanaTools(solanaKit: SolanaAgentKit) {
     new SolanaPythFetchPrice(solanaKit),
   ];
 }
-

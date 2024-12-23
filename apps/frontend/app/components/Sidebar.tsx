@@ -1,5 +1,4 @@
 import { Trash2 } from "lucide-react";
-import { useWallet } from "@solana/wallet-adapter-react";
 import { useState } from "react";
 import Modal from "./Modal";
 import { Thread, SidebarProps } from "../types";
@@ -12,7 +11,6 @@ export default function Sidebar({
   onDeleteThread,
   isLoading,
 }: SidebarProps) {
-  const { publicKey } = useWallet();
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [threadToDelete, setThreadToDelete] = useState<Thread | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -48,16 +46,6 @@ export default function Sidebar({
     }
   };
 
-  if (!publicKey) {
-    return (
-      <aside className="w-64 gradient-panel p-4">
-        <p className="text-[var(--text-secondary)] text-center text-lg">
-          Connect wallet to view chats
-        </p>
-      </aside>
-    );
-  }
-
   return (
     <>
       <aside className="w-64 gradient-panel flex flex-col h-full">
@@ -71,29 +59,38 @@ export default function Sidebar({
           </button>
         </div>
         <nav className="flex-1 overflow-y-auto">
-          <ul className="space-y-1 px-2">
-            {threads.map((thread) => (
-              <li
-                key={thread.threadId}
-                onClick={() => onSelectThread(thread.threadId)}
-                className={`flex justify-between items-center p-3 cursor-pointer rounded-lg hover:bg-[var(--hover-bg)] transition-all duration-200 ${
-                  selectedThread === thread.threadId
-                    ? "bg-[var(--hover-bg)] border border-[var(--border-color)]"
-                    : ""
-                }`}
-              >
-                <span className="truncate text-[var(--text-primary)] font-medium">
-                  {formatThreadName(thread)}
-                </span>
-                <button
-                  onClick={(e) => handleDeleteClick(e, thread)}
-                  className="text-red-400 hover:text-red-300 p-1.5 rounded-lg transition-all duration-200 hover:bg-red-500/10"
+          {threads.length === 0 ? (
+            <div className="p-4 text-center text-[var(--text-secondary)]">
+              <p>No chats yet</p>
+              <p className="text-sm mt-2">
+                Click &apos;New Chat&apos; to start a conversation
+              </p>
+            </div>
+          ) : (
+            <ul className="space-y-1 px-2">
+              {threads.map((thread) => (
+                <li
+                  key={thread.threadId}
+                  onClick={() => onSelectThread(thread.threadId)}
+                  className={`flex justify-between items-center p-3 cursor-pointer rounded-lg hover:bg-[var(--hover-bg)] transition-all duration-200 ${
+                    selectedThread === thread.threadId
+                      ? "bg-[var(--hover-bg)] border border-[var(--border-color)]"
+                      : ""
+                  }`}
                 >
-                  <Trash2 size={18} />
-                </button>
-              </li>
-            ))}
-          </ul>
+                  <span className="truncate text-[var(--text-primary)] font-medium">
+                    {formatThreadName(thread)}
+                  </span>
+                  <button
+                    onClick={(e) => handleDeleteClick(e, thread)}
+                    className="text-red-400 hover:text-red-300 p-1.5 rounded-lg transition-all duration-200 hover:bg-red-500/10"
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
         </nav>
       </aside>
 

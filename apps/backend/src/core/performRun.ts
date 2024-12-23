@@ -3,10 +3,29 @@ import { Thread } from "openai/resources/beta/threads/threads";
 import { Run } from "openai/resources/beta/threads/runs/runs";
 import { handleRunToolCalls } from "./handleRunToolCalls.js";
 
-export async function performRun(run: Run, client: OpenAI, thread: Thread) {
+export async function performRun(
+  run: Run,
+  client: OpenAI,
+  thread: Thread,
+  signal?: AbortSignal
+) {
   console.log(`🚀 Performing run ${run.id}`);
 
+  // Handle cancellation
+  if (signal?.aborted) {
+    throw new Error("Run cancelled by client");
+  }
+
+  // Add abort signal listener
+  signal?.addEventListener("abort", () => {
+    throw new Error("Run cancelled by client");
+  });
+
   while (run.status === "requires_action") {
+    // Check for cancellation before each action
+    if (signal?.aborted) {
+      throw new Error("Run cancelled by client");
+    }
     run = await handleRunToolCalls(run, client, thread);
   }
 

@@ -1,14 +1,12 @@
 import { Express, Request, Response } from "express";
 import OpenAI from "openai";
 import { Assistant } from "openai/resources/beta/assistants";
-import { Thread } from "openai/resources/beta/threads/threads";
 import { createThread } from "../core/createThread.js";
 import { createRun } from "../core/createRun.js";
 import { performRun } from "../core/performRun.js";
 import { ChatThread } from "../models/ChatThread.js";
 import { authenticateUser, AuthenticatedRequest } from "../middleware/auth.js";
 import {
-  createThreadValidator,
   sendMessageValidator,
   threadHistoryValidator,
   deleteThreadValidator,
@@ -26,11 +24,10 @@ export function setupChatRoutes(
   client: OpenAI,
   assistant: Assistant
 ) {
-  // Create a new chat thread (protected)
+  // Create a new chat thread
   app.post(
     "/api/chat/thread",
     authenticateUser,
-    createThreadValidator,
     async (req: AuthenticatedRequest, res: Response) => {
       try {
         if (!req.user?.walletAddress) {
@@ -64,12 +61,20 @@ export function setupChatRoutes(
     }
   );
 
-  // Send a message and get a response (protected)
+  // Send a message and get a response
   app.post(
     "/api/chat/message",
     authenticateUser,
     sendMessageValidator,
     async (req: SendMessageRequest, res: Response) => {
+      // Create an AbortController for this request
+      const abortController = new AbortController();
+
+      // Handle client disconnection
+      req.on("close", () => {
+        abortController.abort();
+      });
+
       try {
         const { message, threadId } = req.body;
 
@@ -113,10 +118,15 @@ export function setupChatRoutes(
           createdAt: new Date(),
         });
 
-        // Create and perform the run
+        // Create and perform the run with abort signal
         const openAiThread = await client.beta.threads.retrieve(threadId);
         const run = await createRun(client, openAiThread, assistant.id);
-        const result = await performRun(run, client, openAiThread);
+        const result = await performRun(
+          run,
+          client,
+          openAiThread,
+          abortController.signal
+        );
 
         if (result?.type === "text") {
           // Save assistant's response to MongoDB
@@ -135,6 +145,9 @@ export function setupChatRoutes(
           throw new Error("No valid response generated");
         }
       } catch (error) {
+        if (error instanceof Error && error.name === "AbortError") {
+          return res.status(499).json({ error: "Request cancelled by client" });
+        }
         console.error("Error processing message:", error);
         res.status(500).json({
           error: "Failed to process message",
@@ -144,7 +157,7 @@ export function setupChatRoutes(
     }
   );
 
-  // Get user's chat threads (protected)
+  // Get user's chat threads
   app.get(
     "/api/chat/threads",
     authenticateUser,
@@ -170,7 +183,7 @@ export function setupChatRoutes(
     }
   );
 
-  // Get thread history (protected)
+  // Get thread history
   app.get(
     "/api/chat/history/:threadId",
     authenticateUser,
@@ -205,7 +218,7 @@ export function setupChatRoutes(
     }
   );
 
-  // Delete a thread (protected)
+  // Delete a thread
   app.delete(
     "/api/chat/thread/:threadId",
     authenticateUser,

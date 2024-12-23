@@ -20,6 +20,13 @@ api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
 api.interceptors.response.use(
   (response: AxiosResponse) => response,
   (error: AxiosError) => {
+    // Don't reject cancelled requests as errors
+    if (axios.isCancel(error)) {
+      return Promise.reject({
+        isCancelled: true,
+        message: "Request cancelled",
+      });
+    }
     return Promise.reject(error);
   }
 );

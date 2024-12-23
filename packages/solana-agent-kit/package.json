@@ -8,6 +8,7 @@
     "build": "tsc",
     "docs": "typedoc src --out docs",
     "test": "ts-node test/index.ts",
+    "dev": "tsc -w",
     "generate": "ts-node src/utils/keypair.ts"
   },
   "engines": {

@@ -9,11 +9,10 @@ import { createAssistant } from "./core/createAssistant.js";
 import { createThread } from "./core/createThread.js";
 import { startTerminalChat } from "./terminal/terminalChat.js";
 import { setupChatRoutes } from "./api/chatRoutes.js";
-import { setupAuthRoutes } from "./api/authRoutes.js";
 
 const client = new OpenAI();
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 const MONGODB_URI =
   process.env.MONGODB_URI || "mongodb://localhost:27017/solana-ai-chat";
 
@@ -26,16 +25,16 @@ app.use(
     origin:
       process.env.NODE_ENV === "production"
         ? ["https://yourdomain.com"]
-        : ["http://localhost:3000", "http://localhost:3001"],
+        : ["http://localhost:3000"],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    allowedHeaders: ["Content-Type"],
     credentials: true,
   })
 );
 
 // Rate limiting
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minsutes
+  windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // Limit each IP to 100 requests per windowMs
   message: "Too many requests from this IP, please try again later.",
 });
@@ -78,7 +77,6 @@ async function main() {
     const assistant = await createAssistant(client);
 
     // Setup routes
-    setupAuthRoutes(app);
     setupChatRoutes(app, client, assistant);
 
     // General error handling middleware

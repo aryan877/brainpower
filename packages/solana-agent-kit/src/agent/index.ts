@@ -56,7 +56,7 @@ export class SolanaAgentKit {
   constructor(
     private_key: string,
     rpc_url = "https://api.mainnet-beta.solana.com",
-    openai_api_key: string,
+    openai_api_key: string
   ) {
     this.connection = new Connection(rpc_url);
     this.wallet = Keypair.fromSecretKey(bs58.decode(private_key));
@@ -74,17 +74,16 @@ export class SolanaAgentKit {
     uri: string,
     symbol: string,
     decimals: number = DEFAULT_OPTIONS.TOKEN_DECIMALS,
-    initialSupply?: number,
+    initialSupply?: number
   ): Promise<{ mint: PublicKey }> {
     return deploy_token(this, name, uri, symbol, decimals, initialSupply);
   }
 
   async deployCollection(
-    options: CollectionOptions,
+    options: CollectionOptions
   ): Promise<CollectionDeployment> {
     return deploy_collection(this, options);
   }
-
   async getBalance(token_address?: PublicKey): Promise<number> {
     return get_balance(this, token_address);
   }
@@ -92,7 +91,7 @@ export class SolanaAgentKit {
   async mintNFT(
     collectionMint: PublicKey,
     metadata: Parameters<typeof mintCollectionNFT>[2],
-    recipient?: PublicKey,
+    recipient?: PublicKey
   ): Promise<MintCollectionNFTResponse> {
     return mintCollectionNFT(this, collectionMint, metadata, recipient);
   }
@@ -100,7 +99,7 @@ export class SolanaAgentKit {
   async transfer(
     to: PublicKey,
     amount: number,
-    mint?: PublicKey,
+    mint?: PublicKey
   ): Promise<string> {
     return transfer(this, to, amount, mint);
   }
@@ -121,7 +120,7 @@ export class SolanaAgentKit {
     outputMint: PublicKey,
     inputAmount: number,
     inputMint?: PublicKey,
-    slippageBps: number = DEFAULT_OPTIONS.SLIPPAGE_BPS,
+    slippageBps: number = DEFAULT_OPTIONS.SLIPPAGE_BPS
   ): Promise<string> {
     return trade(this, outputMint, inputAmount, inputMint, slippageBps);
   }
@@ -135,13 +134,13 @@ export class SolanaAgentKit {
   }
 
   async getTokenDataByAddress(
-    mint: string,
+    mint: string
   ): Promise<JupiterTokenData | undefined> {
     return getTokenDataByAddress(new PublicKey(mint));
   }
 
   async getTokenDataByTicker(
-    ticker: string,
+    ticker: string
   ): Promise<JupiterTokenData | undefined> {
     return getTokenDataByTicker(ticker);
   }
@@ -151,7 +150,7 @@ export class SolanaAgentKit {
     tokenTicker: string,
     description: string,
     imageUrl: string,
-    options?: PumpFunTokenOptions,
+    options?: PumpFunTokenOptions
   ): Promise<PumpfunLaunchResponse> {
     return launchPumpFunToken(
       this,
@@ -159,7 +158,7 @@ export class SolanaAgentKit {
       tokenTicker,
       description,
       imageUrl,
-      options,
+      options
     );
   }
 
@@ -173,7 +172,7 @@ export class SolanaAgentKit {
     decimals: number,
     recipients: string[],
     priorityFeeInLamports: number,
-    shouldLog: boolean,
+    shouldLog: boolean
   ): Promise<string[]> {
     return await sendCompressedAirdrop(
       this,
@@ -182,7 +181,7 @@ export class SolanaAgentKit {
       decimals,
       recipients.map((recipient) => new PublicKey(recipient)),
       priorityFeeInLamports,
-      shouldLog,
+      shouldLog
     );
   }
 
@@ -192,7 +191,7 @@ export class SolanaAgentKit {
     otherTokenMint: PublicKey,
     initialPrice: Decimal,
     maxPrice: Decimal,
-    feeTier: keyof typeof FEE_TIERS,
+    feeTier: keyof typeof FEE_TIERS
   ): Promise<string> {
     return createOrcaSingleSidedWhirlpool(
       this,
@@ -201,7 +200,7 @@ export class SolanaAgentKit {
       otherTokenMint,
       initialPrice,
       maxPrice,
-      feeTier,
+      feeTier
     );
   }
 
@@ -209,7 +208,7 @@ export class SolanaAgentKit {
     marketId: PublicKey,
     baseAmount: BN,
     quoteAmount: BN,
-    startTime: BN,
+    startTime: BN
   ): Promise<string> {
     return raydiumCreateAmmV4(
       this,
@@ -218,7 +217,7 @@ export class SolanaAgentKit {
       baseAmount,
       quoteAmount,
 
-      startTime,
+      startTime
     );
   }
 
@@ -227,7 +226,7 @@ export class SolanaAgentKit {
     mint2: PublicKey,
     configId: PublicKey,
     initialPrice: Decimal,
-    startTime: BN,
+    startTime: BN
   ): Promise<string> {
     return raydiumCreateClmm(
       this,
@@ -235,7 +234,7 @@ export class SolanaAgentKit {
       mint2,
       configId,
       initialPrice,
-      startTime,
+      startTime
     );
   }
 
@@ -245,7 +244,7 @@ export class SolanaAgentKit {
     configId: PublicKey,
     mintAAmount: BN,
     mintBAmount: BN,
-    startTime: BN,
+    startTime: BN
   ): Promise<string> {
     return raydiumCreateCpmm(
       this,
@@ -254,7 +253,7 @@ export class SolanaAgentKit {
       configId,
       mintAAmount,
       mintBAmount,
-      startTime,
+      startTime
     );
   }
 
@@ -262,7 +261,7 @@ export class SolanaAgentKit {
     baseMint: PublicKey,
     quoteMint: PublicKey,
     lotSize: number = 1,
-    tickSize: number = 0.01,
+    tickSize: number = 0.01
   ): Promise<string[]> {
     return openbookCreateMarket(
       this,
@@ -270,8 +269,8 @@ export class SolanaAgentKit {
       quoteMint,
 
       lotSize,
-      tickSize,
-    )
+      tickSize
+    );
   }
 
   async pythFetchPrice(priceFeedID: string) {
