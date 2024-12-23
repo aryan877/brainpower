@@ -97,7 +97,9 @@ export default function CommandPalette({
             className={`p-3 cursor-pointer hover:bg-[var(--background)] ${
               index === selectedIndex ? "bg-[var(--background)]" : ""
             }`}
-            onClick={() => onSelectTemplate(template.template)}
+            onClick={() => {
+              onSelectTemplate(template.template);
+            }}
           >
             <div className="flex items-center justify-between mb-1">
               <h3 className="font-medium text-[var(--text-primary)]">

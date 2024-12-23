@@ -107,6 +107,10 @@ export default function ChatInterface({
     e.preventDefault();
     if (!input.trim() || !selectedChat || isLoading) return;
 
+    // Close both template panels when sending message
+    setShowTemplates(false);
+    setShowCommandPalette(false);
+
     if (abortControllerRef.current) {
       cancelRequest();
     }
@@ -194,10 +198,16 @@ export default function ChatInterface({
   };
 
   const handleTemplateSelect = (template: string) => {
-    setInput(template);
+    setInput((prev) => {
+      // If there's existing text, add a newline before the template
+      const prefix = prev.length > 0 ? prev + "\n" : "";
+      return prefix + template;
+    });
     setShowCommandPalette(false);
     if (textareaRef.current) {
       textareaRef.current.focus();
+      // Adjust height after appending template
+      requestAnimationFrame(adjustTextareaHeight);
     }
   };
 

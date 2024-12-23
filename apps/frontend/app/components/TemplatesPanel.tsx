@@ -170,6 +170,7 @@ export default function TemplatesPanel({
                 onClick={(e) => {
                   e.stopPropagation();
                   onSelectTemplate(template.template);
+                  onClose();
                 }}
               >
                 Use Template
