@@ -8,9 +8,17 @@ export function createSolanaAgent(): SolanaAgentKit {
     throw new Error("⛔ Missing PRIVATE_KEY_BASE58 in .env");
   }
 
-  const rpcUrl = process.env.SOLANA_RPC_URL || "https://api.devnet.solana.com";
+  if (!process.env.HELIUS_API_KEY) {
+    throw new Error("⛔ Missing HELIUS_API_KEY in .env");
+  }
+
+  const heliusRpcUrl = `https://devnet.helius-rpc.com/?api-key=${process.env.HELIUS_API_KEY}`;
 
   const openAiKey = process.env.OPENAI_API_KEY || "";
 
-  return new SolanaAgentKit(process.env.PRIVATE_KEY_BASE58, rpcUrl, openAiKey);
+  return new SolanaAgentKit(
+    process.env.PRIVATE_KEY_BASE58,
+    heliusRpcUrl,
+    openAiKey
+  );
 }
