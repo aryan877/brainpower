@@ -16,6 +16,9 @@ export default function Sidebar({
   const [isDeleting, setIsDeleting] = useState(false);
 
   const formatThreadName = (thread: Thread) => {
+    if (thread.title) {
+      return thread.title;
+    }
     const date = new Date(thread.createdAt);
     return `Chat ${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
   };

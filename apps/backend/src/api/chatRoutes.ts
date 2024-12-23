@@ -32,7 +32,7 @@ export function setupChatRoutes(
     try {
       const threads = await ChatThread.find(
         { userId: req.user?.walletAddress, isActive: true },
-        { threadId: 1, createdAt: 1, updatedAt: 1 }
+        { threadId: 1, createdAt: 1, updatedAt: 1, title: 1 }
       ).sort({ updatedAt: -1 });
 
       res.json({ threads });
@@ -93,6 +93,12 @@ export function setupChatRoutes(
 
         if (!chatThread) {
           return res.status(404).json({ error: "Thread not found" });
+        }
+
+        // Update title if this is the first message
+        if (chatThread.messages.length === 0) {
+          chatThread.title = message.slice(0, 100); // Limit title length to 100 chars
+          await chatThread.save();
         }
 
         // Verify thread exists in OpenAI

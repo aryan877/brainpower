@@ -11,6 +11,7 @@ export interface Message {
 export interface ChatInterfaceProps {
   selectedChat: string | null;
   threads?: Thread[];
+  onUpdateThreads?: (threads: Thread[]) => void;
 }
 
 // Modal types
@@ -26,6 +27,7 @@ export interface ModalProps {
 // Sidebar types
 export interface Thread {
   threadId: string;
+  title?: string;
   createdAt: string;
   updatedAt: string;
 }

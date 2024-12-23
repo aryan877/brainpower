@@ -7,15 +7,18 @@ import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { Message, ChatInterfaceProps } from "../types";
 import TemplatesPanel from "./TemplatesPanel";
+import CommandPalette from "./CommandPalette";
 
 export default function ChatInterface({
   selectedChat,
   threads,
+  onUpdateThreads,
 }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showTemplates, setShowTemplates] = useState(false);
+  const [showCommandPalette, setShowCommandPalette] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -29,7 +32,16 @@ export default function ChatInterface({
   }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setInput(e.target.value);
+    const value = e.target.value;
+    setInput(value);
+
+    // Show command palette when typing '/' at the start
+    if (value === "/") {
+      setShowCommandPalette(true);
+    } else if (!value.startsWith("/")) {
+      setShowCommandPalette(false);
+    }
+
     adjustTextareaHeight();
   };
 
@@ -43,6 +55,8 @@ export default function ChatInterface({
       if (!isLoading && input.trim()) {
         sendMessage(e);
       }
+    } else if (e.key === "Escape" && showCommandPalette) {
+      setShowCommandPalette(false);
     }
   };
 
@@ -119,6 +133,15 @@ export default function ChatInterface({
       },
     ]);
 
+    if (messages.length === 0 && threads) {
+      const updatedThreads = threads.map((thread) =>
+        thread.threadId === selectedChat
+          ? { ...thread, title: messageText.slice(0, 100) }
+          : thread
+      );
+      onUpdateThreads?.(updatedThreads);
+    }
+
     try {
       setIsLoading(true);
       abortControllerRef.current = new AbortController();
@@ -172,7 +195,7 @@ export default function ChatInterface({
 
   const handleTemplateSelect = (template: string) => {
     setInput(template);
-    setShowTemplates(false);
+    setShowCommandPalette(false);
     if (textareaRef.current) {
       textareaRef.current.focus();
     }
@@ -320,10 +343,15 @@ export default function ChatInterface({
               value={input}
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
-              placeholder="Type your message... (Shift + Enter for new line)"
+              placeholder="Type your message... (Shift + Enter for new line, type / for templates)"
               className="w-full p-3 rounded-xl modern-input text-[var(--text-primary)] focus:outline-none placeholder-[var(--text-secondary)] resize-none min-h-[48px] max-h-[200px] overflow-y-auto transition-all duration-200"
               disabled={isLoading}
               rows={1}
+            />
+            <CommandPalette
+              isOpen={showCommandPalette}
+              searchTerm={input}
+              onSelectTemplate={handleTemplateSelect}
             />
           </div>
           {isLoading ? (

@@ -31,6 +31,10 @@ const chatThreadSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
+    title: {
+      type: String,
+      default: "",
+    },
     messages: [messageSchema],
     isActive: {
       type: Boolean,

@@ -169,7 +169,7 @@ export default function TemplatesPanel({
                 className="px-4 py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors"
                 onClick={(e) => {
                   e.stopPropagation();
-                  onSelectTemplate(template.description);
+                  onSelectTemplate(template.template);
                 }}
               >
                 Use Template
