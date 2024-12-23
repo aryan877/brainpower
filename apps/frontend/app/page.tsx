@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Sidebar from "./components/Sidebar";
 import ChatInterface from "./components/ChatInterface";
 import api from "./lib/axios";
 import { Thread } from "./types";
 
-export default function Home() {
+function HomeContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [threads, setThreads] = useState<Thread[]>([]);
@@ -110,5 +110,13 @@ export default function Home() {
         <ChatInterface selectedChat={selectedThread} threads={threads} />
       </main>
     </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <HomeContent />
+    </Suspense>
   );
 }
