@@ -67,7 +67,7 @@ PORT=5000
 For frontend (`apps/frontend/.env`):
 
 ```
-NEXT_PUBLIC_API_URL=http://localhost:5000
+NEXT_PUBLIC_BACKEND_URL=http://localhost:5000
 ```
 
 ## RPC Configuration
