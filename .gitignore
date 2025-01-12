@@ -42,3 +42,7 @@ next-env.d.ts
 # IDE
 .idea
 .vscode
+
+# env files
+.env*
+!.env.example

@@ -37,8 +37,10 @@ export interface SidebarProps {
   selectedThread: string | null;
   onSelectThread: (threadId: string) => void;
   onCreateThread: () => void;
-  onDeleteThread: (threadId: string) => void;
   isLoading: boolean;
+  onDeleteClick: (thread: Thread) => void;
+  onLogoutClick: () => void;
+  onWithdrawClick: () => void;
 }
 
 // API Error types

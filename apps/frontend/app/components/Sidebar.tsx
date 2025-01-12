@@ -1,19 +1,34 @@
 import { Trash2 } from "lucide-react";
 import { useState } from "react";
-import Modal from "./Modal";
 import { Thread, SidebarProps } from "../types";
+import { WalletInfo } from "./WalletInfo";
+import { useSolanaWallets } from "@privy-io/react-auth/solana";
+import { usePrivy } from "@privy-io/react-auth";
 
 export default function Sidebar({
   threads,
   selectedThread,
   onSelectThread,
   onCreateThread,
-  onDeleteThread,
   isLoading,
+  onDeleteClick,
+  onLogoutClick,
+  onWithdrawClick,
 }: SidebarProps) {
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [threadToDelete, setThreadToDelete] = useState<Thread | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
+  const { createWallet } = useSolanaWallets();
+  const { user } = usePrivy();
+  const [isCreatingWallet, setIsCreatingWallet] = useState(false);
+
+  const handleCreateSolanaWallet = async () => {
+    try {
+      setIsCreatingWallet(true);
+      await createWallet();
+    } catch (error) {
+      console.error("Error creating Solana wallet:", error);
+    } finally {
+      setIsCreatingWallet(false);
+    }
+  };
 
   const formatThreadName = (thread: Thread) => {
     if (thread.title) {
@@ -23,111 +38,78 @@ export default function Sidebar({
     return `Chat ${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
   };
 
-  const handleDeleteClick = (e: React.MouseEvent, thread: Thread) => {
-    e.stopPropagation();
-    setThreadToDelete(thread);
-    setDeleteModalOpen(true);
-  };
-
-  const handleDeleteConfirm = async () => {
-    if (!threadToDelete) return;
-
-    setIsDeleting(true);
-    try {
-      await onDeleteThread(threadToDelete.threadId);
-    } finally {
-      setIsDeleting(false);
-      setDeleteModalOpen(false);
-      setThreadToDelete(null);
-    }
-  };
-
-  const handleCloseModal = () => {
-    if (!isDeleting) {
-      setDeleteModalOpen(false);
-      setThreadToDelete(null);
-    }
-  };
-
   return (
-    <>
-      <aside className="w-64 gradient-panel flex flex-col h-full">
-        <div className="p-4">
-          <button
-            onClick={onCreateThread}
-            disabled={isLoading}
-            className="w-full gradient-button text-white rounded-xl py-3 font-medium disabled:opacity-50"
-          >
-            {isLoading ? "Creating..." : "New Chat"}
-          </button>
-        </div>
-        <nav className="flex-1 overflow-y-auto">
-          {threads.length === 0 ? (
-            <div className="p-4 text-center text-[var(--text-secondary)]">
-              <p>No chats yet</p>
-              <p className="text-sm mt-2">
-                Click &apos;New Chat&apos; to start a conversation
-              </p>
-            </div>
-          ) : (
-            <ul className="space-y-1 px-2">
-              {threads.map((thread) => (
-                <li
-                  key={thread.threadId}
-                  onClick={() => onSelectThread(thread.threadId)}
-                  className={`flex justify-between items-center p-3 cursor-pointer rounded-lg hover:bg-[var(--hover-bg)] transition-all duration-200 ${
-                    selectedThread === thread.threadId
-                      ? "bg-[var(--hover-bg)] border border-[var(--border-color)]"
-                      : ""
-                  }`}
-                >
-                  <span className="truncate text-[var(--text-primary)] font-medium">
-                    {formatThreadName(thread)}
-                  </span>
-                  <button
-                    onClick={(e) => handleDeleteClick(e, thread)}
-                    className="text-red-400 hover:text-red-300 p-1.5 rounded-lg transition-all duration-200 hover:bg-red-500/10"
-                  >
-                    <Trash2 size={18} />
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </nav>
-      </aside>
+    <aside className="flex flex-col h-full bg-[var(--background)] border-r border-[var(--border-color)]">
+      <div className="p-4">
+        <button
+          onClick={onCreateThread}
+          disabled={isLoading}
+          className="w-full gradient-button text-white rounded-lg py-3 font-medium disabled:opacity-50 text-sm"
+        >
+          {isLoading ? "Creating..." : "New Chat"}
+        </button>
+      </div>
 
-      <Modal
-        isOpen={deleteModalOpen}
-        onClose={handleCloseModal}
-        title="Delete Chat"
-        footer={
-          <div className="flex justify-end space-x-4">
+      {/* Chat threads list */}
+      <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-[var(--border-color)] scrollbar-track-transparent pb-4">
+        {!user?.wallet && (
+          <div className="px-4 mb-4">
             <button
-              onClick={handleCloseModal}
-              className="px-4 py-2 rounded-xl border border-[var(--border-color)] text-[var(--text-primary)] hover:bg-[var(--hover-bg)] transition-all duration-200"
-              disabled={isDeleting}
+              onClick={handleCreateSolanaWallet}
+              disabled={isCreatingWallet}
+              className="w-full gradient-button text-white rounded-lg py-2 font-medium disabled:opacity-50 text-sm"
             >
-              Cancel
-            </button>
-            <button
-              onClick={handleDeleteConfirm}
-              className="px-4 py-2 rounded-xl bg-red-500 text-white hover:bg-red-600 transition-all duration-200 disabled:opacity-50"
-              disabled={isDeleting}
-            >
-              {isDeleting ? "Deleting..." : "Delete"}
+              {isCreatingWallet
+                ? "Creating Solana Wallet..."
+                : "Create Solana Wallet"}
             </button>
           </div>
-        }
-      >
-        <p className="text-[var(--text-secondary)]">
-          Are you sure you want to delete{" "}
-          <span className="text-[var(--text-primary)]">
-            {threadToDelete ? formatThreadName(threadToDelete) : ""}
-          </span>
-          ? This action cannot be undone.
-        </p>
-      </Modal>
-    </>
+        )}
+
+        {threads.length === 0 ? (
+          <div className="p-4 text-center text-[var(--text-secondary)]">
+            <p className="text-sm md:text-base">No chats yet</p>
+            <p className="text-xs md:text-sm mt-2">
+              Click &apos;New Chat&apos; to start a conversation
+            </p>
+          </div>
+        ) : (
+          <ul className="space-y-2 px-4">
+            {threads.map((thread) => (
+              <li
+                key={thread.threadId}
+                onClick={() => onSelectThread(thread.threadId)}
+                className={`flex justify-between items-center p-3 cursor-pointer rounded-lg hover:bg-[var(--hover-bg)] transition-all duration-200 ${
+                  selectedThread === thread.threadId
+                    ? "bg-[var(--hover-bg)] border border-[var(--border-color)]"
+                    : ""
+                }`}
+              >
+                <span className="truncate text-[var(--text-primary)] font-medium text-sm md:text-base">
+                  {formatThreadName(thread)}
+                </span>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDeleteClick(thread);
+                  }}
+                  className="text-red-400 hover:text-red-300 p-1.5 rounded-lg transition-all duration-200 hover:bg-red-500/10 flex-shrink-0"
+                >
+                  <Trash2 className="w-5 h-5" />
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      {/* Wallet info at the bottom */}
+      <div className="mt-auto border-t border-[var(--border-color)] pt-6">
+        <WalletInfo
+          onLogoutClick={onLogoutClick}
+          onWithdrawClick={onWithdrawClick}
+        />
+      </div>
+    </aside>
   );
 }

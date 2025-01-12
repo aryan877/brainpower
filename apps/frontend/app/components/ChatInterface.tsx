@@ -2,12 +2,10 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import api from "../lib/axios";
-import ReactMarkdown from "react-markdown";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { Message, ChatInterfaceProps } from "../types";
 import TemplatesPanel from "./TemplatesPanel";
 import CommandPalette from "./CommandPalette";
+import ChatMessage from "./ChatMessage";
 
 export default function ChatInterface({
   selectedChat,
@@ -231,8 +229,8 @@ export default function ChatInterface({
 
   if (!selectedChat) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-[var(--background)]">
-        <p className="text-[var(--text-secondary)] text-lg">
+      <div className="flex h-full items-center justify-center bg-[var(--background)]">
+        <p className="text-[var(--text-secondary)] text-center text-base md:text-lg px-4">
           {threads?.length === 0
             ? "Create a new chat to get started"
             : "Select a chat or create a new one"}
@@ -242,147 +240,117 @@ export default function ChatInterface({
   }
 
   return (
-    <div className="flex-1 flex flex-col bg-[var(--background)] h-[calc(100vh-64px)] overflow-hidden relative">
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-[var(--border-color)] scrollbar-track-transparent">
-        {messages.map((message, index) => (
-          <div
-            key={index}
-            className={`flex ${
-              message.role === "user" ? "justify-end" : "justify-start"
-            }`}
-          >
-            <div
-              className={`max-w-[70%] p-4 message-bubble break-words overflow-hidden ${
-                message.role === "user"
-                  ? "message-bubble-user text-white"
-                  : "message-bubble-assistant text-[var(--text-primary)]"
-              }`}
-            >
-              {message.isLoading ? (
-                <div className="flex items-center space-x-2">
-                  <div
-                    className="w-2 h-2 bg-white/40 rounded-full animate-bounce"
-                    style={{ animationDelay: "0ms" }}
-                  />
-                  <div
-                    className="w-2 h-2 bg-white/40 rounded-full animate-bounce"
-                    style={{ animationDelay: "150ms" }}
-                  />
-                  <div
-                    className="w-2 h-2 bg-white/40 rounded-full animate-bounce"
-                    style={{ animationDelay: "300ms" }}
-                  />
-                </div>
-              ) : (
-                <div className="prose prose-invert max-w-none overflow-x-auto">
-                  <ReactMarkdown
-                    components={{
-                      code({ inline, className, children, ...props }) {
-                        const match = /language-(\w+)/.exec(className || "");
-                        return !inline && match ? (
-                          <div className="max-w-full overflow-x-auto">
-                            <SyntaxHighlighter
-                              style={vscDarkPlus}
-                              language={match[1]}
-                              PreTag="div"
-                              customStyle={{
-                                margin: 0,
-                                borderRadius: "0.5rem",
-                              }}
-                              {...props}
-                            >
-                              {String(children).replace(/\n$/, "")}
-                            </SyntaxHighlighter>
-                          </div>
-                        ) : (
-                          <code className={className} {...props}>
-                            {children}
-                          </code>
-                        );
-                      },
-                      p: ({ children }) => (
-                        <p className="whitespace-pre-wrap break-words">
-                          {children}
-                        </p>
-                      ),
-                    }}
-                  >
-                    {message.content}
-                  </ReactMarkdown>
-                </div>
-              )}
+    <div className="flex flex-col h-full">
+      <div className="flex-1 overflow-y-auto">
+        <div className="min-h-full">
+          <div className="max-w-3xl mx-auto px-4 sm:px-6">
+            <div className="py-2 space-y-4">
+              {messages.map((message, index) => (
+                <ChatMessage key={index} message={message} />
+              ))}
+              <div ref={messagesEndRef} />
             </div>
           </div>
-        ))}
-        <div ref={messagesEndRef} />
-      </div>
-
-      {/* Templates Panel */}
-      <div className="relative">
-        {showTemplates && (
-          <TemplatesPanel
-            onSelectTemplate={handleTemplateSelect}
-            onClose={() => setShowTemplates(false)}
-          />
-        )}
-      </div>
-
-      <form
-        onSubmit={sendMessage}
-        className="p-4 gradient-panel relative z-[1]"
-      >
-        <div className="flex space-x-4">
-          <button
-            type="button"
-            onClick={() => setShowTemplates(!showTemplates)}
-            className="px-3 py-2 rounded-xl bg-[var(--background)] text-[var(--text-primary)] hover:bg-[var(--background-hover)] transition-colors"
-            title="Show Templates"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-            >
-              <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" />
-            </svg>
-          </button>
-          <div className="flex-1 relative">
-            <textarea
-              ref={textareaRef}
-              value={input}
-              onChange={handleInputChange}
-              onKeyDown={handleKeyDown}
-              placeholder="Type your message... (Shift + Enter for new line, type / for templates)"
-              className="w-full p-3 rounded-xl modern-input text-[var(--text-primary)] focus:outline-none placeholder-[var(--text-secondary)] resize-none min-h-[48px] max-h-[200px] overflow-y-auto transition-all duration-200"
-              disabled={isLoading}
-              rows={1}
-            />
-            <CommandPalette
-              isOpen={showCommandPalette}
-              searchTerm={input}
-              onSelectTemplate={handleTemplateSelect}
-            />
-          </div>
-          {isLoading ? (
-            <button
-              type="button"
-              onClick={cancelRequest}
-              className="px-6 py-3 bg-red-500 hover:bg-red-600 rounded-xl text-white font-medium focus:outline-none h-[48px] whitespace-nowrap transition-colors"
-            >
-              Cancel
-            </button>
-          ) : (
-            <button
-              type="submit"
-              className="px-6 py-3 gradient-button rounded-xl text-white font-medium focus:outline-none disabled:opacity-50 h-[48px] whitespace-nowrap"
-              disabled={!input.trim()}
-            >
-              Send
-            </button>
-          )}
         </div>
-      </form>
+      </div>
+
+      <div className="flex-shrink-0 border-t border-[var(--border-color)] bg-[var(--background)]">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 py-3">
+          <form onSubmit={sendMessage} className="relative">
+            <div className="relative">
+              <textarea
+                ref={textareaRef}
+                value={input}
+                onChange={handleInputChange}
+                onKeyDown={handleKeyDown}
+                placeholder="Type a message..."
+                className="w-full min-h-[48px] max-h-[200px] p-3 pr-24 bg-[var(--secondary-bg)] rounded-xl resize-none text-sm md:text-base placeholder:text-[var(--text-secondary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                disabled={isLoading}
+              />
+              <div className="absolute right-2 bottom-2 flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowTemplates(true)}
+                  className="p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--hover-bg)] rounded-lg transition-colors"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    className="w-4 h-4"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 5v14M5 12h14"
+                    />
+                  </svg>
+                </button>
+                {isLoading ? (
+                  <button
+                    type="button"
+                    onClick={cancelRequest}
+                    className="p-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      className="w-4 h-4"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </button>
+                ) : (
+                  <button
+                    type="submit"
+                    disabled={!input.trim() || isLoading}
+                    className="p-2 text-[var(--primary)] hover:text-[var(--primary-hover)] hover:bg-[var(--primary)]/10 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      className="w-4 h-4"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 12h14M12 5l7 7-7 7"
+                      />
+                    </svg>
+                  </button>
+                )}
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      {showTemplates && (
+        <TemplatesPanel
+          onSelectTemplate={handleTemplateSelect}
+          onClose={() => setShowTemplates(false)}
+        />
+      )}
+
+      {showCommandPalette && (
+        <CommandPalette
+          isOpen={showCommandPalette}
+          searchTerm={input}
+          onSelectTemplate={handleTemplateSelect}
+        />
+      )}
     </div>
   );
 }

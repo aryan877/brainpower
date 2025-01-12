@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@coral-xyz/anchor": "^0.29.0",
+    "@privy-io/react-auth": "^2.0.1",
     "@solana/web3.js": "1.94.0",
     "@tailwindcss/typography": "^0.5.15",
     "@types/react-syntax-highlighter": "^15.5.13",

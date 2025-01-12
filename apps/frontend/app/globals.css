@@ -3,11 +3,11 @@
 @tailwind utilities;
 
 :root {
-  --background: #0a0a0a;
+  --background: #111111;
   --foreground: #ffffff;
   --primary: #7000ff;
   --primary-hover: #8929ff;
-  --secondary-bg: #111111;
+  --secondary-bg: #1a1a1a;
   --border-color: rgba(255, 255, 255, 0.1);
   --hover-bg: rgba(255, 255, 255, 0.05);
   --message-bg-user: linear-gradient(135deg, #7000ff 0%, #8929ff 100%);
@@ -15,7 +15,7 @@
   --text-primary: #ffffff;
   --text-secondary: rgba(255, 255, 255, 0.6);
   --gradient-primary: linear-gradient(135deg, #7000ff 0%, #8929ff 100%);
-  --gradient-secondary: linear-gradient(135deg, #111111 0%, #1a1a1a 100%);
+  --gradient-secondary: linear-gradient(135deg, #1a1a1a 0%, #222222 100%);
 }
 
 body {
