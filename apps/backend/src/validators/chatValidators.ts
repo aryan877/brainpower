@@ -1,55 +1,27 @@
-import { Request, Response, NextFunction } from "express";
+import { z } from "zod";
+import { validateRequest } from "./validateRequest.js";
 
-export function sendMessageValidator(
-  req: Request,
-  res: Response,
-  next: NextFunction
-) {
-  const { message, threadId } = req.body;
+// Schema for sending a message
+export const validateSendMessage = validateRequest({
+  body: z.object({
+    message: z
+      .string()
+      .min(1, "Message cannot be empty")
+      .max(4000, "Message is too long"),
+    threadId: z.string().uuid("Invalid thread ID"),
+  }),
+});
 
-  if (!message || typeof message !== "string") {
-    return res
-      .status(400)
-      .json({ error: "Message is required and must be a string" });
-  }
+// Schema for getting thread history
+export const validateThreadHistory = validateRequest({
+  params: z.object({
+    threadId: z.string().uuid("Invalid thread ID"),
+  }),
+});
 
-  if (!threadId || typeof threadId !== "string") {
-    return res
-      .status(400)
-      .json({ error: "Thread ID is required and must be a string" });
-  }
-
-  next();
-}
-
-export function threadHistoryValidator(
-  req: Request,
-  res: Response,
-  next: NextFunction
-) {
-  const { threadId } = req.params;
-
-  if (!threadId || typeof threadId !== "string") {
-    return res
-      .status(400)
-      .json({ error: "Thread ID is required and must be a string" });
-  }
-
-  next();
-}
-
-export function deleteThreadValidator(
-  req: Request,
-  res: Response,
-  next: NextFunction
-) {
-  const { threadId } = req.params;
-
-  if (!threadId || typeof threadId !== "string") {
-    return res
-      .status(400)
-      .json({ error: "Thread ID is required and must be a string" });
-  }
-
-  next();
-}
+// Schema for deleting a thread
+export const validateDeleteThread = validateRequest({
+  params: z.object({
+    threadId: z.string().uuid("Invalid thread ID"),
+  }),
+});

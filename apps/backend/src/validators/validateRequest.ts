@@ -1,21 +1,39 @@
 import { Request, Response, NextFunction } from "express";
-import { validationResult, ValidationError } from "express-validator";
+import { AnyZodObject, ZodError } from "zod";
+import { ValidationError } from "../middleware/errors/types.js";
 
-export const validateRequest = (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({
-      error: "Validation failed",
-      details: errors.array().map((err: ValidationError) => ({
-        field: err.type === "field" ? err.path : err.type,
-        message: err.msg,
-        value: err.type === "field" ? err.value : undefined,
-      })),
-    });
-  }
-  next();
+type ValidateRequestOptions = {
+  body?: AnyZodObject;
+  query?: AnyZodObject;
+  params?: AnyZodObject;
+};
+
+export const validateRequest = (schemas: ValidateRequestOptions) => {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      if (schemas.body) {
+        req.body = await schemas.body.parseAsync(req.body);
+      }
+      if (schemas.query) {
+        req.query = await schemas.query.parseAsync(req.query);
+      }
+      if (schemas.params) {
+        req.params = await schemas.params.parseAsync(req.params);
+      }
+      next();
+    } catch (error) {
+      if (error instanceof ZodError) {
+        next(
+          new ValidationError("Validation failed", {
+            errors: error.errors.map((e) => ({
+              path: e.path.join("."),
+              message: e.message,
+            })),
+          })
+        );
+      } else {
+        next(error);
+      }
+    }
+  };
 };

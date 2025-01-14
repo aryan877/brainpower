@@ -1,4 +1,4 @@
-import { ToolConfig } from "../types/index.js";
+import { ToolConfig } from "src/types/index.js";
 import { createSolanaAgent } from "../agent/createAgent.js";
 import { PriceServiceConnection } from "@pythnetwork/price-service-client";
 import pkg from "@coral-xyz/anchor";

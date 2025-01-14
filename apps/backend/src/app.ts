@@ -5,9 +5,10 @@ import cors from "cors";
 import rateLimit from "express-rate-limit";
 import helmet from "helmet";
 import OpenAI from "openai";
-import { setupChatRoutes } from "./api/chatRoutes";
-import { errorHandler, notFoundHandler } from "./middleware/errors";
-import { ErrorCode, ErrorResponse } from "./middleware/errors/types";
+import { setupChatRoutes } from "./routes/chatRoutes.js";
+import { errorHandler } from "./middleware/errors/errorHandler.js";
+import { notFoundHandler } from "./middleware/errors/notFoundHandler.js";
+import { ErrorCode, ErrorResponse } from "./middleware/errors/types.js";
 
 const app = express();
 const httpServer = createServer(app);
@@ -35,7 +36,7 @@ const limiter = rateLimit({
   message: {
     error: {
       code: ErrorCode.RATE_LIMIT_ERROR,
-      message: "Too many requests, please try again later",
+      message: "Too many requests, please try again late",
     },
   } as ErrorResponse,
 });
@@ -53,10 +54,7 @@ const router = express.Router();
 
 // Initialize routes
 export const initializeRoutes = async () => {
-  const assistant = await client.beta.assistants.retrieve(
-    process.env.OPENAI_ASSISTANT_ID!
-  );
-  app.use("/api/chat", setupChatRoutes(router, client, assistant));
+  app.use("/api/chat", setupChatRoutes(router, client));
   console.log("🛠️ Routes configured");
 
   // Handle 404 for undefined routes

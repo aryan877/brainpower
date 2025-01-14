@@ -1,4 +1,4 @@
-import { ToolConfig } from "../types/index.js";
+import { ToolConfig } from "src/types/index.js";
 import { getBalanceTool } from "./getBalance.js";
 import { getWalletAddressTool } from "./getWalletAddress.js";
 import { requestFaucetFundsTool } from "./requestFaucetFunds.js";

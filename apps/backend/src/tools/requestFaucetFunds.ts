@@ -1,4 +1,4 @@
-import { ToolConfig } from "src/types";
+import { ToolConfig } from "src/types/index.js";
 import { createSolanaAgent } from "../agent/createAgent.js";
 
 interface RequestFaucetFundsArgs {

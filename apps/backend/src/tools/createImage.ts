@@ -1,4 +1,4 @@
-import { ToolConfig } from "../types/index.js";
+import { ToolConfig } from "src/types/index.js";
 import { createSolanaAgent } from "../agent/createAgent.js";
 
 interface CreateImageArgs {

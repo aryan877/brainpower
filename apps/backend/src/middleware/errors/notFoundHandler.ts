@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { ErrorCode, ErrorResponse } from "./types";
+import { ErrorCode, ErrorResponse } from "./types.js";
 
 export const notFoundHandler = (req: Request, res: Response) => {
   // Log the 404 error
