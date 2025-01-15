@@ -6,6 +6,7 @@ import { Copy, Wallet, Plus, LogOut, Send, RefreshCw } from "lucide-react";
 import { useState } from "react";
 import { useClusterStore } from "../store/clusterStore";
 import { useWallet } from "../hooks/useWallet";
+import { walletClient } from "../clients/wallet";
 
 interface WalletInfoProps {
   onLogoutClick: () => void;
@@ -37,7 +38,13 @@ export function WalletInfo({
   const handleCreateWallet = async () => {
     try {
       setIsCreating(true);
-      await createWallet();
+      const wallet = await createWallet();
+      await walletClient.storeWallet(wallet.address, wallet.chainType);
+      console.log(
+        "Wallet created and stored:",
+        wallet.address,
+        wallet.chainType
+      );
     } catch (error) {
       console.error("Error creating Solana wallet:", error);
     } finally {

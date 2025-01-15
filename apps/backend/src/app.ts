@@ -6,9 +6,11 @@ import rateLimit from "express-rate-limit";
 import helmet from "helmet";
 import OpenAI from "openai";
 import { setupChatRoutes } from "./routes/chatRoutes.js";
+import { setupWalletRoutes } from "./routes/walletRoutes.js";
 import { errorHandler } from "./middleware/errors/errorHandler.js";
 import { notFoundHandler } from "./middleware/errors/notFoundHandler.js";
 import { ErrorCode, ErrorResponse } from "./middleware/errors/types.js";
+import cookieParser from "cookie-parser";
 
 const app = express();
 const httpServer = createServer(app);
@@ -42,6 +44,9 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
+// Add cookie parser middleware before routes
+app.use(cookieParser());
+
 // Body parser middleware
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
@@ -55,6 +60,7 @@ const router = express.Router();
 // Initialize routes
 export const initializeRoutes = async () => {
   app.use("/api/chat", setupChatRoutes(router, client));
+  app.use("/api/wallet", setupWalletRoutes(express.Router()));
   console.log("🛠️ Routes configured");
 
   // Handle 404 for undefined routes

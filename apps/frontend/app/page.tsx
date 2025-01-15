@@ -317,7 +317,7 @@ function HomeContent() {
     if (withdrawModalOpen && solanaWallet?.address) {
       refreshBalance();
     }
-  }, [withdrawModalOpen]);
+  }, [withdrawModalOpen, refreshBalance, wallets]);
 
   const handleRefreshBalance = () => {
     const solanaWallet = wallets[0];

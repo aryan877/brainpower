@@ -1,36 +1,71 @@
 import { Request, Response, NextFunction } from "express";
-import { Keypair } from "@solana/web3.js";
-import bs58 from "bs58";
-import { config } from "dotenv";
-
-config();
+import { privyClient } from "../lib/privyClient.js";
+import { UnauthorizedError } from "./errors/types.js";
 
 export interface AuthenticatedRequest extends Request {
   user?: {
-    walletAddress: string;
+    userId: string;
+    walletAddress?: string;
   };
 }
 
-export function authenticateUser(
+export async function authenticateUser(
   req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
 ) {
   try {
-    // Get the keypair from private key
-    const privateKeyBytes = bs58.decode(process.env.PRIVATE_KEY_BASE58 || "");
-    const keypair = Keypair.fromSecretKey(privateKeyBytes);
-    const walletAddress = keypair.publicKey.toBase58();
+    // Get the access token from the Authorization header
+    const authHeader = req.headers.authorization;
+    if (!authHeader?.startsWith("Bearer ")) {
+      // Check for cookie-based tokens if header is not present
+      const accessToken = req.cookies["privy-token"];
+      const idToken = req.cookies["privy-id-token"];
+
+      if (!accessToken) {
+        throw new UnauthorizedError("No authentication token provided");
+      }
+
+      // Verify the access token
+      const verifiedClaims = await privyClient.verifyAuthToken(accessToken);
+
+      // Get user details from identity token if available
+      if (idToken) {
+        try {
+          const user = await privyClient.getUser({ idToken });
+          req.user = {
+            userId: verifiedClaims.userId,
+            walletAddress: user.wallet?.address,
+          };
+        } catch (error) {
+          console.error(
+            "Error getting user details from identity token:",
+            error
+          );
+          req.user = {
+            userId: verifiedClaims.userId,
+          };
+        }
+      } else {
+        req.user = {
+          userId: verifiedClaims.userId,
+        };
+      }
+
+      next();
+      return;
+    }
+
+    // Extract and verify the token from header
+    const token = authHeader.split(" ")[1];
+    const verifiedClaims = await privyClient.verifyAuthToken(token);
 
     req.user = {
-      walletAddress,
+      userId: verifiedClaims.userId,
     };
+
     next();
   } catch (error) {
-    console.error("Authentication error:", error);
-    res.status(401).json({
-      error: "Authentication failed",
-      details: error instanceof Error ? error.message : "Unknown error",
-    });
+    next(new UnauthorizedError("Invalid authentication token"));
   }
 }

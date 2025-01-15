@@ -1,12 +1,13 @@
 import "./globals.css";
 import { Inter } from "next/font/google";
+import { NotificationContainer } from "./components/NotificationContainer";
 import { PrivyProvider } from "./providers/PrivyProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "BrainPower",
-  description: "AI-powered chat interface",
+  title: "Brainpower",
+  description: "AI-powered learning platform",
 };
 
 export default function RootLayout({
@@ -15,9 +16,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="h-full">
-      <body className={`${inter.className} h-full overflow-hidden`}>
+    <html lang="en">
+      <body className={inter.className}>
         <PrivyProvider>{children}</PrivyProvider>
+        <NotificationContainer />
       </body>
     </html>
   );
