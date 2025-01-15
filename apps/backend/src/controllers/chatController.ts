@@ -6,19 +6,27 @@ import { createRun } from "../core/createRun.js";
 import { performRun } from "../core/performRun.js";
 import { ChatThread } from "../models/ChatThread.js";
 import { AuthenticatedRequest } from "../middleware/auth.js";
-import { NotFoundError } from "../middleware/errors/types.js";
+import { NotFoundError, DatabaseError } from "../middleware/errors/types.js";
+import { getUserId } from "../utils/userIdentification.js";
 
 export const getThreads = async (req: AuthenticatedRequest, res: Response) => {
+  const userId = await getUserId(req);
   const threads = await ChatThread.find(
-    { userId: req.user?.walletAddress, isActive: true },
+    { userId, isActive: true },
     { threadId: 1, createdAt: 1, updatedAt: 1, title: 1 }
   ).sort({ updatedAt: -1 });
 
-  return { threads };
+  res.json({ threads });
 };
 
-export const createNewThread = async (client: OpenAI, userId: string) => {
+export const createNewThread = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  client: OpenAI
+) => {
+  const userId = await getUserId(req);
   const openAiThread = await createThread(client);
+
   if (!openAiThread?.id) {
     throw new Error("Failed to create OpenAI thread");
   }
@@ -29,20 +37,21 @@ export const createNewThread = async (client: OpenAI, userId: string) => {
     messages: [],
   });
 
-  return {
+  res.json({
     threadId: chatThread.threadId,
     createdAt: chatThread.createdAt,
-  };
+  });
 };
 
 export const sendMessage = async (
+  req: AuthenticatedRequest,
+  res: Response,
   client: OpenAI,
-  assistant: Assistant,
-  userId: string,
-  message: string,
-  threadId: string,
-  abortSignal?: AbortSignal
+  assistant: Assistant
 ) => {
+  const userId = await getUserId(req);
+  const { message, threadId } = req.body;
+
   const chatThread = await ChatThread.findOne({
     threadId,
     userId,
@@ -77,28 +86,39 @@ export const sendMessage = async (
     createdAt: new Date(),
   });
 
-  // Create and perform run
-  const run = await createRun(client, openAiThread, assistant.id);
-  const result = await performRun(run, client, openAiThread, abortSignal);
+  try {
+    // Create and perform run
+    const run = await createRun(client, openAiThread, assistant.id);
+    const result = await performRun(run, client, openAiThread);
 
-  if (result?.type === "text") {
-    chatThread.messages.push({
-      role: "assistant",
-      content: result.text.value,
-      createdAt: new Date(),
-    });
-    await chatThread.save();
+    if (result?.type === "text") {
+      chatThread.messages.push({
+        role: "assistant",
+        content: result.text.value,
+        createdAt: new Date(),
+      });
+      await chatThread.save();
 
-    return {
-      response: result.text.value,
-      threadId: chatThread.threadId,
-    };
+      res.json({
+        response: result.text.value,
+        threadId: chatThread.threadId,
+      });
+      return;
+    }
+
+    throw new Error("No valid response generated");
+  } catch (error) {
+    throw new DatabaseError("Failed to process message", error);
   }
-
-  throw new Error("No valid response generated");
 };
 
-export const getThreadHistory = async (userId: string, threadId: string) => {
+export const getThreadHistory = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
+  const userId = await getUserId(req);
+  const threadId = req.params.threadId;
+
   const chatThread = await ChatThread.findOne({
     threadId,
     userId,
@@ -109,19 +129,22 @@ export const getThreadHistory = async (userId: string, threadId: string) => {
     throw new NotFoundError("Thread not found");
   }
 
-  return {
+  res.json({
     threadId: chatThread.threadId,
     messages: chatThread.messages,
     createdAt: chatThread.createdAt,
     updatedAt: chatThread.updatedAt,
-  };
+  });
 };
 
 export const deleteThread = async (
-  client: OpenAI,
-  userId: string,
-  threadId: string
+  req: AuthenticatedRequest,
+  res: Response,
+  client: OpenAI
 ) => {
+  const userId = await getUserId(req);
+  const threadId = req.params.threadId;
+
   const chatThread = await ChatThread.findOne({
     threadId,
     userId,
@@ -141,5 +164,5 @@ export const deleteThread = async (
   chatThread.isActive = false;
   await chatThread.save();
 
-  return { message: "Thread deleted successfully" };
+  res.json({ message: "Thread deleted successfully" });
 };

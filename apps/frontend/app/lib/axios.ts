@@ -4,25 +4,7 @@ import axios, {
   AxiosError,
 } from "axios";
 import { useNotificationStore } from "../store/notificationStore";
-
-export enum ErrorCode {
-  VALIDATION_ERROR = "VALIDATION_ERROR",
-  DATABASE_ERROR = "DATABASE_ERROR",
-  NOT_FOUND = "NOT_FOUND",
-  RATE_LIMIT_ERROR = "RATE_LIMIT_ERROR",
-  INTERNAL_SERVER_ERROR = "INTERNAL_SERVER_ERROR",
-  BAD_REQUEST = "BAD_REQUEST",
-  UNAUTHORIZED = "UNAUTHORIZED",
-  FORBIDDEN = "FORBIDDEN",
-}
-
-interface ErrorResponse {
-  error: {
-    code: ErrorCode;
-    message: string;
-    details?: unknown;
-  };
-}
+import { ErrorResponse } from "../types";
 
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_BACKEND_URL,
@@ -48,20 +30,21 @@ api.interceptors.response.use(
       });
     }
 
-    // Type guard for AxiosError
     const axiosError = error as AxiosError<ErrorResponse>;
+    const errorData = axiosError.response?.data;
 
-    // Get error message
     let errorMessage = "An unexpected error occurred";
-    if (axiosError.response?.data?.error) {
-      errorMessage = axiosError.response.data.error.message;
+    let details = undefined;
+
+    if (errorData?.error) {
+      errorMessage = errorData.error.message;
+      details = errorData.error.details;
     } else if (axiosError.message) {
       errorMessage = axiosError.message;
     }
 
-    // Show error notification
     const addNotification = useNotificationStore.getState().addNotification;
-    addNotification("error", errorMessage);
+    addNotification("error", errorMessage, details);
 
     return Promise.reject(error);
   }

@@ -8,12 +8,14 @@ import {
   InformationCircleIcon,
   ExclamationTriangleIcon,
 } from "@heroicons/react/24/solid";
+import { ValidationErrorDetail } from "../types";
 
 export type NotificationType = "success" | "error" | "info" | "warning";
 
 interface NotificationProps {
   type: NotificationType;
   message: string;
+  details?: unknown;
   isVisible: boolean;
   onClose: () => void;
   autoClose?: boolean;
@@ -48,9 +50,31 @@ const textColors = {
   info: "text-blue-400",
 };
 
+const formatDetails = (details: unknown): string => {
+  if (!details) return "";
+
+  // Handle validation errors
+  const detailsObj = details as { errors?: ValidationErrorDetail[] };
+  if (detailsObj.errors?.length) {
+    return detailsObj.errors
+      .map((err) => `${err.path}: ${err.message}`)
+      .join("\n");
+  }
+
+  // Handle string details
+  if (typeof details === "string") return details;
+
+  // Handle other object details
+  return JSON.stringify(details, null, 2)
+    .replace(/[{}"]/g, "")
+    .replace(/,/g, "")
+    .trim();
+};
+
 export const Notification = ({
   type,
   message,
+  details,
   isVisible,
   onClose,
   autoClose = true,
@@ -68,6 +92,8 @@ export const Notification = ({
 
   if (!isVisible) return null;
 
+  const formattedDetails = details ? formatDetails(details) : null;
+
   return (
     <div
       className={`transform transition-all duration-300 ease-in-out ${
@@ -75,11 +101,16 @@ export const Notification = ({
       }`}
     >
       <div
-        className={`flex items-center gap-3 p-3 rounded-lg border backdrop-blur-sm ${bgColors[type]} ${borderColors[type]} shadow-lg shadow-black/10`}
+        className={`flex items-start gap-3 p-3 rounded-lg border backdrop-blur-sm ${bgColors[type]} ${borderColors[type]} shadow-lg shadow-black/10`}
       >
-        <div className="flex-shrink-0">{icons[type]}</div>
+        <div className="flex-shrink-0 mt-1">{icons[type]}</div>
         <div className="flex-1 mr-2">
-          <p className={`text-sm ${textColors[type]}`}>{message}</p>
+          <p className={`text-sm font-medium ${textColors[type]}`}>{message}</p>
+          {formattedDetails && (
+            <pre className="mt-2 text-xs text-gray-400 whitespace-pre-wrap font-mono bg-black/20 p-2 rounded">
+              {formattedDetails}
+            </pre>
+          )}
         </div>
         <button
           onClick={onClose}

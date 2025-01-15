@@ -1,5 +1,11 @@
 import { Request, Response, NextFunction } from "express";
-import { APIError, ErrorCode, ErrorResponse } from "./types.js";
+import {
+  APIError,
+  ErrorCode,
+  ErrorResponse,
+  ValidationError,
+  BadRequestError,
+} from "./types.js";
 
 export const errorHandler = (
   err: Error,
@@ -34,9 +40,12 @@ export const errorHandler = (
     errorResponse.error = {
       code: err.code,
       message: err.message,
-      ...(process.env.NODE_ENV === "development" && {
-        details: err.details,
-      }),
+      details:
+        process.env.NODE_ENV === "development"
+          ? err.details
+          : err instanceof ValidationError || err instanceof BadRequestError
+          ? err.details // Safe to show validation/request errors in production
+          : undefined,
     };
     return res.status(err.statusCode).json(errorResponse);
   }
@@ -46,7 +55,7 @@ export const errorHandler = (
     errorResponse.error = {
       code: ErrorCode.VALIDATION_ERROR,
       message: "Validation failed",
-      details: process.env.NODE_ENV === "development" ? err.message : undefined,
+      details: err.message, // Safe to show validation messages in production
     };
     return res.status(400).json(errorResponse);
   }
@@ -56,6 +65,7 @@ export const errorHandler = (
     errorResponse.error = {
       code: ErrorCode.DATABASE_ERROR,
       message: "A database error occurred",
+      details: process.env.NODE_ENV === "development" ? err.message : undefined,
     };
     return res.status(500).json(errorResponse);
   }

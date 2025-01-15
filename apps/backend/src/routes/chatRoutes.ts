@@ -1,6 +1,6 @@
-import { Router, Response } from "express";
+import { Router } from "express";
 import OpenAI from "openai";
-import { authenticateUser, AuthenticatedRequest } from "../middleware/auth.js";
+import { authenticateUser } from "../middleware/auth.js";
 import {
   getThreads,
   createNewThread,
@@ -13,93 +13,46 @@ import {
   validateThreadHistory,
   validateDeleteThread,
 } from "../validators/chatValidators.js";
-import { BadRequestError, DatabaseError } from "../middleware/errors/types.js";
 import { asyncHandler } from "../middleware/errors/asyncHandler.js";
 
 export function setupChatRoutes(router: Router, client: OpenAI): Router {
-  // Apply authentication middleware to all routes
   router.use(authenticateUser);
 
-  // Get user's chat threads
-  router.get(
-    "/threads",
-    asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
-      const result = await getThreads(req, res);
-      res.json(result);
-    })
-  );
+  router.get("/threads", asyncHandler(getThreads));
 
-  // Create a new chat thread
   router.post(
     "/thread",
-    asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
-      const result = await createNewThread(client, req.user?.walletAddress!);
-      res.json(result);
-    })
+    asyncHandler((req, res) => createNewThread(req, res, client))
   );
 
-  // Send a message and get a response
   router.post(
     "/message",
     validateSendMessage,
-    asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
-      const abortController = new AbortController();
-
-      // Handle client disconnection
-      req.on("close", () => {
-        abortController.abort();
+    asyncHandler(async (req, res) => {
+      const assistant = await client.beta.assistants.create({
+        name: "Brainpower AI",
+        instructions:
+          "You are Brainpower AI, a helpful assistant that helps users understand and interact with blockchain technology, specifically Solana.",
+        model: "gpt-4-turbo-preview",
       });
 
-      const { message, threadId } = req.body;
+      await sendMessage(req, res, client, assistant);
 
-      // Create assistant for this request
-      const assistant = await client.beta.assistants.retrieve(
-        process.env.OPENAI_ASSISTANT_ID!
-      );
-
-      const result = await sendMessage(
-        client,
-        assistant,
-        req.user?.walletAddress!,
-        message,
-        threadId,
-        abortController.signal
-      ).catch((error) => {
-        if (error.name === "AbortError") {
-          throw new BadRequestError("Request cancelled by client");
-        }
-        throw new DatabaseError("Failed to process message", error);
-      });
-
-      res.json(result);
+      // Cleanup assistant after use
+      await client.beta.assistants.del(assistant.id);
     })
   );
 
-  // Get thread history
   router.get(
     "/history/:threadId",
     validateThreadHistory,
-    asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
-      const result = await getThreadHistory(
-        req.user?.walletAddress!,
-        req.params.threadId
-      );
-      res.json(result);
-    })
+    asyncHandler(getThreadHistory)
   );
 
-  // Delete a thread
   router.delete(
     "/thread/:threadId",
     validateDeleteThread,
-    asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
-      const result = await deleteThread(
-        client,
-        req.user?.walletAddress!,
-        req.params.threadId
-      );
-      res.json(result);
-    })
+    asyncHandler((req, res) => deleteThread(req, res, client))
   );
 
   return router;
