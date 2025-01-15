@@ -1,5 +1,5 @@
 import { X } from "lucide-react";
-import { ModalProps } from "../types";
+import { ReactNode } from "react";
 
 const sizeClasses = {
   sm: "max-w-sm",
@@ -7,6 +7,15 @@ const sizeClasses = {
   lg: "max-w-lg",
   xl: "max-w-xl",
 };
+
+export interface ModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  title: string;
+  children: ReactNode;
+  footer?: ReactNode;
+  size?: "sm" | "md" | "lg" | "xl";
+}
 
 export default function Modal({
   isOpen,

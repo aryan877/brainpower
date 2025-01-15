@@ -1,8 +1,8 @@
 import { User } from "../models/User.js";
 import { UnauthorizedError } from "../middleware/errors/types.js";
-import { AuthenticatedRequest } from "../middleware/auth.js";
+import { AuthenticatedRequest } from "../middleware/auth/index.js";
 
-export async function getUserId(req: AuthenticatedRequest): Promise<string> {
+export function getUserId(req: AuthenticatedRequest): string {
   // If no user object exists in request, throw error
   if (!req.user?.userId) {
     throw new UnauthorizedError("User not authenticated");
@@ -29,4 +29,14 @@ export async function getUserWalletAddress(
 
   const activeWallet = user.wallets.find((wallet) => wallet.isActive);
   return activeWallet?.address || null;
+}
+
+export function getUserCluster(
+  req: AuthenticatedRequest
+): "mainnet-beta" | "devnet" {
+  if (!req.user?.cluster) {
+    throw new UnauthorizedError("Solana cluster not specified");
+  }
+
+  return req.user.cluster;
 }

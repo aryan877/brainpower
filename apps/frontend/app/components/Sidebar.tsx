@@ -1,10 +1,21 @@
 import { Trash2 } from "lucide-react";
 import { useState } from "react";
-import { Thread, SidebarProps } from "../types";
+import { ThreadPreview } from "../types";
 import { WalletInfo } from "./WalletInfo";
 import { useSolanaWallets } from "@privy-io/react-auth/solana";
 import { usePrivy } from "@privy-io/react-auth";
 import { walletClient } from "../clients/wallet";
+
+export interface SidebarProps {
+  threads: ThreadPreview[];
+  selectedThread: string | null;
+  onSelectThread: (threadId: string) => void;
+  onCreateThread: () => void;
+  isLoading: boolean;
+  onDeleteClick: (thread: ThreadPreview) => void;
+  onLogoutClick: () => void;
+  onWithdrawClick: () => void;
+}
 
 export default function Sidebar({
   threads,
@@ -32,7 +43,7 @@ export default function Sidebar({
     }
   };
 
-  const formatThreadName = (thread: Thread) => {
+  const formatThreadName = (thread: ThreadPreview) => {
     if (thread.title) {
       return thread.title;
     }

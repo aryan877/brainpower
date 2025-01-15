@@ -1,11 +1,17 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import api from "../lib/axios";
-import { Message, ChatInterfaceProps } from "../types";
+import { Message, ThreadPreview } from "../types";
 import TemplatesPanel from "./TemplatesPanel";
 import CommandPalette from "./CommandPalette";
 import ChatMessage from "./ChatMessage";
+import { chatClient } from "../clients/chat";
+
+export interface ChatInterfaceProps {
+  selectedChat: string | null;
+  threads?: ThreadPreview[];
+  onUpdateThreads?: (threads: ThreadPreview[]) => void;
+}
 
 export default function ChatInterface({
   selectedChat,
@@ -62,10 +68,8 @@ export default function ChatInterface({
     if (!selectedChat) return;
 
     try {
-      const { data } = await api.get(`/api/chat/history/${selectedChat}`);
-      if (data.messages) {
-        setMessages(data.messages);
-      }
+      const messages = await chatClient.getHistory(selectedChat);
+      setMessages(messages);
     } catch (error) {
       console.error("Error fetching messages:", error);
       setMessages([
@@ -148,19 +152,7 @@ export default function ChatInterface({
       setIsLoading(true);
       abortControllerRef.current = new AbortController();
 
-      const { data } = await api.post(
-        "/api/chat/message",
-        {
-          message: messageText,
-          threadId: selectedChat,
-        },
-        {
-          signal: abortControllerRef.current.signal,
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await chatClient.sendMessage(messageText, selectedChat);
 
       setMessages((prev) => {
         const newMessages = [...prev];
@@ -169,7 +161,8 @@ export default function ChatInterface({
         }
         newMessages.push({
           role: "assistant",
-          content: data.response || "Sorry, I couldn't process that request.",
+          content:
+            response.response || "Sorry, I couldn't process that request.",
           createdAt: new Date(),
         });
         return newMessages;

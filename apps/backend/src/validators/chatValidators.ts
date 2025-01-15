@@ -8,20 +8,20 @@ export const validateSendMessage = validateRequest({
       .string()
       .min(1, "Message cannot be empty")
       .max(4000, "Message is too long"),
-    threadId: z.string().uuid("Invalid thread ID"),
+    threadId: z.string(),
   }),
 });
 
 // Schema for getting thread history
 export const validateThreadHistory = validateRequest({
   params: z.object({
-    threadId: z.string().uuid("Invalid thread ID"),
+    threadId: z.string(),
   }),
 });
 
 // Schema for deleting a thread
 export const validateDeleteThread = validateRequest({
   params: z.object({
-    threadId: z.string().uuid("Invalid thread ID"),
+    threadId: z.string(),
   }),
 });

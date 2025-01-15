@@ -6,8 +6,6 @@ import { useNotificationStore } from "../store/notificationStore";
 export const NotificationContainer = () => {
   const { notifications, removeNotification } = useNotificationStore();
 
-  console.log(notifications);
-
   return (
     <div className="fixed top-4 right-4 z-50 flex flex-col gap-2 min-w-[320px] max-w-[420px] pointer-events-none dark:text-white">
       {notifications.map((notification) => (

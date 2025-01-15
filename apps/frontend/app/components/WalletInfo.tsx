@@ -40,11 +40,6 @@ export function WalletInfo({
       setIsCreating(true);
       const wallet = await createWallet();
       await walletClient.storeWallet(wallet.address, wallet.chainType);
-      console.log(
-        "Wallet created and stored:",
-        wallet.address,
-        wallet.chainType
-      );
     } catch (error) {
       console.error("Error creating Solana wallet:", error);
     } finally {

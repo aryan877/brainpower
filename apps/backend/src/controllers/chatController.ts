@@ -5,12 +5,12 @@ import { createThread } from "../core/createThread.js";
 import { createRun } from "../core/createRun.js";
 import { performRun } from "../core/performRun.js";
 import { ChatThread } from "../models/ChatThread.js";
-import { AuthenticatedRequest } from "../middleware/auth.js";
+import { AuthenticatedRequest } from "../middleware/auth/index.js";
 import { NotFoundError, DatabaseError } from "../middleware/errors/types.js";
-import { getUserId } from "../utils/userIdentification.js";
+import { getUserCluster, getUserId } from "../utils/userIdentification.js";
 
 export const getThreads = async (req: AuthenticatedRequest, res: Response) => {
-  const userId = await getUserId(req);
+  const userId = getUserId(req);
   const threads = await ChatThread.find(
     { userId, isActive: true },
     { threadId: 1, createdAt: 1, updatedAt: 1, title: 1 }
@@ -24,7 +24,9 @@ export const createNewThread = async (
   res: Response,
   client: OpenAI
 ) => {
-  const userId = await getUserId(req);
+  const userId = getUserId(req);
+  const cluster = getUserCluster(req);
+  console.log(cluster);
   const openAiThread = await createThread(client);
 
   if (!openAiThread?.id) {
@@ -49,7 +51,7 @@ export const sendMessage = async (
   client: OpenAI,
   assistant: Assistant
 ) => {
-  const userId = await getUserId(req);
+  const userId = getUserId(req);
   const { message, threadId } = req.body;
 
   const chatThread = await ChatThread.findOne({
@@ -116,7 +118,7 @@ export const getThreadHistory = async (
   req: AuthenticatedRequest,
   res: Response
 ) => {
-  const userId = await getUserId(req);
+  const userId = getUserId(req);
   const threadId = req.params.threadId;
 
   const chatThread = await ChatThread.findOne({
@@ -142,7 +144,7 @@ export const deleteThread = async (
   res: Response,
   client: OpenAI
 ) => {
-  const userId = await getUserId(req);
+  const userId = getUserId(req);
   const threadId = req.params.threadId;
 
   const chatThread = await ChatThread.findOne({

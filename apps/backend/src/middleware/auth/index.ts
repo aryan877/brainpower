@@ -1,11 +1,12 @@
 import { Request, Response, NextFunction } from "express";
-import { privyClient } from "../lib/privyClient.js";
-import { UnauthorizedError } from "./errors/types.js";
+import { privyClient } from "../../lib/privyClient.js";
+import { UnauthorizedError } from "../errors/types.js";
 
 export interface AuthenticatedRequest extends Request {
   user?: {
     userId: string;
     walletAddress?: string;
+    cluster?: "mainnet-beta" | "devnet";
   };
 }
 

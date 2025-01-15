@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect } from "react";
-import { XMarkIcon } from "@heroicons/react/24/outline";
 import {
-  CheckCircleIcon,
-  ExclamationCircleIcon,
-  InformationCircleIcon,
-  ExclamationTriangleIcon,
-} from "@heroicons/react/24/solid";
+  CheckCircle,
+  XCircle,
+  AlertCircle,
+  AlertTriangle,
+  X,
+} from "lucide-react";
 import { ValidationErrorDetail } from "../types";
 
 export type NotificationType = "success" | "error" | "info" | "warning";
@@ -23,10 +23,10 @@ interface NotificationProps {
 }
 
 const icons = {
-  success: <CheckCircleIcon className="h-5 w-5 text-green-400" />,
-  error: <ExclamationCircleIcon className="h-5 w-5 text-red-400" />,
-  warning: <ExclamationTriangleIcon className="h-5 w-5 text-yellow-400" />,
-  info: <InformationCircleIcon className="h-5 w-5 text-blue-400" />,
+  success: <CheckCircle className="h-5 w-5 text-green-400" />,
+  error: <XCircle className="h-5 w-5 text-red-400" />,
+  warning: <AlertTriangle className="h-5 w-5 text-yellow-400" />,
+  info: <AlertCircle className="h-5 w-5 text-blue-400" />,
 };
 
 const bgColors = {
@@ -116,7 +116,7 @@ export const Notification = ({
           onClick={onClose}
           className="text-gray-400 hover:text-gray-300 transition-colors duration-150"
         >
-          <XMarkIcon className="h-4 w-4" />
+          <X className="h-4 w-4" />
         </button>
       </div>
     </div>

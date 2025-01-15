@@ -4,6 +4,7 @@ import axios, {
   AxiosError,
 } from "axios";
 import { useNotificationStore } from "../store/notificationStore";
+import { useClusterStore } from "../store/clusterStore";
 import { ErrorResponse } from "../types";
 
 const api = axios.create({
@@ -16,6 +17,8 @@ const api = axios.create({
 
 // Request interceptor
 api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
+  const selectedCluster = useClusterStore.getState().selectedCluster;
+  config.headers["X-Solana-Cluster"] = selectedCluster;
   return config;
 });
 

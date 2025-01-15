@@ -1,6 +1,7 @@
 import { Router } from "express";
 import OpenAI from "openai";
-import { authenticateUser } from "../middleware/auth.js";
+import { authenticateUser } from "../middleware/auth/index.js";
+import { validateCluster } from "../middleware/auth/cluster.js";
 import {
   getThreads,
   createNewThread,
@@ -17,6 +18,7 @@ import { asyncHandler } from "../middleware/errors/asyncHandler.js";
 
 export function setupChatRoutes(router: Router, client: OpenAI): Router {
   router.use(authenticateUser);
+  router.use(validateCluster);
 
   router.get("/threads", asyncHandler(getThreads));
 

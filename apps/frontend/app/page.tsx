@@ -2,12 +2,10 @@
 
 import { useState, useCallback, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Menu } from "lucide-react";
+import { Menu, RefreshCw } from "lucide-react";
 import Sidebar from "./components/Sidebar";
 import ChatInterface from "./components/ChatInterface";
 import Modal from "./components/Modal";
-import api from "./lib/axios";
-import { Thread } from "./types";
 import { AuthGuard } from "./components/AuthGuard";
 import { usePrivy } from "@privy-io/react-auth";
 import {
@@ -20,12 +18,13 @@ import {
 import { useSolanaWallets } from "@privy-io/react-auth/solana";
 import { useClusterStore } from "./store/clusterStore";
 import { useWallet } from "./hooks/useWallet";
-import { RefreshCw } from "lucide-react";
+import { ThreadPreview } from "./types";
+import { chatClient } from "./clients/chat";
 
 function HomeContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [threads, setThreads] = useState<Thread[]>([]);
+  const [threads, setThreads] = useState<ThreadPreview[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const { user, logout } = usePrivy();
@@ -35,7 +34,9 @@ function HomeContent() {
 
   // Chat delete modal states
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [threadToDelete, setThreadToDelete] = useState<Thread | null>(null);
+  const [threadToDelete, setThreadToDelete] = useState<ThreadPreview | null>(
+    null
+  );
   const [isDeleting, setIsDeleting] = useState(false);
 
   // Wallet modal states
@@ -91,10 +92,8 @@ function HomeContent() {
    */
   const fetchThreads = useCallback(async (): Promise<void> => {
     try {
-      const { data } = await api.get("/api/chat/threads");
-      if (data.threads) {
-        setThreads(data.threads);
-      }
+      const threads = await chatClient.getThreads();
+      setThreads(threads);
     } catch (error) {
       console.error("Error fetching threads:", error);
     }
@@ -106,12 +105,10 @@ function HomeContent() {
   const createThread = useCallback(async () => {
     try {
       setIsLoading(true);
-      const { data } = await api.post("/api/chat/thread");
-      if (data.threadId) {
-        await fetchThreads();
-        // Update URL with new thread ID
-        router.push(`/?chatId=${data.threadId}`);
-      }
+      const response = await chatClient.createThread();
+      await fetchThreads();
+      // Update URL with new thread ID
+      router.push(`/?chatId=${response.threadId}`);
     } catch (error) {
       console.error("Error creating thread:", error);
     } finally {
@@ -125,13 +122,11 @@ function HomeContent() {
   const deleteThread = useCallback(
     async (threadId: string) => {
       try {
-        const response = await api.delete(`/api/chat/thread/${threadId}`);
-        if (response.status === 200) {
-          await fetchThreads();
-          if (selectedThread === threadId) {
-            // Remove chatId from URL if deleted thread is currently selected
-            router.push("/");
-          }
+        await chatClient.deleteThread(threadId);
+        await fetchThreads();
+        if (selectedThread === threadId) {
+          // Remove chatId from URL if deleted thread is currently selected
+          router.push("/");
         }
       } catch (error) {
         console.error("Error deleting thread:", error);
@@ -161,7 +156,7 @@ function HomeContent() {
     fetchThreads();
   }, [fetchThreads]);
 
-  const handleDeleteClick = (thread: Thread) => {
+  const handleDeleteClick = (thread: ThreadPreview) => {
     setThreadToDelete(thread);
     setDeleteModalOpen(true);
   };
@@ -186,7 +181,7 @@ function HomeContent() {
     }
   };
 
-  const formatThreadName = (thread: Thread) => {
+  const formatThreadName = (thread: ThreadPreview) => {
     if (thread.title) {
       return thread.title;
     }
