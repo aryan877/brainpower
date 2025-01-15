@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Message, ThreadPreview } from "../types";
+import { ThreadPreview } from "../types";
 import TemplatesPanel from "./TemplatesPanel";
 import CommandPalette from "./CommandPalette";
 import ChatMessage from "./ChatMessage";
-import { chatClient } from "../clients/chat";
+import { useThreadMessages, useSendMessage } from "../hooks/chat";
 
 export interface ChatInterfaceProps {
   selectedChat: string | null;
@@ -18,14 +18,19 @@ export default function ChatInterface({
   threads,
   onUpdateThreads,
 }: ChatInterfaceProps) {
-  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const [showTemplates, setShowTemplates] = useState(false);
   const [showCommandPalette, setShowCommandPalette] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+
+  const { data: messages = [], isLoading: isLoadingMessages } =
+    useThreadMessages(selectedChat);
+  const { mutate: sendMessageMutation, isPending: isSending } =
+    useSendMessage();
+
+  const isLoading = isLoadingMessages || isSending;
 
   const adjustTextareaHeight = useCallback(() => {
     const textarea = textareaRef.current;
@@ -39,7 +44,6 @@ export default function ChatInterface({
     const value = e.target.value;
     setInput(value);
 
-    // Show command palette when typing '/' at the start
     if (value === "/") {
       setShowCommandPalette(true);
     } else if (!value.startsWith("/")) {
@@ -64,44 +68,10 @@ export default function ChatInterface({
     }
   };
 
-  const fetchMessages = useCallback(async () => {
-    if (!selectedChat) return;
-
-    try {
-      const messages = await chatClient.getHistory(selectedChat);
-      setMessages(messages);
-    } catch (error) {
-      console.error("Error fetching messages:", error);
-      setMessages([
-        {
-          role: "assistant",
-          content: "Failed to load chat history. Please try again later.",
-          createdAt: new Date(),
-        },
-      ]);
-    }
-  }, [selectedChat]);
-
-  useEffect(() => {
-    if (selectedChat) {
-      fetchMessages();
-    } else {
-      setMessages([]);
-    }
-  }, [selectedChat, fetchMessages]);
-
   const cancelRequest = () => {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
       abortControllerRef.current = null;
-      setIsLoading(false);
-      setMessages((prev) => {
-        const newMessages = [...prev];
-        if (newMessages[newMessages.length - 1]?.isLoading) {
-          newMessages.pop();
-        }
-        return newMessages;
-      });
     }
   };
 
@@ -124,21 +94,6 @@ export default function ChatInterface({
       textarea.style.height = "48px";
     }
 
-    setMessages((prev) => [
-      ...prev,
-      {
-        role: "user",
-        content: messageText,
-        createdAt: new Date(),
-      },
-      {
-        role: "assistant",
-        content: "...",
-        createdAt: new Date(),
-        isLoading: true,
-      },
-    ]);
-
     if (messages.length === 0 && threads) {
       const updatedThreads = threads.map((thread) =>
         thread.threadId === selectedChat
@@ -149,41 +104,18 @@ export default function ChatInterface({
     }
 
     try {
-      setIsLoading(true);
       abortControllerRef.current = new AbortController();
-
-      const response = await chatClient.sendMessage(messageText, selectedChat);
-
-      setMessages((prev) => {
-        const newMessages = [...prev];
-        if (newMessages[newMessages.length - 1]?.isLoading) {
-          newMessages.pop();
+      sendMessageMutation(
+        { message: messageText, threadId: selectedChat },
+        {
+          onError: (error) => {
+            console.error("Error sending message:", error);
+          },
         }
-        newMessages.push({
-          role: "assistant",
-          content:
-            response.response || "Sorry, I couldn't process that request.",
-          createdAt: new Date(),
-        });
-        return newMessages;
-      });
+      );
     } catch (error) {
       console.error("Error sending message:", error);
-      setMessages((prev) => {
-        const newMessages = [...prev];
-        if (newMessages[newMessages.length - 1]?.isLoading) {
-          newMessages.pop();
-        }
-        newMessages.push({
-          role: "assistant",
-          content:
-            "Sorry, there was an error processing your request. Please try again.",
-          createdAt: new Date(),
-        });
-        return newMessages;
-      });
     } finally {
-      setIsLoading(false);
       abortControllerRef.current = null;
     }
   };
@@ -241,6 +173,16 @@ export default function ChatInterface({
               {messages.map((message, index) => (
                 <ChatMessage key={index} message={message} />
               ))}
+              {isSending && (
+                <ChatMessage
+                  message={{
+                    role: "assistant",
+                    content: "...",
+                    createdAt: new Date(),
+                    isLoading: true,
+                  }}
+                />
+              )}
               <div ref={messagesEndRef} />
             </div>
           </div>
@@ -281,7 +223,7 @@ export default function ChatInterface({
                     />
                   </svg>
                 </button>
-                {isLoading ? (
+                {isSending ? (
                   <button
                     type="button"
                     onClick={cancelRequest}

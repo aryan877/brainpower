@@ -5,8 +5,7 @@ import { useSolanaWallets } from "@privy-io/react-auth/solana";
 import { Copy, Wallet, Plus, LogOut, Send, RefreshCw } from "lucide-react";
 import { useState } from "react";
 import { useClusterStore } from "../store/clusterStore";
-import { useWallet } from "../hooks/useWallet";
-import { walletClient } from "../clients/wallet";
+import { useWallet, useStoreWallet } from "../hooks/wallet";
 
 interface WalletInfoProps {
   onLogoutClick: () => void;
@@ -20,12 +19,21 @@ export function WalletInfo({
   const { user, ready } = usePrivy();
   const { createWallet } = useSolanaWallets();
   const { selectedCluster, setSelectedCluster } = useClusterStore();
-  const { wallet, walletAddress, balance, isLoadingBalance, refreshBalance } =
-    useWallet();
+  const {
+    wallet,
+    walletAddress,
+    balance,
+    isLoadingBalance,
+    isRefetchingBalance,
+    refreshBalance,
+  } = useWallet();
+  const { mutateAsync: storeWallet } = useStoreWallet();
   const [copied, setCopied] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
 
   if (!ready) return null;
+
+  console.log(isLoadingBalance);
 
   const copyAddress = async () => {
     if (walletAddress) {
@@ -39,7 +47,10 @@ export function WalletInfo({
     try {
       setIsCreating(true);
       const wallet = await createWallet();
-      await walletClient.storeWallet(wallet.address, wallet.chainType);
+      await storeWallet({
+        address: wallet.address,
+        chainType: wallet.chainType,
+      });
     } catch (error) {
       console.error("Error creating Solana wallet:", error);
     } finally {
@@ -117,13 +128,15 @@ export function WalletInfo({
               </span>
               <button
                 onClick={refreshBalance}
-                disabled={isLoadingBalance}
+                disabled={isLoadingBalance || isRefetchingBalance}
                 className="p-1.5 hover:bg-[var(--hover-bg)] rounded-md transition-colors disabled:opacity-50"
                 title="Refresh balance"
               >
                 <RefreshCw
                   className={`h-3.5 w-3.5 ${
-                    isLoadingBalance ? "animate-spin" : ""
+                    isLoadingBalance || isRefetchingBalance
+                      ? "animate-spin"
+                      : ""
                   }`}
                 />
               </button>

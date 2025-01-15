@@ -4,7 +4,7 @@ import { ThreadPreview } from "../types";
 import { WalletInfo } from "./WalletInfo";
 import { useSolanaWallets } from "@privy-io/react-auth/solana";
 import { usePrivy } from "@privy-io/react-auth";
-import { walletClient } from "../clients/wallet";
+import { useStoreWallet } from "../hooks/wallet";
 
 export interface SidebarProps {
   threads: ThreadPreview[];
@@ -29,13 +29,17 @@ export default function Sidebar({
 }: SidebarProps) {
   const { createWallet } = useSolanaWallets();
   const { user } = usePrivy();
+  const { mutateAsync: storeWallet } = useStoreWallet();
   const [isCreatingWallet, setIsCreatingWallet] = useState(false);
 
   const handleCreateSolanaWallet = async () => {
     try {
       setIsCreatingWallet(true);
       const wallet = await createWallet();
-      await walletClient.storeWallet(wallet.address, wallet.chainType);
+      await storeWallet({
+        address: wallet.address,
+        chainType: wallet.chainType,
+      });
     } catch (error) {
       console.error("Error creating Solana wallet:", error);
     } finally {

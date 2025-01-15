@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Menu, RefreshCw } from "lucide-react";
 import Sidebar from "./components/Sidebar";
 import ChatInterface from "./components/ChatInterface";
-import Modal from "./components/Modal";
 import { AuthGuard } from "./components/AuthGuard";
 import { usePrivy } from "@privy-io/react-auth";
 import {
@@ -15,34 +14,27 @@ import {
   SystemProgram,
   Transaction,
 } from "@solana/web3.js";
-import { useSolanaWallets } from "@privy-io/react-auth/solana";
 import { useClusterStore } from "./store/clusterStore";
-import { useWallet } from "./hooks/useWallet";
+import { useWallet } from "./hooks/wallet";
 import { ThreadPreview } from "./types";
-import { chatClient } from "./clients/chat";
+import { useThreads, useCreateThread, useDeleteThread } from "./hooks/chat";
+import { useModal } from "./providers/ModalProvider";
 
 function HomeContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [threads, setThreads] = useState<ThreadPreview[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const { user, logout } = usePrivy();
-  const { wallets } = useSolanaWallets();
   const { getRpcUrl } = useClusterStore();
   const { wallet, balance, isLoadingBalance, refreshBalance } = useWallet();
+  const { showModal, hideModal, confirm } = useModal();
 
-  // Chat delete modal states
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [threadToDelete, setThreadToDelete] = useState<ThreadPreview | null>(
-    null
-  );
-  const [isDeleting, setIsDeleting] = useState(false);
+  // Use hooks for thread operations
+  const { data: threads = [], isLoading } = useThreads();
+  const { mutateAsync: createThreadMutation } = useCreateThread();
+  const { mutateAsync: deleteThreadMutation } = useDeleteThread();
 
-  // Wallet modal states
-  const [logoutModalOpen, setLogoutModalOpen] = useState(false);
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const [withdrawModalOpen, setWithdrawModalOpen] = useState(false);
+  // Withdraw modal states
   const [withdrawAmount, setWithdrawAmount] = useState("");
   const [recipientAddress, setRecipientAddress] = useState("");
   const [isWithdrawing, setIsWithdrawing] = useState(false);
@@ -88,33 +80,17 @@ function HomeContent() {
   }, []);
 
   /**
-   * Fetch the list of threads
-   */
-  const fetchThreads = useCallback(async (): Promise<void> => {
-    try {
-      const threads = await chatClient.getThreads();
-      setThreads(threads);
-    } catch (error) {
-      console.error("Error fetching threads:", error);
-    }
-  }, []);
-
-  /**
    * Create a new thread
    */
   const createThread = useCallback(async () => {
     try {
-      setIsLoading(true);
-      const response = await chatClient.createThread();
-      await fetchThreads();
+      const response = await createThreadMutation();
       // Update URL with new thread ID
       router.push(`/?chatId=${response.threadId}`);
     } catch (error) {
       console.error("Error creating thread:", error);
-    } finally {
-      setIsLoading(false);
     }
-  }, [fetchThreads, router]);
+  }, [createThreadMutation, router]);
 
   /**
    * Delete an existing thread
@@ -122,8 +98,7 @@ function HomeContent() {
   const deleteThread = useCallback(
     async (threadId: string) => {
       try {
-        await chatClient.deleteThread(threadId);
-        await fetchThreads();
+        await deleteThreadMutation(threadId);
         if (selectedThread === threadId) {
           // Remove chatId from URL if deleted thread is currently selected
           router.push("/");
@@ -132,7 +107,7 @@ function HomeContent() {
         console.error("Error deleting thread:", error);
       }
     },
-    [selectedThread, fetchThreads, router]
+    [selectedThread, deleteThreadMutation, router]
   );
 
   /**
@@ -149,36 +124,30 @@ function HomeContent() {
     [router]
   );
 
-  /**
-   * Initial fetch of threads
-   */
-  useEffect(() => {
-    fetchThreads();
-  }, [fetchThreads]);
-
   const handleDeleteClick = (thread: ThreadPreview) => {
-    setThreadToDelete(thread);
-    setDeleteModalOpen(true);
-  };
-
-  const handleDeleteConfirm = async () => {
-    if (!threadToDelete) return;
-
-    setIsDeleting(true);
-    try {
-      await deleteThread(threadToDelete.threadId);
-    } finally {
-      setIsDeleting(false);
-      setDeleteModalOpen(false);
-      setThreadToDelete(null);
-    }
-  };
-
-  const handleCloseDeleteModal = () => {
-    if (!isDeleting) {
-      setDeleteModalOpen(false);
-      setThreadToDelete(null);
-    }
+    confirm({
+      title: "Delete Chat",
+      content: (
+        <p className="text-[var(--text-secondary)] text-sm md:text-base">
+          Are you sure you want to delete{" "}
+          <span className="text-[var(--text-primary)]">
+            {formatThreadName(thread)}
+          </span>
+          ? This action cannot be undone.
+        </p>
+      ),
+      isDangerous: true,
+      confirmText: "Delete",
+      isLoading: false,
+    }).then(async (confirmed) => {
+      if (confirmed) {
+        try {
+          await deleteThread(thread.threadId);
+        } catch (error) {
+          console.error("Error deleting thread:", error);
+        }
+      }
+    });
   };
 
   const formatThreadName = (thread: ThreadPreview) => {
@@ -190,29 +159,119 @@ function HomeContent() {
   };
 
   const handleLogoutClick = () => {
-    setLogoutModalOpen(true);
-  };
-
-  const handleLogoutConfirm = async () => {
-    try {
-      setIsLoggingOut(true);
-      await logout();
-    } catch (error) {
-      console.error("Error logging out:", error);
-    } finally {
-      setIsLoggingOut(false);
-      setLogoutModalOpen(false);
-    }
-  };
-
-  const handleCloseLogoutModal = () => {
-    if (!isLoggingOut) {
-      setLogoutModalOpen(false);
-    }
+    confirm({
+      title: "Confirm Logout",
+      content: (
+        <div className="text-[var(--text-secondary)]">
+          <p>Are you sure you want to log out?</p>
+          {user?.wallet && (
+            <p className="mt-2 text-sm">
+              Note: This will not disconnect your wallet. You will need to
+              reconnect to access your account again.
+            </p>
+          )}
+        </div>
+      ),
+      isDangerous: true,
+      confirmText: "Logout",
+      isLoading: false,
+    }).then(async (confirmed) => {
+      if (confirmed) {
+        try {
+          await logout();
+        } catch (error) {
+          console.error("Error logging out:", error);
+        }
+      }
+    });
   };
 
   const handleWithdrawClick = () => {
-    setWithdrawModalOpen(true);
+    showModal({
+      title: "Withdraw SOL",
+      content: (
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
+              Amount (SOL)
+            </label>
+            <input
+              type="number"
+              value={withdrawAmount}
+              onChange={(e) => setWithdrawAmount(e.target.value)}
+              placeholder="0.0"
+              className="w-full px-3 py-2 bg-[var(--background)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)]"
+              step="0.000001"
+              min="0"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
+              Recipient Address
+            </label>
+            <input
+              type="text"
+              value={recipientAddress}
+              onChange={(e) => setRecipientAddress(e.target.value)}
+              placeholder="Solana address"
+              className="w-full px-3 py-2 bg-[var(--background)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)]"
+            />
+          </div>
+          {withdrawError && (
+            <p className="text-red-500 text-sm">{withdrawError}</p>
+          )}
+          <div className="flex items-center justify-between">
+            <p className="text-xs text-[var(--text-secondary)]">
+              Available balance:{" "}
+              {isLoadingBalance
+                ? "Loading..."
+                : `${balance?.toFixed(6) || "0"} SOL`}
+            </p>
+            <button
+              onClick={handleRefreshBalance}
+              disabled={isLoadingBalance}
+              className="p-1.5 hover:bg-[var(--hover-bg)] rounded-md transition-colors disabled:opacity-50"
+              title="Refresh balance"
+            >
+              <RefreshCw
+                className={`h-3.5 w-3.5 ${
+                  isLoadingBalance ? "animate-spin" : ""
+                }`}
+              />
+            </button>
+          </div>
+        </div>
+      ),
+      footer: (
+        <div className="flex justify-end space-x-4">
+          <button
+            onClick={() => {
+              hideModal();
+              setWithdrawError("");
+              setWithdrawAmount("");
+              setRecipientAddress("");
+            }}
+            className="px-4 py-2 rounded-xl border border-[var(--border-color)] text-[var(--text-primary)] hover:bg-[var(--hover-bg)] transition-all duration-200"
+            disabled={isWithdrawing}
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleWithdraw}
+            className="px-4 py-2 rounded-xl bg-[var(--primary)] text-white hover:bg-[var(--primary-hover)] transition-all duration-200 disabled:opacity-50"
+            disabled={isWithdrawing || !withdrawAmount || !recipientAddress}
+          >
+            {isWithdrawing ? "Processing..." : "Withdraw"}
+          </button>
+        </div>
+      ),
+    });
+  };
+
+  const handleRefreshBalance = () => {
+    if (wallet?.address) {
+      refreshBalance();
+    }
   };
 
   const handleWithdraw = async () => {
@@ -286,7 +345,7 @@ function HomeContent() {
           throw new Error("Transaction failed to confirm");
         }
 
-        setWithdrawModalOpen(false);
+        hideModal();
         setWithdrawAmount("");
         setRecipientAddress("");
         refreshBalance();
@@ -303,21 +362,6 @@ function HomeContent() {
       );
     } finally {
       setIsWithdrawing(false);
-    }
-  };
-
-  // Fetch balance when modal opens
-  useEffect(() => {
-    const solanaWallet = wallets[0];
-    if (withdrawModalOpen && solanaWallet?.address) {
-      refreshBalance();
-    }
-  }, [withdrawModalOpen, refreshBalance, wallets]);
-
-  const handleRefreshBalance = () => {
-    const solanaWallet = wallets[0];
-    if (solanaWallet?.address) {
-      refreshBalance();
     }
   };
 
@@ -361,7 +405,7 @@ function HomeContent() {
               <Menu className="h-5 w-5 text-[var(--text-primary)]" />
             </button>
             <h1 className="text-lg font-medium text-[var(--text-primary)]">
-              BrainPower
+              BrainPower 🧠⚡
             </h1>
           </div>
         </header>
@@ -370,161 +414,6 @@ function HomeContent() {
           <ChatInterface selectedChat={selectedThread} threads={threads} />
         </div>
       </main>
-
-      {/* Modals */}
-      <Modal
-        isOpen={deleteModalOpen}
-        onClose={handleCloseDeleteModal}
-        title="Delete Chat"
-        footer={
-          <div className="flex justify-end space-x-4">
-            <button
-              onClick={handleCloseDeleteModal}
-              className="px-4 py-2 rounded-xl border border-[var(--border-color)] text-[var(--text-primary)] hover:bg-[var(--hover-bg)] transition-all duration-200 text-sm md:text-base"
-              disabled={isDeleting}
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleDeleteConfirm}
-              className="px-4 py-2 rounded-xl bg-red-500 text-white hover:bg-red-600 transition-all duration-200 disabled:opacity-50 text-sm md:text-base"
-              disabled={isDeleting}
-            >
-              {isDeleting ? "Deleting..." : "Delete"}
-            </button>
-          </div>
-        }
-      >
-        <p className="text-[var(--text-secondary)] text-sm md:text-base">
-          Are you sure you want to delete{" "}
-          <span className="text-[var(--text-primary)]">
-            {threadToDelete ? formatThreadName(threadToDelete) : ""}
-          </span>
-          ? This action cannot be undone.
-        </p>
-      </Modal>
-
-      <Modal
-        isOpen={logoutModalOpen}
-        onClose={handleCloseLogoutModal}
-        title="Confirm Logout"
-        footer={
-          <div className="flex justify-end space-x-4">
-            <button
-              onClick={handleCloseLogoutModal}
-              className="px-4 py-2 rounded-xl border border-[var(--border-color)] text-[var(--text-primary)] hover:bg-[var(--hover-bg)] transition-all duration-200"
-              disabled={isLoggingOut}
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleLogoutConfirm}
-              className="px-4 py-2 rounded-xl bg-red-500 text-white hover:bg-red-600 transition-all duration-200 disabled:opacity-50"
-              disabled={isLoggingOut}
-            >
-              {isLoggingOut ? "Logging out..." : "Logout"}
-            </button>
-          </div>
-        }
-      >
-        <div className="text-[var(--text-secondary)]">
-          <p>Are you sure you want to log out?</p>
-          {user?.wallet && (
-            <p className="mt-2 text-sm">
-              Note: This will not disconnect your wallet. You will need to
-              reconnect to access your account again.
-            </p>
-          )}
-        </div>
-      </Modal>
-
-      <Modal
-        isOpen={withdrawModalOpen}
-        onClose={() => {
-          if (!isWithdrawing) {
-            setWithdrawModalOpen(false);
-            setWithdrawError("");
-            setWithdrawAmount("");
-            setRecipientAddress("");
-          }
-        }}
-        title="Withdraw SOL"
-        footer={
-          <div className="flex justify-end space-x-4">
-            <button
-              onClick={() => {
-                setWithdrawModalOpen(false);
-                setWithdrawError("");
-                setWithdrawAmount("");
-                setRecipientAddress("");
-              }}
-              className="px-4 py-2 rounded-xl border border-[var(--border-color)] text-[var(--text-primary)] hover:bg-[var(--hover-bg)] transition-all duration-200"
-              disabled={isWithdrawing}
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleWithdraw}
-              className="px-4 py-2 rounded-xl bg-[var(--primary)] text-white hover:bg-[var(--primary-hover)] transition-all duration-200 disabled:opacity-50"
-              disabled={isWithdrawing || !withdrawAmount || !recipientAddress}
-            >
-              {isWithdrawing ? "Processing..." : "Withdraw"}
-            </button>
-          </div>
-        }
-      >
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
-              Amount (SOL)
-            </label>
-            <input
-              type="number"
-              value={withdrawAmount}
-              onChange={(e) => setWithdrawAmount(e.target.value)}
-              placeholder="0.0"
-              className="w-full px-3 py-2 bg-[var(--background)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)]"
-              step="0.000001"
-              min="0"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
-              Recipient Address
-            </label>
-            <input
-              type="text"
-              value={recipientAddress}
-              onChange={(e) => setRecipientAddress(e.target.value)}
-              placeholder="Solana address"
-              className="w-full px-3 py-2 bg-[var(--background)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)]"
-            />
-          </div>
-          {withdrawError && (
-            <p className="text-red-500 text-sm">{withdrawError}</p>
-          )}
-          <div className="flex items-center justify-between">
-            <p className="text-xs text-[var(--text-secondary)]">
-              Available balance:{" "}
-              {isLoadingBalance
-                ? "Loading..."
-                : `${balance?.toFixed(6) || "0"} SOL`}
-            </p>
-            <button
-              onClick={handleRefreshBalance}
-              disabled={isLoadingBalance}
-              className="p-1.5 hover:bg-[var(--hover-bg)] rounded-md transition-colors disabled:opacity-50"
-              title="Refresh balance"
-            >
-              <RefreshCw
-                className={`h-3.5 w-3.5 ${
-                  isLoadingBalance ? "animate-spin" : ""
-                }`}
-              />
-            </button>
-          </div>
-        </div>
-      </Modal>
     </div>
   );
 }

@@ -9,18 +9,10 @@ export enum ErrorCode {
   FORBIDDEN = "FORBIDDEN",
 }
 
-export interface ValidationErrorDetail {
-  path: string;
-  message: string;
-}
-
 export interface ErrorResponse {
   error: {
     code: ErrorCode;
     message: string;
-    details?: {
-      errors?: ValidationErrorDetail[];
-      [key: string]: unknown;
-    };
+    details?: unknown;
   };
 }

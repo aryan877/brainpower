@@ -42,7 +42,13 @@ export default function ChatMessage({ message }: ChatMessageProps) {
             ) : (
               <ReactMarkdown
                 components={{
-                  code({ inline, className, children, ...props }) {
+                  code: ({
+                    inline,
+                    className,
+                    children,
+                    ...props
+                  }: // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  any) => {
                     const match = /language-(\w+)/.exec(className || "");
                     return !inline && match ? (
                       <div className="relative group/code mt-2 mb-1">

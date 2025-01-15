@@ -1,14 +1,18 @@
 export type ChainType = "solana" | "ethereum";
 
-export interface StoreWalletResponse {
+export type StoreWalletResponse = {
   address: string;
   chainType: ChainType;
-}
+};
 
-export interface GetUserWalletsResponse {
-  wallets: Array<{
+export type GetUserWalletsResponse = {
+  wallets: {
     address: string;
     chainType: ChainType;
     isActive: boolean;
-  }>;
-}
+  }[];
+};
+
+export type GetBalanceResponse = {
+  balance: number;
+};

@@ -8,7 +8,6 @@ import {
   AlertTriangle,
   X,
 } from "lucide-react";
-import { ValidationErrorDetail } from "../types";
 
 export type NotificationType = "success" | "error" | "info" | "warning";
 
@@ -54,7 +53,9 @@ const formatDetails = (details: unknown): string => {
   if (!details) return "";
 
   // Handle validation errors
-  const detailsObj = details as { errors?: ValidationErrorDetail[] };
+  const detailsObj = details as {
+    errors?: Array<{ path: string; message: string }>;
+  };
   if (detailsObj.errors?.length) {
     return detailsObj.errors
       .map((err) => `${err.path}: ${err.message}`)

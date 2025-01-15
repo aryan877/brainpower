@@ -55,7 +55,7 @@ export const errorHandler = (
     errorResponse.error = {
       code: ErrorCode.VALIDATION_ERROR,
       message: "Validation failed",
-      details: err.message, // Safe to show validation messages in production
+      details: err.message,
     };
     return res.status(400).json(errorResponse);
   }

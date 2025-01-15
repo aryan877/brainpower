@@ -38,7 +38,7 @@ const limiter = rateLimit({
   message: {
     error: {
       code: ErrorCode.RATE_LIMIT_ERROR,
-      message: "Too many requests, please try again late",
+      message: "Too many requests, please try again later",
     },
   } as ErrorResponse,
 });
