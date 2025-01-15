@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import { Plus, X, ArrowRight } from "lucide-react";
 import { ThreadPreview } from "../types";
 import TemplatesPanel from "./TemplatesPanel";
 import CommandPalette from "./CommandPalette";
@@ -202,68 +203,29 @@ export default function ChatInterface({
                 className="w-full min-h-[48px] max-h-[200px] p-3 pr-24 bg-[var(--secondary-bg)] rounded-xl resize-none text-sm md:text-base placeholder:text-[var(--text-secondary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
                 disabled={isLoading}
               />
-              <div className="absolute right-2 bottom-2 flex items-center gap-2">
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
                 <button
                   type="button"
                   onClick={() => setShowTemplates(true)}
-                  className="p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--hover-bg)] rounded-lg transition-colors"
+                  className="p-1.5 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--hover-bg)] rounded-lg transition-colors"
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    className="w-4 h-4"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 5v14M5 12h14"
-                    />
-                  </svg>
+                  <Plus className="w-5 h-5" />
                 </button>
                 {isSending ? (
                   <button
                     type="button"
                     onClick={cancelRequest}
-                    className="p-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors"
+                    className="p-1.5 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors"
                   >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      className="w-4 h-4"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M6 18L18 6M6 6l12 12"
-                      />
-                    </svg>
+                    <X className="w-5 h-5" />
                   </button>
                 ) : (
                   <button
                     type="submit"
                     disabled={!input.trim() || isLoading}
-                    className="p-2 text-[var(--primary)] hover:text-[var(--primary-hover)] hover:bg-[var(--primary)]/10 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="p-1.5 text-[var(--primary)] hover:text-[var(--primary-hover)] hover:bg-[var(--primary)]/10 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      className="w-4 h-4"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M5 12h14M12 5l7 7-7 7"
-                      />
-                    </svg>
+                    <ArrowRight className="w-5 h-5" />
                   </button>
                 )}
               </div>

@@ -16,7 +16,7 @@ export default function ChatMessage({ message }: ChatMessageProps) {
     >
       {message.role === "assistant" && (
         <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white text-xs font-medium mr-2 flex-shrink-0">
-          BP
+          🧠
         </div>
       )}
       <div
