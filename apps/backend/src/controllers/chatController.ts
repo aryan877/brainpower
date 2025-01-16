@@ -1,13 +1,17 @@
 import { Response } from "express";
-import OpenAI from "openai";
-import { Assistant } from "openai/resources/beta/assistants";
-import { createThread } from "../core/createThread.js";
-import { createRun } from "../core/createRun.js";
-import { performRun } from "../core/performRun.js";
 import { ChatThread } from "../models/ChatThread.js";
 import { AuthenticatedRequest } from "../middleware/auth/index.js";
 import { NotFoundError, DatabaseError } from "../middleware/errors/types.js";
 import { getUserCluster, getUserId } from "../utils/userIdentification.js";
+import { createSolanaTools } from "brainpower-agent";
+// import { streamText } from "ai";
+import { generateBrainpowerAgent } from "../utils/generateBrainpowerAgent.js";
+import OpenAI from "openai";
+import { config } from "dotenv";
+
+config();
+
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export const getThreads = async (req: AuthenticatedRequest, res: Response) => {
   const userId = getUserId(req);
@@ -21,21 +25,19 @@ export const getThreads = async (req: AuthenticatedRequest, res: Response) => {
 
 export const createNewThread = async (
   req: AuthenticatedRequest,
-  res: Response,
-  client: OpenAI
+  res: Response
 ) => {
   const userId = getUserId(req);
   const cluster = getUserCluster(req);
-  console.log(cluster);
-  const openAiThread = await createThread(client);
+  const thread = await openai.beta.threads.create();
 
-  if (!openAiThread?.id) {
+  if (!thread?.id) {
     throw new Error("Failed to create OpenAI thread");
   }
 
   const chatThread = await ChatThread.create({
     userId,
-    threadId: openAiThread.id,
+    threadId: thread.id,
     messages: [],
   });
 
@@ -45,13 +47,9 @@ export const createNewThread = async (
   });
 };
 
-export const sendMessage = async (
-  req: AuthenticatedRequest,
-  res: Response,
-  client: OpenAI,
-  assistant: Assistant
-) => {
+export const sendMessage = async (req: AuthenticatedRequest, res: Response) => {
   const userId = getUserId(req);
+  const cluster = getUserCluster(req);
   const { message, threadId } = req.body;
 
   const chatThread = await ChatThread.findOne({
@@ -70,46 +68,59 @@ export const sendMessage = async (
     await chatThread.save();
   }
 
-  // Verify OpenAI thread
-  const openAiThread = await client.beta.threads.retrieve(threadId);
-  if (!openAiThread?.id) {
-    throw new NotFoundError("OpenAI thread not found");
-  }
-
-  // Add user message
-  await client.beta.threads.messages.create(threadId, {
-    role: "user",
-    content: message,
-  });
-
-  chatThread.messages.push({
-    role: "user",
-    content: message,
-    createdAt: new Date(),
-  });
+  // Set up SSE headers
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Connection", "keep-alive");
 
   try {
-    // Create and perform run
-    const run = await createRun(client, openAiThread, assistant.id);
-    const result = await performRun(run, client, openAiThread);
+    // Generate BrainPower agent for this user
+    const agent = generateBrainpowerAgent({
+      walletId: req.user?.walletAddress || "",
+      cluster: cluster,
+    });
 
-    if (result?.type === "text") {
-      chatThread.messages.push({
-        role: "assistant",
-        content: result.text.value,
-        createdAt: new Date(),
-      });
-      await chatThread.save();
+    const tools = createSolanaTools(agent);
 
-      res.json({
-        response: result.text.value,
-        threadId: chatThread.threadId,
-      });
-      return;
+    // Create a completion using OpenAI directly
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4",
+      messages: [
+        ...chatThread.messages.map((msg) => ({
+          role: msg.role as any,
+          content: msg.content,
+        })),
+        { role: "user", content: message },
+      ],
+      stream: true,
+    });
+
+    let fullResponse = "";
+    for await (const chunk of completion) {
+      const content = chunk.choices[0]?.delta?.content || "";
+      fullResponse += content;
+      res.write(`data: ${JSON.stringify({ type: "token", content })}\n\n`);
     }
 
-    throw new Error("No valid response generated");
+    // Save message to database
+    chatThread.messages.push(
+      { role: "user", content: message, createdAt: new Date() },
+      { role: "assistant", content: fullResponse, createdAt: new Date() }
+    );
+    await chatThread.save();
+
+    // End the stream
+    res.write(`data: ${JSON.stringify({ type: "done" })}\n\n`);
+    res.end();
   } catch (error) {
+    console.error("Error in chat stream:", error);
+    res.write(
+      `data: ${JSON.stringify({
+        type: "error",
+        error: "Failed to process message",
+      })}\n\n`
+    );
+    res.end();
     throw new DatabaseError("Failed to process message", error);
   }
 };
@@ -141,8 +152,7 @@ export const getThreadHistory = async (
 
 export const deleteThread = async (
   req: AuthenticatedRequest,
-  res: Response,
-  client: OpenAI
+  res: Response
 ) => {
   const userId = getUserId(req);
   const threadId = req.params.threadId;
@@ -157,7 +167,7 @@ export const deleteThread = async (
   }
 
   try {
-    await client.beta.threads.del(threadId);
+    await openai.beta.threads.del(threadId);
   } catch (error) {
     console.error("Error deleting OpenAI thread:", error);
     // Continue even if OpenAI deletion fails

@@ -16,7 +16,7 @@ import {
 } from "../validators/chatValidators.js";
 import { asyncHandler } from "../middleware/errors/asyncHandler.js";
 
-export function setupChatRoutes(router: Router, client: OpenAI): Router {
+export function setupChatRoutes(router: Router): Router {
   router.use(authenticateUser);
   router.use(validateCluster);
 
@@ -24,24 +24,14 @@ export function setupChatRoutes(router: Router, client: OpenAI): Router {
 
   router.post(
     "/thread",
-    asyncHandler((req, res) => createNewThread(req, res, client))
+    asyncHandler((req, res) => createNewThread(req, res))
   );
 
   router.post(
     "/message",
     validateSendMessage,
     asyncHandler(async (req, res) => {
-      const assistant = await client.beta.assistants.create({
-        name: "Brainpower AI",
-        instructions:
-          "You are Brainpower AI, a helpful assistant that helps users understand and interact with blockchain technology, specifically Solana.",
-        model: "gpt-4-turbo-preview",
-      });
-
-      await sendMessage(req, res, client, assistant);
-
-      // Cleanup assistant after use
-      await client.beta.assistants.del(assistant.id);
+      await sendMessage(req, res);
     })
   );
 
@@ -54,7 +44,7 @@ export function setupChatRoutes(router: Router, client: OpenAI): Router {
   router.delete(
     "/thread/:threadId",
     validateDeleteThread,
-    asyncHandler((req, res) => deleteThread(req, res, client))
+    asyncHandler((req, res) => deleteThread(req, res))
   );
 
   return router;

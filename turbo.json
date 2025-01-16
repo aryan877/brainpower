@@ -5,12 +5,16 @@
       "outputs": ["dist/**", ".next/**"]
     },
     "dev": {
-      "dependsOn": [],
-      "outputs": []
+      "dependsOn": ["^build"],
+      "cache": false,
+      "persistent": true
     },
     "start": {
-      "dependsOn": [],
+      "dependsOn": ["build"],
       "outputs": []
+    },
+    "clean": {
+      "cache": false
     }
   }
 }

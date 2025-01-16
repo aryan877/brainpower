@@ -14,7 +14,9 @@
     "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
     "paths": {
-      "src/*": ["./src/*"]
+      "src/*": ["./src/*"],
+      "brainpower-agent": ["../../packages/brainpower/src"],
+      "brainpower-agent/*": ["../../packages/brainpower/src/*"]
     }
   },
   "include": ["src/**/*.ts", "src/**/*.js"],

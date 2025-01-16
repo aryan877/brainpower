@@ -4,7 +4,6 @@ import mongoose from "mongoose";
 import cors from "cors";
 import rateLimit from "express-rate-limit";
 import helmet from "helmet";
-import OpenAI from "openai";
 import { setupChatRoutes } from "./routes/chatRoutes.js";
 import { setupWalletRoutes } from "./routes/walletRoutes.js";
 import { errorHandler } from "./middleware/errors/errorHandler.js";
@@ -52,14 +51,13 @@ app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 // Initialize OpenAI client
-const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 // Setup routes
 const router = express.Router();
 
 // Initialize routes
 export const initializeRoutes = async () => {
-  app.use("/api/chat", setupChatRoutes(router, client));
+  app.use("/api/chat", setupChatRoutes(router));
   app.use("/api/wallet", setupWalletRoutes(express.Router()));
   console.log("🛠️ Routes configured");
 

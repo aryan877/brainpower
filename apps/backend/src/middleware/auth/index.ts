@@ -1,12 +1,15 @@
 import { Request, Response, NextFunction } from "express";
 import { privyClient } from "../../lib/privyClient.js";
 import { UnauthorizedError } from "../errors/types.js";
+import { SolanaCaip2ChainId } from "@privy-io/server-auth";
+import { SOLANA_CAIP2 } from "./cluster.js";
 
 export interface AuthenticatedRequest extends Request {
   user?: {
     userId: string;
     walletAddress?: string;
     cluster?: "mainnet-beta" | "devnet";
+    caip2?: (typeof SOLANA_CAIP2)[keyof typeof SOLANA_CAIP2];
   };
 }
 
@@ -18,6 +21,7 @@ export async function authenticateUser(
   try {
     // Get the access token from the Authorization header
     const authHeader = req.headers.authorization;
+
     if (!authHeader?.startsWith("Bearer ")) {
       // Check for cookie-based tokens if header is not present
       const accessToken = req.cookies["privy-token"];
