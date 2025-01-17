@@ -1,7 +1,7 @@
 import { Message, ThreadPreview } from "../models/chat";
 
 export interface SendMessageResponse {
-  response: string;
+  message: string;
   threadId: string;
 }
 
@@ -23,4 +23,21 @@ export interface GetThreadsResponse {
 
 export interface DeleteThreadResponse {
   message: string;
+}
+
+export interface ToolInvocation {
+  toolCallId: string;
+  toolName: string;
+  args: Record<string, unknown>;
+  result?: unknown;
+  state: "partial-call" | "call" | "result";
+}
+
+export interface ChatMessage {
+  id?: string;
+  role: "user" | "assistant";
+  content: string;
+  createdAt?: string;
+  isLoading?: boolean;
+  toolInvocations?: ToolInvocation[];
 }

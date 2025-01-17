@@ -1,7 +1,7 @@
-export interface Message {
-  role: "user" | "assistant";
-  content: string;
-  createdAt: Date;
+import { Message as AIMessage } from "ai";
+
+export interface Message extends AIMessage {
+  createdAt?: Date;
   isLoading?: boolean;
 }
 

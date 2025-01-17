@@ -26,7 +26,13 @@ function HomeContent() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const { user, logout } = usePrivy();
   const { getRpcUrl } = useClusterStore();
-  const { wallet, balance, isLoadingBalance, refreshBalance } = useWallet();
+  const {
+    wallet,
+    balance,
+    isLoadingBalance,
+    refreshBalance,
+    isRefetchingBalance,
+  } = useWallet();
   const { showModal, hideModal, confirm } = useModal();
 
   // Use hooks for thread operations
@@ -229,13 +235,13 @@ function HomeContent() {
             </p>
             <button
               onClick={handleRefreshBalance}
-              disabled={isLoadingBalance}
+              disabled={isLoadingBalance || isRefetchingBalance}
               className="p-1.5 hover:bg-[var(--hover-bg)] rounded-md transition-colors disabled:opacity-50"
               title="Refresh balance"
             >
               <RefreshCw
                 className={`h-3.5 w-3.5 ${
-                  isLoadingBalance ? "animate-spin" : ""
+                  isLoadingBalance || isRefetchingBalance ? "animate-spin" : ""
                 }`}
               />
             </button>
@@ -411,7 +417,7 @@ function HomeContent() {
         </header>
 
         <div className="absolute inset-0 top-12">
-          <ChatInterface selectedChat={selectedThread} threads={threads} />
+          <ChatInterface threadId={selectedThread} />
         </div>
       </main>
     </div>

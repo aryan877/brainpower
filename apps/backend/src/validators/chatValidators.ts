@@ -1,14 +1,31 @@
 import { z } from "zod";
 import { validateRequest } from "./validateRequest.js";
 
+const toolInvocationSchema = z.object({
+  toolCallId: z.string(),
+  toolName: z.string(),
+  args: z.record(z.unknown()),
+  result: z.unknown().optional(),
+  state: z.enum(["partial-call", "call", "result"]),
+});
+
+const messageSchema = z.object({
+  id: z.string(),
+  role: z.enum(["user", "assistant"]),
+  content: z.string(),
+  createdAt: z.string().optional(),
+  annotations: z.array(z.unknown()).optional().default([]),
+  isLoading: z.boolean().optional().default(false),
+  toolInvocations: z.array(toolInvocationSchema).optional().default([]),
+});
+
 // Schema for sending a message
 export const validateSendMessage = validateRequest({
   body: z.object({
-    message: z
-      .string()
-      .min(1, "Message cannot be empty")
-      .max(4000, "Message is too long"),
+    messages: z.array(messageSchema),
     threadId: z.string(),
+    // model: z.string().optional(),
+    // modelName: z.string().optional(),
   }),
 });
 
@@ -25,3 +42,6 @@ export const validateDeleteThread = validateRequest({
     threadId: z.string(),
   }),
 });
+
+export type Message = z.infer<typeof messageSchema>;
+export type ToolInvocation = z.infer<typeof toolInvocationSchema>;

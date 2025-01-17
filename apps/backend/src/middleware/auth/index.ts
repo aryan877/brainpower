@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { privyClient } from "../../lib/privyClient.js";
 import { UnauthorizedError } from "../errors/types.js";
-import { SolanaCaip2ChainId } from "@privy-io/server-auth";
 import { SOLANA_CAIP2 } from "./cluster.js";
 
 export interface AuthenticatedRequest extends Request {

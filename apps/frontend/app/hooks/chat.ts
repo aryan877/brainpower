@@ -1,6 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { chatClient } from "../clients/chat";
-import { Message } from "../types/models/chat";
 
 export const chatKeys = {
   all: ["chats"] as const,
@@ -22,38 +21,6 @@ export function useThreadMessages(threadId: string | null) {
     queryKey: chatKeys.messages(threadId || ""),
     queryFn: () => chatClient.getHistory(threadId || ""),
     enabled: !!threadId,
-  });
-}
-
-export function useSendMessage() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({
-      message,
-      threadId,
-    }: {
-      message: string;
-      threadId: string;
-    }) => chatClient.sendMessage(message, threadId),
-    onSuccess: (data, variables) => {
-      // Optimistically update the messages list
-      queryClient.setQueryData<Message[]>(
-        chatKeys.messages(variables.threadId),
-        (old) => {
-          if (!old) return [];
-          return [
-            ...old,
-            {
-              content: data.response,
-              role: "assistant",
-              createdAt: new Date(),
-              isLoading: false,
-            },
-          ];
-        }
-      );
-    },
   });
 }
 
