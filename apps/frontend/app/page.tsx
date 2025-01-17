@@ -18,7 +18,13 @@ import { useClusterStore } from "./store/clusterStore";
 import { useWallet } from "./hooks/wallet";
 import { ThreadPreview } from "./types";
 import { useThreads, useCreateThread, useDeleteThread } from "./hooks/chat";
-import { useModal } from "./providers/ModalProvider";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "../components/ui/dialog";
 
 function HomeContent() {
   const router = useRouter();
@@ -33,7 +39,6 @@ function HomeContent() {
     refreshBalance,
     isRefetchingBalance,
   } = useWallet();
-  const { showModal, hideModal, confirm } = useModal();
 
   // Use hooks for thread operations
   const { data: threads = [], isLoading } = useThreads();
@@ -45,6 +50,7 @@ function HomeContent() {
   const [recipientAddress, setRecipientAddress] = useState("");
   const [isWithdrawing, setIsWithdrawing] = useState(false);
   const [withdrawError, setWithdrawError] = useState("");
+  const [isWithdrawDialogOpen, setIsWithdrawDialogOpen] = useState(false);
 
   // Get chatId from URL query parameter
   const selectedThread = searchParams.get("chatId");
@@ -130,8 +136,29 @@ function HomeContent() {
     [router]
   );
 
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
+  const [confirmDialogConfig, setConfirmDialogConfig] = useState<{
+    title: string;
+    content: React.ReactNode;
+    onConfirm: () => Promise<void>;
+  } | null>(null);
+
+  const showConfirmDialog = (config: {
+    title: string;
+    content: React.ReactNode;
+    onConfirm: () => Promise<void>;
+  }) => {
+    setConfirmDialogConfig(config);
+    setIsConfirmDialogOpen(true);
+  };
+
+  const handleConfirmDialogClose = () => {
+    setIsConfirmDialogOpen(false);
+    setConfirmDialogConfig(null);
+  };
+
   const handleDeleteClick = (thread: ThreadPreview) => {
-    confirm({
+    showConfirmDialog({
       title: "Delete Chat",
       content: (
         <p className="text-[var(--text-secondary)] text-sm md:text-base">
@@ -142,17 +169,13 @@ function HomeContent() {
           ? This action cannot be undone.
         </p>
       ),
-      isDangerous: true,
-      confirmText: "Delete",
-      isLoading: false,
-    }).then(async (confirmed) => {
-      if (confirmed) {
+      onConfirm: async () => {
         try {
           await deleteThread(thread.threadId);
         } catch (error) {
           console.error("Error deleting thread:", error);
         }
-      }
+      },
     });
   };
 
@@ -165,7 +188,7 @@ function HomeContent() {
   };
 
   const handleLogoutClick = () => {
-    confirm({
+    showConfirmDialog({
       title: "Confirm Logout",
       content: (
         <div className="text-[var(--text-secondary)]">
@@ -178,100 +201,25 @@ function HomeContent() {
           )}
         </div>
       ),
-      isDangerous: true,
-      confirmText: "Logout",
-      isLoading: false,
-    }).then(async (confirmed) => {
-      if (confirmed) {
+      onConfirm: async () => {
         try {
           await logout();
         } catch (error) {
           console.error("Error logging out:", error);
         }
-      }
+      },
     });
   };
 
   const handleWithdrawClick = () => {
-    showModal({
-      title: "Withdraw SOL",
-      content: (
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
-              Amount (SOL)
-            </label>
-            <input
-              type="number"
-              value={withdrawAmount}
-              onChange={(e) => setWithdrawAmount(e.target.value)}
-              placeholder="0.0"
-              className="w-full px-3 py-2 bg-[var(--background)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)]"
-              step="0.000001"
-              min="0"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
-              Recipient Address
-            </label>
-            <input
-              type="text"
-              value={recipientAddress}
-              onChange={(e) => setRecipientAddress(e.target.value)}
-              placeholder="Solana address"
-              className="w-full px-3 py-2 bg-[var(--background)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)]"
-            />
-          </div>
-          {withdrawError && (
-            <p className="text-red-500 text-sm">{withdrawError}</p>
-          )}
-          <div className="flex items-center justify-between">
-            <p className="text-xs text-[var(--text-secondary)]">
-              Available balance:{" "}
-              {isLoadingBalance
-                ? "Loading..."
-                : `${balance?.toFixed(6) || "0"} SOL`}
-            </p>
-            <button
-              onClick={handleRefreshBalance}
-              disabled={isLoadingBalance || isRefetchingBalance}
-              className="p-1.5 hover:bg-[var(--hover-bg)] rounded-md transition-colors disabled:opacity-50"
-              title="Refresh balance"
-            >
-              <RefreshCw
-                className={`h-3.5 w-3.5 ${
-                  isLoadingBalance || isRefetchingBalance ? "animate-spin" : ""
-                }`}
-              />
-            </button>
-          </div>
-        </div>
-      ),
-      footer: (
-        <div className="flex justify-end space-x-4">
-          <button
-            onClick={() => {
-              hideModal();
-              setWithdrawError("");
-              setWithdrawAmount("");
-              setRecipientAddress("");
-            }}
-            className="px-4 py-2 rounded-xl border border-[var(--border-color)] text-[var(--text-primary)] hover:bg-[var(--hover-bg)] transition-all duration-200"
-            disabled={isWithdrawing}
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleWithdraw}
-            className="px-4 py-2 rounded-xl bg-[var(--primary)] text-white hover:bg-[var(--primary-hover)] transition-all duration-200 disabled:opacity-50"
-            disabled={isWithdrawing || !withdrawAmount || !recipientAddress}
-          >
-            {isWithdrawing ? "Processing..." : "Withdraw"}
-          </button>
-        </div>
-      ),
-    });
+    setIsWithdrawDialogOpen(true);
+  };
+
+  const closeWithdrawDialog = () => {
+    setIsWithdrawDialogOpen(false);
+    setWithdrawError("");
+    setWithdrawAmount("");
+    setRecipientAddress("");
   };
 
   const handleRefreshBalance = () => {
@@ -351,9 +299,7 @@ function HomeContent() {
           throw new Error("Transaction failed to confirm");
         }
 
-        hideModal();
-        setWithdrawAmount("");
-        setRecipientAddress("");
+        closeWithdrawDialog();
         refreshBalance();
       } catch (error) {
         console.error("Transaction error:", error);
@@ -372,11 +318,121 @@ function HomeContent() {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[var(--background)]">
+    <div className="flex h-screen overflow-hidden bg-background">
+      {/* Confirm Dialog */}
+      <Dialog open={isConfirmDialogOpen} onOpenChange={setIsConfirmDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{confirmDialogConfig?.title}</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">{confirmDialogConfig?.content}</div>
+          <DialogFooter>
+            <button
+              onClick={handleConfirmDialogClose}
+              className="px-4 py-2 rounded-xl border text-foreground hover:bg-muted/50 transition-all duration-200"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={async () => {
+                if (confirmDialogConfig) {
+                  await confirmDialogConfig.onConfirm();
+                  handleConfirmDialogClose();
+                }
+              }}
+              className="px-4 py-2 rounded-xl bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-all duration-200"
+            >
+              Confirm
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Withdraw Dialog */}
+      <Dialog
+        open={isWithdrawDialogOpen}
+        onOpenChange={setIsWithdrawDialogOpen}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Withdraw SOL</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
+                Amount (SOL)
+              </label>
+              <input
+                type="number"
+                value={withdrawAmount}
+                onChange={(e) => setWithdrawAmount(e.target.value)}
+                placeholder="0.0"
+                className="w-full px-3 py-2 bg-background border rounded-lg text-foreground placeholder-muted-foreground"
+                step="0.000001"
+                min="0"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
+                Recipient Address
+              </label>
+              <input
+                type="text"
+                value={recipientAddress}
+                onChange={(e) => setRecipientAddress(e.target.value)}
+                placeholder="Solana address"
+                className="w-full px-3 py-2 bg-background border rounded-lg text-foreground placeholder-muted-foreground"
+              />
+            </div>
+            {withdrawError && (
+              <p className="text-destructive text-sm">{withdrawError}</p>
+            )}
+            <div className="flex items-center justify-between">
+              <p className="text-xs text-muted-foreground">
+                Available balance:{" "}
+                {isLoadingBalance
+                  ? "Loading..."
+                  : `${balance?.toFixed(6) || "0"} SOL`}
+              </p>
+              <button
+                onClick={handleRefreshBalance}
+                disabled={isLoadingBalance || isRefetchingBalance}
+                className="p-1.5 hover:bg-muted/50 rounded-md transition-colors disabled:opacity-50"
+                title="Refresh balance"
+              >
+                <RefreshCw
+                  className={`h-3.5 w-3.5 ${
+                    isLoadingBalance || isRefetchingBalance
+                      ? "animate-spin"
+                      : ""
+                  }`}
+                />
+              </button>
+            </div>
+          </div>
+          <DialogFooter>
+            <button
+              onClick={closeWithdrawDialog}
+              className="px-4 py-2 rounded-xl border text-foreground hover:bg-muted/50 transition-all duration-200"
+              disabled={isWithdrawing}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleWithdraw}
+              className="px-4 py-2 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-200 disabled:opacity-50"
+              disabled={isWithdrawing || !withdrawAmount || !recipientAddress}
+            >
+              {isWithdrawing ? "Processing..." : "Withdraw"}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Mobile sidebar overlay */}
       {isSidebarOpen && window.innerWidth < 768 && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-20 md:hidden"
+          className="fixed inset-0 bg-background/80 backdrop-blur-sm z-20 md:hidden"
           onClick={toggleSidebar}
         />
       )}
@@ -402,15 +458,15 @@ function HomeContent() {
       {/* Main content */}
       <main className="flex-1 relative h-full">
         {/* Header with burger menu */}
-        <header className="absolute top-0 left-0 right-0 h-12 bg-[var(--background)] border-b border-[var(--border-color)] flex items-center px-4 z-10">
+        <header className="absolute top-0 left-0 right-0 h-12 bg-background border-b flex items-center px-4 z-10">
           <div className="flex items-center gap-4">
             <button
               onClick={toggleSidebar}
-              className="p-1 hover:bg-[var(--hover-bg)] rounded-lg md:hidden"
+              className="p-1 hover:bg-muted/50 rounded-lg md:hidden"
             >
-              <Menu className="h-5 w-5 text-[var(--text-primary)]" />
+              <Menu className="h-5 w-5 text-foreground" />
             </button>
-            <h1 className="text-lg font-medium text-[var(--text-primary)]">
+            <h1 className="text-lg font-medium text-foreground">
               BrainPower 🧠⚡
             </h1>
           </div>

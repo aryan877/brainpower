@@ -11,14 +11,21 @@ export function createSolanaTools(
 
   for (const key of actionKeys) {
     const action = ACTIONS[key as keyof typeof ACTIONS];
-    tools[key] = tool({
-      // @ts-expect-error Value matches type however TS still shows error
+    const toolConfig: any = {
       id: action.name,
       description: action.description,
       parameters: action.schema,
-      execute: async (params) =>
-        await executeAction(action, BrainPowerAgent, params),
-    });
+    };
+
+    // Only add execute function for backend tools (ones with handlers)
+    if (action.handler) {
+      toolConfig.execute = async (params: any) => {
+        const result = await executeAction(action, BrainPowerAgent, params);
+        return result;
+      };
+    }
+
+    tools[key] = tool(toolConfig);
   }
 
   return tools;

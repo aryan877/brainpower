@@ -3,7 +3,7 @@ import { Inter } from "next/font/google";
 import { NotificationContainer } from "./components/NotificationContainer";
 import { PrivyProvider } from "./providers/PrivyProvider";
 import { ReactQueryProvider } from "./providers/ReactQueryProvider";
-import { ModalProvider } from "./providers/ModalProvider";
+import { ThemeProvider } from "./providers/ThemeProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -18,14 +18,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        <ReactQueryProvider>
-          <PrivyProvider>
-            <ModalProvider>{children}</ModalProvider>
-          </PrivyProvider>
-        </ReactQueryProvider>
-        <NotificationContainer />
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <ReactQueryProvider>
+            <PrivyProvider>{children}</PrivyProvider>
+          </ReactQueryProvider>
+          <NotificationContainer />
+        </ThemeProvider>
       </body>
     </html>
   );

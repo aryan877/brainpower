@@ -50,10 +50,10 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
     return (
       <div className="flex h-full items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-4">
+          <h2 className="text-2xl font-bold text-foreground mb-4">
             Welcome to BrainPower 🧠⚡
           </h2>
-          <p className="text-[var(--text-secondary)] mb-8">
+          <p className="text-muted-foreground mb-8">
             Start a new chat or select an existing one to begin
           </p>
         </div>
@@ -64,7 +64,7 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
   return (
     <div className="flex flex-col h-full">
       {/* Messages container */}
-      <div className="flex-1 overflow-y-auto space-y-1 scrollbar-thin scrollbar-thumb-[var(--border-color)] scrollbar-track-transparent hover:scrollbar-thumb-[var(--hover-bg)]">
+      <div className="flex-1 overflow-y-auto space-y-1 scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent hover:scrollbar-thumb-muted/80">
         {messages.map((message) => (
           <ChatMessage key={message.id} message={message} />
         ))}
@@ -74,15 +74,15 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
       {/* Error display */}
       {error && (
         <div className="mx-auto w-full max-w-3xl px-4 py-2">
-          <div className="flex items-center space-x-3 rounded-lg border border-red-400/20 bg-red-400/10 p-3">
-            <AlertCircle className="h-5 w-5 text-red-400" />
-            <p className="flex-1 text-[15px] text-[var(--text-primary)]">
+          <div className="flex items-center space-x-3 rounded-lg border border-destructive/20 bg-destructive/10 p-3">
+            <AlertCircle className="h-5 w-5 text-destructive" />
+            <p className="flex-1 text-[15px] text-foreground">
               {error.message}
             </p>
             <button
               onClick={() => reload()}
-              className="flex items-center space-x-1.5 rounded-lg border border-red-400/20 px-3 py-1.5 
-                       text-sm text-red-400 hover:bg-red-400/20 transition-colors duration-200"
+              className="flex items-center space-x-1.5 rounded-lg border border-destructive/20 px-3 py-1.5 
+                       text-sm text-destructive hover:bg-destructive/20 transition-colors duration-200"
             >
               <RefreshCcw className="h-4 w-4" />
               <span>Retry</span>
@@ -92,7 +92,7 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
       )}
 
       {/* Input form */}
-      <div className="border-t border-[var(--border-color)] bg-[var(--background)]">
+      <div className="border-t bg-background">
         <form onSubmit={handleSubmit} className="max-w-3xl mx-auto px-4 py-3">
           <div className="relative flex items-center">
             <textarea
@@ -105,10 +105,10 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
               }}
               placeholder="Type your message..."
               rows={1}
-              className="w-full resize-none rounded-xl border border-[var(--border-color)] bg-[var(--background)] 
-                       px-4 py-3 pr-14 text-[var(--text-primary)] placeholder:text-[var(--text-secondary)]
-                       text-[15px] focus:outline-none focus:ring-2 focus:ring-blue-500/50 
-                       disabled:opacity-50 hover:border-[var(--hover-bg)]
+              className="w-full resize-none rounded-xl border bg-background 
+                       px-4 py-3 pr-14 text-foreground placeholder:text-muted-foreground
+                       text-[15px] focus:outline-none focus:ring-2 focus:ring-ring 
+                       disabled:opacity-50 hover:border-input
                        transition-all duration-200 ease-in-out"
               style={{ minHeight: "52px", maxHeight: "200px" }}
               disabled={isLoading}
@@ -125,8 +125,8 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
               <button
                 type="submit"
                 disabled={isLoading || !input.trim()}
-                className="gradient-button p-1.5 rounded-lg disabled:opacity-50 transition-all duration-200 
-                         hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0"
+                className="bg-primary text-primary-foreground p-1.5 rounded-lg disabled:opacity-50 transition-all duration-200 
+                         hover:bg-primary/90 hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0"
               >
                 <ArrowUpCircle className="h-5 w-5" />
               </button>
@@ -134,8 +134,8 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
                 <button
                   type="button"
                   onClick={() => stop()}
-                  className="p-1.5 text-red-400 hover:text-red-300 rounded-lg transition-colors duration-200 
-                           hover:bg-red-500/10"
+                  className="p-1.5 text-destructive hover:text-destructive/90 rounded-lg transition-colors duration-200 
+                           hover:bg-destructive/10"
                 >
                   <Square className="h-4 w-4" />
                 </button>

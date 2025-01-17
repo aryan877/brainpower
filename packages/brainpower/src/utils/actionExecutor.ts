@@ -27,7 +27,8 @@ export async function executeAction(
     const validatedInput = action.schema.parse(input);
 
     // Execute the action with validated input
-    const result = await action.handler(agent, validatedInput);
+    // We know handler exists because we only call this for backend tools
+    const result = await action.handler!(agent, validatedInput);
 
     return {
       status: "success",

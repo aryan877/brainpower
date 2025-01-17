@@ -62,15 +62,15 @@ export function WalletInfo({
     <div className="p-4">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <Wallet className="h-4 w-4 text-[var(--text-secondary)]" />
-          <span className="text-sm font-medium text-[var(--text-primary)]">
+          <Wallet className="h-4 w-4 text-muted-foreground" />
+          <span className="text-sm font-medium text-foreground">
             Solana Wallet
           </span>
         </div>
         {user && (
           <button
             onClick={onLogoutClick}
-            className="flex items-center gap-1 px-2 py-1 text-xs rounded-lg hover:bg-[var(--hover-bg)] text-red-400 hover:text-red-300 transition-colors"
+            className="flex items-center gap-1 px-2 py-1 text-xs rounded-lg hover:bg-muted/50 text-destructive hover:text-destructive/90 transition-colors"
             title="Logout"
           >
             <LogOut className="h-3 w-3" />
@@ -85,7 +85,7 @@ export function WalletInfo({
           onChange={(e) =>
             setSelectedCluster(e.target.value as "mainnet-beta" | "devnet")
           }
-          className="w-full px-2 py-1 text-xs rounded-lg bg-[var(--background)] border border-[var(--border-color)] text-[var(--text-primary)]"
+          className="w-full px-2 py-1 text-xs rounded-lg bg-background border text-foreground"
         >
           <option value="mainnet-beta">Mainnet</option>
           <option value="devnet">Devnet</option>
@@ -94,34 +94,34 @@ export function WalletInfo({
 
       {wallet ? (
         <div className="space-y-2">
-          <div className="text-xs text-[var(--text-secondary)] break-all">
-            <div className="bg-[var(--background)] p-2 rounded-lg flex items-center justify-between gap-2">
+          <div className="text-xs text-muted-foreground break-all">
+            <div className="bg-muted/50 p-2 rounded-lg flex items-center justify-between gap-2">
               <span>{walletAddress}</span>
               <button
                 onClick={copyAddress}
-                className="p-1 hover:bg-[var(--hover-bg)] rounded-md transition-colors relative"
+                className="p-1 hover:bg-muted rounded-md transition-colors relative"
                 title="Copy address"
               >
                 <Copy className="h-3 w-3" />
                 {copied && (
-                  <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-black text-white px-2 py-1 rounded text-xs whitespace-nowrap">
+                  <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-popover text-popover-foreground px-2 py-1 rounded text-xs whitespace-nowrap">
                     Copied!
                   </span>
                 )}
               </button>
             </div>
           </div>
-          <div className="flex items-center justify-between text-xs text-[var(--text-secondary)]">
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span>Status:</span>
-            <span className="px-2 py-1 bg-[var(--background)] rounded-md flex items-center gap-1">
+            <span className="px-2 py-1 bg-muted/50 rounded-md flex items-center gap-1">
               <span className="h-1.5 w-1.5 rounded-full bg-green-500"></span>
               Connected
             </span>
           </div>
-          <div className="flex items-center justify-between text-xs text-[var(--text-secondary)]">
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span>Balance:</span>
             <div className="flex items-center gap-2">
-              <span className="px-2 py-1 bg-[var(--background)] rounded-md">
+              <span className="px-2 py-1 bg-muted/50 rounded-md">
                 {isLoadingBalance
                   ? "Loading..."
                   : `${balance?.toFixed(4) || "0"} SOL`}
@@ -129,7 +129,7 @@ export function WalletInfo({
               <button
                 onClick={refreshBalance}
                 disabled={isLoadingBalance || isRefetchingBalance}
-                className="p-1.5 hover:bg-[var(--hover-bg)] rounded-md transition-colors disabled:opacity-50"
+                className="p-1.5 hover:bg-muted rounded-md transition-colors disabled:opacity-50"
                 title="Refresh balance"
               >
                 <RefreshCw
@@ -142,7 +142,7 @@ export function WalletInfo({
               </button>
               <button
                 onClick={onWithdrawClick}
-                className="p-1.5 hover:bg-[var(--hover-bg)] rounded-md transition-colors"
+                className="p-1.5 hover:bg-muted rounded-md transition-colors"
                 title="Withdraw"
               >
                 <Send className="h-3.5 w-3.5" />
@@ -151,10 +151,10 @@ export function WalletInfo({
           </div>
         </div>
       ) : (
-        <div className="text-xs text-[var(--text-secondary)] bg-[var(--background)] p-3 rounded-lg">
+        <div className="text-xs text-muted-foreground bg-muted/50 p-3 rounded-lg">
           {isCreating ? (
             <div className="flex items-center justify-center gap-2">
-              <div className="animate-spin rounded-full h-3 w-3 border-b border-[var(--primary)]" />
+              <div className="animate-spin rounded-full h-3 w-3 border-b border-primary" />
               <span>Creating Solana wallet...</span>
             </div>
           ) : (
@@ -163,7 +163,7 @@ export function WalletInfo({
               <button
                 onClick={handleCreateWallet}
                 disabled={isCreating}
-                className="flex items-center justify-center gap-1 px-2 py-1.5 text-xs rounded-lg bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white transition-colors w-full"
+                className="flex items-center justify-center gap-1 px-2 py-1.5 text-xs rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground transition-colors w-full"
               >
                 <Plus className="h-3 w-3" />
                 {isCreating ? "Creating..." : "Create Solana Wallet"}

@@ -52,5 +52,5 @@ export interface Action {
   /**
    * Function that executes the action
    */
-  handler: Handler;
+  handler?: Handler;
 }

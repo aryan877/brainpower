@@ -1,6 +1,7 @@
 import { Message as AIMessage } from "ai";
 
 export interface Message extends AIMessage {
+  id: string;
   createdAt?: Date;
   isLoading?: boolean;
 }

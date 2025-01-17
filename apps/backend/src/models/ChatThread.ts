@@ -37,7 +37,7 @@ const messageSchema = new mongoose.Schema(
     },
     content: {
       type: String,
-      required: true,
+      default: "",
     },
     createdAt: {
       type: Date,

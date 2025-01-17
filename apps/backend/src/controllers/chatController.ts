@@ -67,10 +67,9 @@ export const sendMessage = async (req: AuthenticatedRequest, res: Response) => {
   res.setHeader("Content-Type", "text/event-stream");
   res.setHeader("Cache-Control", "no-cache");
   res.setHeader("Connection", "keep-alive");
-  res.flushHeaders(); // Ensure headers are sent immediately
+  res.flushHeaders();
 
   try {
-    // Generate BrainPower agent for this user
     const agent = generateBrainpowerAgent({
       walletId: req.user?.walletAddress || "",
       cluster: cluster,
@@ -78,9 +77,22 @@ export const sendMessage = async (req: AuthenticatedRequest, res: Response) => {
 
     const tools = createSolanaTools(agent);
 
+    // Keep track of current message being built
+    let currentAssistantMessage = {
+      id: `msg_${nanoid()}`,
+      role: "assistant" as const,
+      content: "",
+      toolCalls: [],
+      toolResults: [],
+      createdAt: new Date(),
+      annotations: [],
+      isLoading: false,
+      toolInvocations: [],
+    };
+
     const result = streamText({
       model: openai("gpt-4o"),
-      messages: messages,
+      messages, // messages from useChat already has full history
       experimental_toolCallStreaming: true,
       maxSteps: 5,
       system: assistantPrompt,
@@ -89,98 +101,148 @@ export const sendMessage = async (req: AuthenticatedRequest, res: Response) => {
         chunking: "word",
         delayInMs: 15,
       }),
+      // Save progress on each step
+      onStepFinish: async ({ text, toolCalls, toolResults }) => {
+        currentAssistantMessage.content = text;
+        if (toolCalls) {
+          currentAssistantMessage.toolInvocations = toolCalls.map((call) => ({
+            toolCallId: call.toolCallId,
+            toolName: call.toolName,
+            args: call.args,
+            state: "call",
+            result: undefined,
+          }));
+        }
+        if (toolResults) {
+          currentAssistantMessage.toolInvocations =
+            currentAssistantMessage.toolInvocations.map((call) => {
+              const result = toolResults.find(
+                (r) => r.toolCallId === call.toolCallId
+              );
+              return result
+                ? {
+                    ...call,
+                    result: result.result,
+                    state: "result",
+                  }
+                : call;
+            });
+        }
+
+        // Update the current message in the messages array
+        const messageIndex = messages.findIndex(
+          (m) => m.id === currentAssistantMessage.id
+        );
+        if (messageIndex !== -1) {
+          messages[messageIndex] = { ...currentAssistantMessage };
+        }
+
+        // Update the messages array with the current state
+        await ChatThread.findOneAndUpdate(
+          { threadId, userId, isActive: true },
+          { $set: { messages } },
+          { new: true }
+        );
+      },
+      // Final save on completion
+      onFinish: async ({ text, toolCalls, toolResults }) => {
+        currentAssistantMessage.content = text;
+        if (toolCalls) {
+          currentAssistantMessage.toolInvocations = toolCalls.map((call) => ({
+            toolCallId: call.toolCallId,
+            toolName: call.toolName,
+            args: call.args,
+            state: "call",
+            result: undefined,
+          }));
+        }
+        if (toolResults) {
+          currentAssistantMessage.toolInvocations =
+            currentAssistantMessage.toolInvocations.map((call) => {
+              const result = toolResults.find(
+                (r) => r.toolCallId === call.toolCallId
+              );
+              return result
+                ? {
+                    ...call,
+                    result: result.result,
+                    state: "result",
+                  }
+                : call;
+            });
+        }
+
+        // Update the current message in the messages array
+        const messageIndex = messages.findIndex(
+          (m) => m.id === currentAssistantMessage.id
+        );
+        if (messageIndex !== -1) {
+          messages[messageIndex] = { ...currentAssistantMessage };
+        }
+
+        // Save final state
+        await ChatThread.findOneAndUpdate(
+          { threadId, userId, isActive: true },
+          { $set: { messages } },
+          { new: true }
+        );
+      },
     });
 
-    try {
-      // Handle all stream events
-      for await (const event of result.fullStream) {
-        switch (event.type) {
-          case "text-delta":
-            // Send text delta with '0:' prefix
-            res.write(`0:${JSON.stringify(event.textDelta)}\n`);
-            break;
-          case "tool-call":
-            // Send tool call with '9:' prefix
-            res.write(
-              `9:${JSON.stringify({
-                toolCallId: event.toolCallId,
-                toolName: event.toolName,
-                args: event.args,
-              })}\n`
-            );
-            break;
-          case "tool-result":
-            // Send tool result with 'a:' prefix
-            res.write(
-              `a:${JSON.stringify({
-                toolCallId: event.toolCallId,
-                result: event.result,
-              })}\n`
-            );
-            break;
-          case "error":
-            // Send error with 'e:' prefix
-            res.write(
-              `e:${JSON.stringify({
-                finishReason: "error",
-                error: event.error,
-                isContinued: false,
-              })}\n`
-            );
-            break;
-        }
+    // Add the assistant message to messages array
+    messages.push(currentAssistantMessage);
+
+    // Handle streaming events
+    for await (const event of result.fullStream) {
+      switch (event.type) {
+        case "text-delta":
+          res.write(`0:${JSON.stringify(event.textDelta)}\n`);
+          break;
+        case "tool-call":
+          res.write(
+            `9:${JSON.stringify({
+              toolCallId: event.toolCallId,
+              toolName: event.toolName,
+              args: event.args,
+            })}\n`
+          );
+          break;
+        case "tool-result":
+          res.write(
+            `a:${JSON.stringify({
+              toolCallId: event.toolCallId,
+              result: event.result,
+            })}\n`
+          );
+          break;
+        case "error":
+          res.write(
+            `e:${JSON.stringify({
+              finishReason: "error",
+              error: event.error,
+              isContinued: false,
+            })}\n`
+          );
+          break;
       }
-
-      // Get final completion info
-      const [usage, finishReason] = await Promise.all([
-        result.usage,
-        result.finishReason,
-      ]);
-
-      // Send completion event
-      const completion = {
-        finishReason,
-        usage,
-        isContinued: false,
-      };
-
-      // Send event completion and done markers
-      res.write(`e:${JSON.stringify(completion)}\n`);
-      res.write(`d:${JSON.stringify({ finishReason, usage })}\n`);
-
-      // Save messages to thread
-      const finalText = await result.text;
-      const toolCalls = await result.toolCalls;
-      const toolResults = await result.toolResults;
-
-      // Update thread with new messages
-      chatThread.messages.push(...messages);
-      if (finalText) {
-        chatThread.messages.push({
-          role: "assistant",
-          content: finalText,
-          toolCalls,
-          toolResults,
-        });
-      }
-      await chatThread.save();
-    } catch (streamError) {
-      console.error("Stream error:", streamError);
-      const errorCompletion = {
-        finishReason: "error",
-        usage: null,
-        isContinued: false,
-      };
-      res.write(`e:${JSON.stringify(errorCompletion)}\n`);
-      res.write(
-        `d:${JSON.stringify({ finishReason: "error", usage: null })}\n`
-      );
-    } finally {
-      res.end();
     }
+
+    // Get final completion info
+    const [usage, finishReason] = await Promise.all([
+      result.usage,
+      result.finishReason,
+    ]);
+
+    // Send completion events
+    res.write(
+      `e:${JSON.stringify({ finishReason, usage, isContinued: false })}\n`
+    );
+    res.write(`d:${JSON.stringify({ finishReason, usage })}\n`);
   } catch (error) {
     console.error("Error in chat:", error);
     throw new DatabaseError("Failed to process message", error);
+  } finally {
+    res.end();
   }
 };
 
@@ -216,17 +278,11 @@ export const deleteThread = async (
   const userId = getUserId(req);
   const threadId = req.params.threadId;
 
-  const chatThread = await ChatThread.findOne({
-    threadId,
-    userId,
-  });
+  const result = await ChatThread.findOneAndDelete({ threadId, userId });
 
-  if (!chatThread) {
+  if (!result) {
     throw new NotFoundError("Thread not found");
   }
-
-  chatThread.isActive = false;
-  await chatThread.save();
 
   res.json({ message: "Thread deleted successfully" });
 };

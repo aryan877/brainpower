@@ -16,15 +16,15 @@ export default function ChatMessage({ message }: ChatMessageProps) {
         className={`flex w-full gap-3 ${message.role === "user" ? "justify-end" : "justify-start"}`}
       >
         {message.role === "assistant" && (
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-medium flex-shrink-0 border-2 border-blue-400/20 shadow-lg">
+          <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-medium flex-shrink-0 border-2 border-primary/20 shadow-lg">
             🧠
           </div>
         )}
         <div
           className={`relative group w-auto max-w-[85%] ${
             message.role === "assistant"
-              ? "bg-gradient-to-br from-[#1E1E1E] via-[#242424] to-[#2A2A2A] text-[var(--text-primary)] shadow-sm border border-[var(--border-color)]"
-              : "bg-gradient-to-br from-[#4F46E5] to-[#7C3AED] text-white shadow-md"
+              ? "bg-card text-card-foreground shadow-sm border"
+              : "bg-primary text-primary-foreground shadow-md"
           } rounded-2xl ${
             message.role === "assistant" ? "rounded-tl-sm" : "rounded-tr-sm"
           }`}
@@ -37,7 +37,7 @@ export default function ChatMessage({ message }: ChatMessageProps) {
             >
               {message.isLoading ? (
                 <div className="flex items-center gap-2">
-                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" />
+                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-primary-foreground border-t-transparent" />
                   <span className="text-base font-medium">Thinking...</span>
                 </div>
               ) : (
@@ -56,8 +56,8 @@ export default function ChatMessage({ message }: ChatMessageProps) {
                           key={nanoid()}
                           className="relative group/code mt-2 mb-1"
                         >
-                          <div className="absolute -top-4 left-0 right-0 h-6 bg-[#2D2D2D] rounded-t-lg flex items-center px-4">
-                            <span className="text-xs text-[var(--text-secondary)]">
+                          <div className="absolute -top-4 left-0 right-0 h-6 bg-muted rounded-t-lg flex items-center px-4">
+                            <span className="text-xs text-muted-foreground">
                               {match[1].toUpperCase()}
                             </span>
                           </div>
@@ -66,7 +66,7 @@ export default function ChatMessage({ message }: ChatMessageProps) {
                             style={vscDarkPlus}
                             language={match[1]}
                             PreTag="div"
-                            className="!bg-[#1E1E1E] !rounded-lg !rounded-tl-none !pt-4 text-sm !mt-0 !mb-0 whitespace-pre-wrap break-all"
+                            className="!bg-card !rounded-lg !rounded-tl-none !pt-4 text-sm !mt-0 !mb-0 whitespace-pre-wrap break-all"
                           >
                             {String(children).replace(/\n$/, "")}
                           </SyntaxHighlighter>
@@ -76,7 +76,7 @@ export default function ChatMessage({ message }: ChatMessageProps) {
                                 String(children).replace(/\n$/, "")
                               )
                             }
-                            className="absolute top-2 right-2 p-1.5 rounded-lg bg-[#2D2D2D] text-[var(--text-secondary)] opacity-0 group-hover/code:opacity-100 transition-opacity hover:text-[var(--text-primary)]"
+                            className="absolute top-2 right-2 p-1.5 rounded-lg bg-muted text-muted-foreground opacity-0 group-hover/code:opacity-100 transition-opacity hover:text-foreground"
                           >
                             Copy
                           </button>
@@ -87,8 +87,8 @@ export default function ChatMessage({ message }: ChatMessageProps) {
                           {...props}
                           className={`px-1.5 py-0.5 rounded text-[15px] break-all ${
                             message.role === "assistant"
-                              ? "bg-black/10 dark:bg-white/10"
-                              : "bg-black/20"
+                              ? "bg-muted/50"
+                              : "bg-primary-foreground/20"
                           }`}
                         >
                           {children}
@@ -134,7 +134,7 @@ export default function ChatMessage({ message }: ChatMessageProps) {
           </div>
         </div>
         {message.role === "user" && (
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#4F46E5] to-[#7C3AED] flex items-center justify-center text-white flex-shrink-0 border-2 border-indigo-400/20 shadow-lg">
+          <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground flex-shrink-0 border-2 border-primary/20 shadow-lg">
             <User className="w-4 h-4" />
           </div>
         )}

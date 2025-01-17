@@ -1,7 +1,7 @@
 import { Action } from "../../types/action";
-import { BrainPowerAgent } from "../../agent";
+// import { BrainPowerAgent } from "../../agent";
 import { z } from "zod";
-import { launchPumpFunToken } from "../../tools";
+// import { launchPumpFunToken } from "../../tools";
 
 const launchPumpfunTokenAction: Action = {
   name: "LAUNCH_PUMPFUN_TOKEN",
@@ -55,9 +55,24 @@ const launchPumpfunTokenAction: Action = {
       .max(1000)
       .describe("Description of the token"),
     imageUrl: z.string().url().describe("URL of the token image"),
-    twitter: z.string().optional().describe("Twitter handle (optional)"),
-    telegram: z.string().optional().describe("Telegram group link (optional)"),
-    website: z.string().url().optional().describe("Website URL (optional)"),
+    twitter: z
+      .string()
+      .nullable()
+      .transform((val) => val ?? "")
+      .default("")
+      .describe("Twitter handle (optional)"),
+    telegram: z
+      .string()
+      .nullable()
+      .transform((val) => val ?? "")
+      .default("")
+      .describe("Telegram group link (optional)"),
+    website: z
+      .string()
+      .nullable()
+      .transform((val) => val ?? "")
+      .default("")
+      .describe("Website URL (optional)"),
     initialLiquiditySOL: z
       .number()
       .min(0.0001)
@@ -75,32 +90,32 @@ const launchPumpfunTokenAction: Action = {
       .default(0.00005)
       .describe("Priority fee in SOL"),
   }),
-  handler: async (agent: BrainPowerAgent, input: Record<string, any>) => {
-    try {
-      const { tokenName, tokenTicker, description, imageUrl } = input;
-      const result = await launchPumpFunToken(
-        agent,
-        tokenName,
-        tokenTicker,
-        description,
-        imageUrl,
-        input,
-      );
+  // handler: async (agent: BrainPowerAgent, input: Record<string, any>) => {
+  //   try {
+  //     const { tokenName, tokenTicker, description, imageUrl } = input;
+  //     const result = await launchPumpFunToken(
+  //       agent,
+  //       tokenName,
+  //       tokenTicker,
+  //       description,
+  //       imageUrl,
+  //       input,
+  //     );
 
-      return {
-        status: "success",
-        signature: result.signature,
-        mint: result.mint,
-        metadataUri: result.metadataUri,
-        message: "Successfully launched token on Pump.fun",
-      };
-    } catch (error: any) {
-      return {
-        status: "error",
-        message: `Failed to launch token: ${error.message}`,
-      };
-    }
-  },
+  //     return {
+  //       status: "success",
+  //       signature: result.signature,
+  //       mint: result.mint,
+  //       metadataUri: result.metadataUri,
+  //       message: "Successfully launched token on Pump.fun",
+  //     };
+  //   } catch (error: any) {
+  //     return {
+  //       status: "error",
+  //       message: `Failed to launch token: ${error.message}`,
+  //     };
+  //   }
+  // },
 };
 
 export default launchPumpfunTokenAction;
