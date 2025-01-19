@@ -1,19 +1,59 @@
 import mongoose from "mongoose";
 
+const toolInvocationSchema = new mongoose.Schema(
+  {
+    toolCallId: {
+      type: String,
+      required: true,
+    },
+    toolName: {
+      type: String,
+      required: true,
+    },
+    args: {
+      type: mongoose.Schema.Types.Mixed,
+      required: true,
+    },
+    result: mongoose.Schema.Types.Mixed,
+    state: {
+      type: String,
+      enum: ["partial-call", "call", "result"],
+      required: true,
+    },
+  },
+  { _id: false }
+);
+
 const messageSchema = new mongoose.Schema(
   {
+    id: {
+      type: String,
+      required: true,
+    },
     role: {
       type: String,
-      enum: ["user", "assistant"],
+      enum: ["user", "assistant", "system", "data"],
       required: true,
     },
     content: {
       type: String,
-      required: true,
+      default: "",
     },
     createdAt: {
       type: Date,
       default: Date.now,
+    },
+    name: String,
+    data: mongoose.Schema.Types.Mixed,
+    annotations: [mongoose.Schema.Types.Mixed],
+    experimental_providerMetadata: mongoose.Schema.Types.Mixed,
+    isLoading: {
+      type: Boolean,
+      default: false,
+    },
+    toolInvocations: {
+      type: [toolInvocationSchema],
+      default: [],
     },
   },
   { _id: false }
@@ -35,7 +75,10 @@ const chatThreadSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
-    messages: [messageSchema],
+    messages: {
+      type: [messageSchema],
+      default: [],
+    },
     isActive: {
       type: Boolean,
       default: true,

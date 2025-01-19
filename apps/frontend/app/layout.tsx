@@ -1,11 +1,15 @@
 import "./globals.css";
 import { Inter } from "next/font/google";
+import { NotificationContainer } from "./components/NotificationContainer";
+import { PrivyProvider } from "./providers/PrivyProvider";
+import { ReactQueryProvider } from "./providers/ReactQueryProvider";
+import { ThemeProvider } from "./providers/ThemeProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "BrainPower",
-  description: "AI-powered chat interface",
+  title: "Brainpower",
+  description: "AI-powered learning platform",
 };
 
 export default function RootLayout({
@@ -14,8 +18,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className={inter.className}>{children}</body>
+    <html lang="en" suppressHydrationWarning>
+      <body className={inter.className}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <ReactQueryProvider>
+            <PrivyProvider>{children}</PrivyProvider>
+          </ReactQueryProvider>
+          <NotificationContainer />
+        </ThemeProvider>
+      </body>
     </html>
   );
 }

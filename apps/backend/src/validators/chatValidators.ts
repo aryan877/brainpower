@@ -1,55 +1,53 @@
-import { Request, Response, NextFunction } from "express";
+import { z } from "zod";
+import { validateRequest } from "./validateRequest.js";
 
-export function sendMessageValidator(
-  req: Request,
-  res: Response,
-  next: NextFunction
-) {
-  const { message, threadId } = req.body;
+const toolInvocationSchema = z.object({
+  toolCallId: z.string(),
+  toolName: z.string(),
+  args: z.record(z.unknown()),
+  result: z.unknown().optional(),
+  state: z.enum(["partial-call", "call", "result"]),
+});
 
-  if (!message || typeof message !== "string") {
-    return res
-      .status(400)
-      .json({ error: "Message is required and must be a string" });
-  }
+const messageSchema = z.object({
+  id: z.string(),
+  role: z.enum(["user", "assistant"]),
+  content: z.string(),
+  createdAt: z.string().optional(),
+  annotations: z.array(z.unknown()).optional().default([]),
+  isLoading: z.boolean().optional().default(false),
+  toolInvocations: z.array(toolInvocationSchema).optional().default([]),
+});
 
-  if (!threadId || typeof threadId !== "string") {
-    return res
-      .status(400)
-      .json({ error: "Thread ID is required and must be a string" });
-  }
+// Schema for sending a message
+export const validateSendMessage = validateRequest({
+  body: z.object({
+    messages: z.array(messageSchema),
+    threadId: z.string(),
+  }),
+});
 
-  next();
-}
+// Schema for saving all messages in a thread
+export const validateSaveAllMessages = validateRequest({
+  body: z.object({
+    messages: z.array(messageSchema),
+    threadId: z.string(),
+  }),
+});
 
-export function threadHistoryValidator(
-  req: Request,
-  res: Response,
-  next: NextFunction
-) {
-  const { threadId } = req.params;
+// Schema for getting thread history
+export const validateThreadHistory = validateRequest({
+  params: z.object({
+    threadId: z.string(),
+  }),
+});
 
-  if (!threadId || typeof threadId !== "string") {
-    return res
-      .status(400)
-      .json({ error: "Thread ID is required and must be a string" });
-  }
+// Schema for deleting a thread
+export const validateDeleteThread = validateRequest({
+  params: z.object({
+    threadId: z.string(),
+  }),
+});
 
-  next();
-}
-
-export function deleteThreadValidator(
-  req: Request,
-  res: Response,
-  next: NextFunction
-) {
-  const { threadId } = req.params;
-
-  if (!threadId || typeof threadId !== "string") {
-    return res
-      .status(400)
-      .json({ error: "Thread ID is required and must be a string" });
-  }
-
-  next();
-}
+export type Message = z.infer<typeof messageSchema>;
+export type ToolInvocation = z.infer<typeof toolInvocationSchema>;

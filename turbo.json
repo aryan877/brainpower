@@ -2,15 +2,20 @@
   "pipeline": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**", ".next/**"]
+      "outputs": ["dist/**", ".next/**", "!.next/cache/**"]
     },
     "dev": {
-      "dependsOn": [],
-      "outputs": []
+      "dependsOn": ["^build"],
+      "cache": false,
+      "persistent": true
     },
     "start": {
-      "dependsOn": [],
-      "outputs": []
+      "dependsOn": ["build"],
+      "outputs": [],
+      "cache": false
+    },
+    "clean": {
+      "cache": false
     }
   }
 }

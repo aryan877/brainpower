@@ -21,7 +21,7 @@ npm-debug.log*
 yarn-debug.log*
 pnpm-debug.log*
 .pnpm-debug.log*
-
+s
 # local env files
 .env
 .env.local
@@ -42,3 +42,7 @@ next-env.d.ts
 # IDE
 .idea
 .vscode
+
+# env files
+.env*
+!.env.example
