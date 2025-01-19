@@ -2,6 +2,7 @@
 
 import { usePrivy } from "@privy-io/react-auth";
 import { ReactNode } from "react";
+import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 
 export function AuthGuard({ children }: { children: ReactNode }) {
@@ -28,12 +29,12 @@ export function AuthGuard({ children }: { children: ReactNode }) {
           Connect with your wallet or email to get started with your AI-powered
           chat experience.
         </p>
-        <button
+        <Button
           onClick={login}
           className="px-6 py-3 gradient-button rounded-xl text-white font-medium hover:scale-105 transition-all duration-200"
         >
           Login to continue
-        </button>
+        </Button>
       </div>
     );
   }

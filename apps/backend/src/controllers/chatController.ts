@@ -1,7 +1,7 @@
 import { Response } from "express";
 import { ChatThread } from "../models/ChatThread.js";
 import { AuthenticatedRequest } from "../middleware/auth/index.js";
-import { NotFoundError, DatabaseError } from "../middleware/errors/types.js";
+import { NotFoundError } from "../middleware/errors/types.js";
 import { getUserCluster, getUserId } from "../utils/userIdentification.js";
 import { createSolanaTools } from "brainpower-agent";
 import { streamText, smoothStream } from "ai";
@@ -44,32 +44,26 @@ export const sendMessage = async (req: AuthenticatedRequest, res: Response) => {
   const cluster = getUserCluster(req);
   const { messages, threadId } = req.body;
 
-  const chatThread = await ChatThread.findOne({
-    threadId,
-    userId,
-    isActive: true,
-  });
-
-  if (!chatThread) {
-    throw new NotFoundError("Thread not found");
-  }
-
-  // Update title if first message
-  if (chatThread.messages.length === 0 && messages.length > 0) {
-    const firstMessage = messages[messages.length - 1];
-    if (firstMessage.role === "user") {
-      chatThread.title = firstMessage.content.slice(0, 100);
-      await chatThread.save();
-    }
-  }
-
-  // Set headers for streaming
-  res.setHeader("Content-Type", "text/event-stream");
-  res.setHeader("Cache-Control", "no-cache");
-  res.setHeader("Connection", "keep-alive");
-  res.flushHeaders();
-
   try {
+    const chatThread = await ChatThread.findOne({
+      threadId,
+      userId,
+      isActive: true,
+    });
+
+    if (!chatThread) {
+      return res.status(404).json({ error: "Thread not found" });
+    }
+
+    // Update title if first message
+    if (chatThread.messages.length === 1 && messages.length > 0) {
+      const firstMessage = messages[messages.length - 1];
+      if (firstMessage.role === "user") {
+        chatThread.title = firstMessage.content.slice(0, 100);
+        await chatThread.save();
+      }
+    }
+
     const agent = generateBrainpowerAgent({
       walletId: req.user?.walletAddress || "",
       cluster: cluster,
@@ -77,22 +71,14 @@ export const sendMessage = async (req: AuthenticatedRequest, res: Response) => {
 
     const tools = createSolanaTools(agent);
 
-    // Keep track of current message being built
-    let currentAssistantMessage = {
-      id: `msg_${nanoid()}`,
-      role: "assistant" as const,
-      content: "",
-      toolCalls: [],
-      toolResults: [],
-      createdAt: new Date(),
-      annotations: [],
-      isLoading: false,
-      toolInvocations: [],
-    };
+    // Set headers before any potential errors
+    res.setHeader("Content-Type", "text/event-stream");
+    res.setHeader("Cache-Control", "no-cache");
+    res.setHeader("Connection", "keep-alive");
 
     const result = streamText({
       model: openai("gpt-4o"),
-      messages, // messages from useChat already has full history
+      messages,
       experimental_toolCallStreaming: true,
       maxSteps: 5,
       system: assistantPrompt,
@@ -101,148 +87,38 @@ export const sendMessage = async (req: AuthenticatedRequest, res: Response) => {
         chunking: "word",
         delayInMs: 15,
       }),
-      // Save progress on each step
-      onStepFinish: async ({ text, toolCalls, toolResults }) => {
-        currentAssistantMessage.content = text;
-        if (toolCalls) {
-          currentAssistantMessage.toolInvocations = toolCalls.map((call) => ({
-            toolCallId: call.toolCallId,
-            toolName: call.toolName,
-            args: call.args,
-            state: "call",
-            result: undefined,
-          }));
-        }
-        if (toolResults) {
-          currentAssistantMessage.toolInvocations =
-            currentAssistantMessage.toolInvocations.map((call) => {
-              const result = toolResults.find(
-                (r) => r.toolCallId === call.toolCallId
-              );
-              return result
-                ? {
-                    ...call,
-                    result: result.result,
-                    state: "result",
-                  }
-                : call;
-            });
-        }
-
-        // Update the current message in the messages array
-        const messageIndex = messages.findIndex(
-          (m) => m.id === currentAssistantMessage.id
-        );
-        if (messageIndex !== -1) {
-          messages[messageIndex] = { ...currentAssistantMessage };
-        }
-
-        // Update the messages array with the current state
-        await ChatThread.findOneAndUpdate(
-          { threadId, userId, isActive: true },
-          { $set: { messages } },
-          { new: true }
-        );
-      },
-      // Final save on completion
-      onFinish: async ({ text, toolCalls, toolResults }) => {
-        currentAssistantMessage.content = text;
-        if (toolCalls) {
-          currentAssistantMessage.toolInvocations = toolCalls.map((call) => ({
-            toolCallId: call.toolCallId,
-            toolName: call.toolName,
-            args: call.args,
-            state: "call",
-            result: undefined,
-          }));
-        }
-        if (toolResults) {
-          currentAssistantMessage.toolInvocations =
-            currentAssistantMessage.toolInvocations.map((call) => {
-              const result = toolResults.find(
-                (r) => r.toolCallId === call.toolCallId
-              );
-              return result
-                ? {
-                    ...call,
-                    result: result.result,
-                    state: "result",
-                  }
-                : call;
-            });
-        }
-
-        // Update the current message in the messages array
-        const messageIndex = messages.findIndex(
-          (m) => m.id === currentAssistantMessage.id
-        );
-        if (messageIndex !== -1) {
-          messages[messageIndex] = { ...currentAssistantMessage };
-        }
-
-        // Save final state
-        await ChatThread.findOneAndUpdate(
-          { threadId, userId, isActive: true },
-          { $set: { messages } },
-          { new: true }
-        );
-      },
     });
 
-    // Add the assistant message to messages array
-    messages.push(currentAssistantMessage);
+    const streamResponse = result.toDataStreamResponse();
 
-    // Handle streaming events
-    for await (const event of result.fullStream) {
-      switch (event.type) {
-        case "text-delta":
-          res.write(`0:${JSON.stringify(event.textDelta)}\n`);
-          break;
-        case "tool-call":
-          res.write(
-            `9:${JSON.stringify({
-              toolCallId: event.toolCallId,
-              toolName: event.toolName,
-              args: event.args,
-            })}\n`
-          );
-          break;
-        case "tool-result":
-          res.write(
-            `a:${JSON.stringify({
-              toolCallId: event.toolCallId,
-              result: event.result,
-            })}\n`
-          );
-          break;
-        case "error":
-          res.write(
-            `e:${JSON.stringify({
-              finishReason: "error",
-              error: event.error,
-              isContinued: false,
-            })}\n`
-          );
-          break;
-      }
+    const stream = streamResponse.body;
+    if (!stream) {
+      throw new Error("No stream available");
     }
 
-    // Get final completion info
-    const [usage, finishReason] = await Promise.all([
-      result.usage,
-      result.finishReason,
-    ]);
-
-    // Send completion events
-    res.write(
-      `e:${JSON.stringify({ finishReason, usage, isContinued: false })}\n`
-    );
-    res.write(`d:${JSON.stringify({ finishReason, usage })}\n`);
+    const reader = stream.getReader();
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) {
+          res.end();
+          break;
+        }
+        res.write(value);
+      }
+    } catch (error) {
+      reader.releaseLock();
+      console.error("Stream error:", error);
+      res.end();
+    }
   } catch (error) {
-    console.error("Error in chat:", error);
-    throw new DatabaseError("Failed to process message", error);
-  } finally {
-    res.end();
+    if (!res.headersSent) {
+      if (error instanceof Error) {
+        res.status(500).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: "An unexpected error occurred" });
+      }
+    }
   }
 };
 
@@ -285,4 +161,32 @@ export const deleteThread = async (
   }
 
   res.json({ message: "Thread deleted successfully" });
+};
+
+export const saveAllMessages = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
+  const userId = getUserId(req);
+  const { messages, threadId } = req.body;
+
+  const chatThread = await ChatThread.findOne({
+    threadId,
+    userId,
+    isActive: true,
+  });
+
+  if (!chatThread) {
+    throw new NotFoundError("Thread not found");
+  }
+
+  // Replace all messages in the thread
+  chatThread.messages = messages;
+  await chatThread.save();
+
+  res.json({
+    success: true,
+    threadId,
+    messageCount: messages.length,
+  });
 };

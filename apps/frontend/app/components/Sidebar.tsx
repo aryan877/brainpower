@@ -98,8 +98,10 @@ export default function Sidebar({
               <li
                 key={thread.threadId}
                 onClick={() => onSelectThread(thread.threadId)}
-                className={`flex justify-between items-center p-3 cursor-pointer rounded-lg hover:bg-muted/50 transition-all duration-200 ${
-                  selectedThread === thread.threadId ? "bg-muted border" : ""
+                className={`flex justify-between items-center p-3 cursor-pointer rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-all duration-200 ${
+                  selectedThread === thread.threadId
+                    ? "bg-neutral-100 dark:bg-neutral-800 border"
+                    : ""
                 }`}
               >
                 <span className="truncate text-foreground font-medium text-sm md:text-base">
@@ -110,7 +112,7 @@ export default function Sidebar({
                     e.stopPropagation();
                     onDeleteClick(thread);
                   }}
-                  className="text-destructive hover:text-destructive/90 p-1.5 rounded-lg transition-all duration-200 hover:bg-destructive/10 flex-shrink-0"
+                  className="text-destructive hover:text-destructive/90 p-1.5 rounded-lg transition-all duration-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 flex-shrink-0"
                 >
                   <Trash2 className="w-5 h-5" />
                 </button>

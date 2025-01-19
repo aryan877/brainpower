@@ -24,8 +24,14 @@ export const validateSendMessage = validateRequest({
   body: z.object({
     messages: z.array(messageSchema),
     threadId: z.string(),
-    // model: z.string().optional(),
-    // modelName: z.string().optional(),
+  }),
+});
+
+// Schema for saving all messages in a thread
+export const validateSaveAllMessages = validateRequest({
+  body: z.object({
+    messages: z.array(messageSchema),
+    threadId: z.string(),
   }),
 });
 

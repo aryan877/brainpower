@@ -98,7 +98,7 @@ import {
   // withdrawFromDriftVault,
   // updateVaultDelegate,
   // get_token_balance,
-} from "../tools";
+} from "../tools/index.js";
 import {
   Config,
   // TokenCheck,
@@ -113,7 +113,7 @@ import {
   // HeliusWebhookIdResponse,
   // HeliusWebhookResponse,
   // PrivyWallet,
-} from "../types";
+} from "../types/index.js";
 import { PrivyClient } from "@privy-io/server-auth";
 import { SolanaCaip2ChainId } from "@privy-io/server-auth";
 

@@ -1,4 +1,4 @@
-import { Action } from "../../types/action";
+import { Action } from "../../types/action.js";
 // import { BrainPowerAgent } from "../../agent";
 import { z } from "zod";
 // import { launchPumpFunToken } from "../../tools";

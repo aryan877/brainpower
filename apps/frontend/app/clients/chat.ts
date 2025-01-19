@@ -1,22 +1,25 @@
 import api from "../lib/axios";
 import {
-  SendMessageResponse,
   GetThreadsResponse,
   GetThreadHistoryResponse,
   CreateThreadResponse,
   DeleteThreadResponse,
+  SaveAllMessagesResponse,
 } from "../types/api/chat";
 import { Message, ThreadPreview } from "../types/models/chat";
 
 export const chatClient = {
-  sendMessage: async (
-    message: string,
+  saveAllMessages: async (
+    messages: Message[],
     threadId: string
-  ): Promise<SendMessageResponse> => {
-    const { data } = await api.post<SendMessageResponse>("/api/chat/message", {
-      message,
-      threadId,
-    });
+  ): Promise<SaveAllMessagesResponse> => {
+    const { data } = await api.post<SaveAllMessagesResponse>(
+      "/api/chat/save-all-messages",
+      {
+        messages,
+        threadId,
+      }
+    );
     return data;
   },
 

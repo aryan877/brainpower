@@ -70,7 +70,7 @@ export function WalletInfo({
         {user && (
           <button
             onClick={onLogoutClick}
-            className="flex items-center gap-1 px-2 py-1 text-xs rounded-lg hover:bg-muted/50 text-destructive hover:text-destructive/90 transition-colors"
+            className="flex items-center gap-1 px-2 py-1 text-xs rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 text-destructive hover:text-destructive/90 transition-colors"
             title="Logout"
           >
             <LogOut className="h-3 w-3" />
@@ -95,11 +95,11 @@ export function WalletInfo({
       {wallet ? (
         <div className="space-y-2">
           <div className="text-xs text-muted-foreground break-all">
-            <div className="bg-muted/50 p-2 rounded-lg flex items-center justify-between gap-2">
+            <div className="bg-neutral-100 dark:bg-neutral-800 p-2 rounded-lg flex items-center justify-between gap-2">
               <span>{walletAddress}</span>
               <button
                 onClick={copyAddress}
-                className="p-1 hover:bg-muted rounded-md transition-colors relative"
+                className="p-1 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-md transition-colors relative"
                 title="Copy address"
               >
                 <Copy className="h-3 w-3" />
@@ -113,7 +113,7 @@ export function WalletInfo({
           </div>
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span>Status:</span>
-            <span className="px-2 py-1 bg-muted/50 rounded-md flex items-center gap-1">
+            <span className="px-2 py-1 bg-neutral-100 dark:bg-neutral-800 rounded-md flex items-center gap-1">
               <span className="h-1.5 w-1.5 rounded-full bg-green-500"></span>
               Connected
             </span>
@@ -121,7 +121,7 @@ export function WalletInfo({
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span>Balance:</span>
             <div className="flex items-center gap-2">
-              <span className="px-2 py-1 bg-muted/50 rounded-md">
+              <span className="px-2 py-1 bg-neutral-100 dark:bg-neutral-800 rounded-md">
                 {isLoadingBalance
                   ? "Loading..."
                   : `${balance?.toFixed(4) || "0"} SOL`}
@@ -129,7 +129,7 @@ export function WalletInfo({
               <button
                 onClick={refreshBalance}
                 disabled={isLoadingBalance || isRefetchingBalance}
-                className="p-1.5 hover:bg-muted rounded-md transition-colors disabled:opacity-50"
+                className="p-1.5 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-md transition-colors disabled:opacity-50"
                 title="Refresh balance"
               >
                 <RefreshCw
@@ -142,7 +142,7 @@ export function WalletInfo({
               </button>
               <button
                 onClick={onWithdrawClick}
-                className="p-1.5 hover:bg-muted rounded-md transition-colors"
+                className="p-1.5 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-md transition-colors"
                 title="Withdraw"
               >
                 <Send className="h-3.5 w-3.5" />
@@ -151,7 +151,7 @@ export function WalletInfo({
           </div>
         </div>
       ) : (
-        <div className="text-xs text-muted-foreground bg-muted/50 p-3 rounded-lg">
+        <div className="text-xs text-muted-foreground bg-neutral-100 dark:bg-neutral-800 p-3 rounded-lg">
           {isCreating ? (
             <div className="flex items-center justify-center gap-2">
               <div className="animate-spin rounded-full h-3 w-3 border-b border-primary" />

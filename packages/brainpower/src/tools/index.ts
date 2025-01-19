@@ -1,5 +1,5 @@
 // export * from "./sns";
-export * from "./dexscreener";
+export * from "./dexscreener/index.js";
 // export * from "./alldomains";
 // export * from "./gibwork";
 // export * from "./jupiter";
@@ -10,7 +10,7 @@ export * from "./dexscreener";
 // export * from "./metaplex";
 // export * from "./openbook";
 // export * from "./orca";
-export * from "./pumpfun";
+export * from "./pumpfun/index.js";
 // export * from "./pyth";
 // export * from "./raydium";
 // export * from "./rugcheck";

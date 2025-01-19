@@ -50,6 +50,25 @@ app.use(cookieParser());
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
+// Health check endpoint
+app.get("/health", (req, res) => {
+  const healthcheck = {
+    status: "ok",
+    timestamp: new Date(),
+    uptime: process.uptime(),
+    mongoConnection:
+      mongoose.connection.readyState === 1 ? "connected" : "disconnected",
+    environment: process.env.NODE_ENV,
+  };
+
+  try {
+    res.status(200).json(healthcheck);
+  } catch (error) {
+    healthcheck.status = "error";
+    res.status(503).json(healthcheck);
+  }
+});
+
 // Initialize OpenAI client
 
 // Setup routes
@@ -71,11 +90,16 @@ export const initializeRoutes = async () => {
 // Database connection
 export const connectDB = async () => {
   const MONGODB_URI =
-    process.env.MONGODB_URI || "mongodb://localhost:27017/solana-ai-chat";
+    process.env.NODE_ENV === "production"
+      ? process.env.MONGODB_PROD_URI
+      : process.env.MONGODB_TEST_URI ||
+        "mongodb://localhost:27017/solana-ai-chat";
 
   try {
     await mongoose.connect(MONGODB_URI);
-    console.log("📦 Connected to MongoDB");
+    console.log(
+      `📦 Connected to MongoDB (${process.env.NODE_ENV} environment)`
+    );
   } catch (error) {
     console.error("MongoDB connection error:", error);
     throw error;

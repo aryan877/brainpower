@@ -3,6 +3,7 @@ import { useClusterStore } from "../store/clusterStore";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { walletClient } from "../clients/wallet";
 import { ChainType } from "../types/api/wallet";
+import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 
 export const walletKeys = {
   all: ["wallets"] as const,
@@ -38,7 +39,9 @@ export function useWalletBalance(
     queryFn: async () => {
       if (!walletAddress) throw new Error("No wallet address");
       const response = await walletClient.getBalance(walletAddress, cluster);
-      return response;
+      return {
+        balance: response.balance / LAMPORTS_PER_SOL,
+      };
     },
     enabled: !!walletAddress && !!cluster,
   });

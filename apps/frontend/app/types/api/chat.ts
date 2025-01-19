@@ -1,10 +1,5 @@
 import { Message, ThreadPreview } from "../models/chat";
 
-export interface SendMessageResponse {
-  message: string;
-  threadId: string;
-}
-
 export interface CreateThreadResponse {
   threadId: string;
   createdAt: string;
@@ -25,19 +20,8 @@ export interface DeleteThreadResponse {
   message: string;
 }
 
-export interface ToolInvocation {
-  toolCallId: string;
-  toolName: string;
-  args: Record<string, unknown>;
-  result?: unknown;
-  state: "partial-call" | "call" | "result";
-}
-
-export interface ChatMessage {
-  id?: string;
-  role: "user" | "assistant";
-  content: string;
-  createdAt?: string;
-  isLoading?: boolean;
-  toolInvocations?: ToolInvocation[];
+export interface SaveAllMessagesResponse {
+  success: boolean;
+  threadId: string;
+  messageCount: number;
 }

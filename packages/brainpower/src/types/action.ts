@@ -1,4 +1,4 @@
-import { BrainPowerAgent } from "../agent";
+import { BrainPowerAgent } from "../agent/index.js";
 import { z } from "zod";
 
 /**

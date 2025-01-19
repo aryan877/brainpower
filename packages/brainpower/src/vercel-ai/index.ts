@@ -1,7 +1,7 @@
 import { tool, type CoreTool } from "ai";
-import { BrainPowerAgent } from "../agent";
-import { executeAction } from "../utils/actionExecutor";
-import { ACTIONS } from "../actions";
+import { BrainPowerAgent } from "../agent/index.js";
+import { executeAction } from "../utils/actionExecutor.js";
+import { ACTIONS } from "../actions/index.js";
 
 export function createSolanaTools(
   BrainPowerAgent: BrainPowerAgent,

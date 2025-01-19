@@ -1,5 +1,5 @@
 import { PublicKey } from "@solana/web3.js";
-import { BrainPowerAgent } from "../agent";
+import { BrainPowerAgent } from "../agent/index.js";
 import { z } from "zod";
 
 export interface Config {

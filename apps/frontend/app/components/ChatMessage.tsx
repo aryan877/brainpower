@@ -10,6 +10,11 @@ interface ChatMessageProps {
 }
 
 export default function ChatMessage({ message }: ChatMessageProps) {
+  // Return null for empty messages
+  if (!message.content?.trim()) {
+    return null;
+  }
+
   return (
     <div className="flex w-full max-w-3xl mx-auto py-2">
       <div
@@ -56,7 +61,7 @@ export default function ChatMessage({ message }: ChatMessageProps) {
                           key={nanoid()}
                           className="relative group/code mt-2 mb-1"
                         >
-                          <div className="absolute -top-4 left-0 right-0 h-6 bg-muted rounded-t-lg flex items-center px-4">
+                          <div className="absolute -top-4 left-0 right-0 h-6 bg-neutral-100 dark:bg-neutral-800 rounded-t-lg flex items-center px-4">
                             <span className="text-xs text-muted-foreground">
                               {match[1].toUpperCase()}
                             </span>
@@ -76,7 +81,7 @@ export default function ChatMessage({ message }: ChatMessageProps) {
                                 String(children).replace(/\n$/, "")
                               )
                             }
-                            className="absolute top-2 right-2 p-1.5 rounded-lg bg-muted text-muted-foreground opacity-0 group-hover/code:opacity-100 transition-opacity hover:text-foreground"
+                            className="absolute top-2 right-2 p-1.5 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-muted-foreground opacity-0 group-hover/code:opacity-100 transition-opacity hover:text-foreground"
                           >
                             Copy
                           </button>
@@ -87,7 +92,7 @@ export default function ChatMessage({ message }: ChatMessageProps) {
                           {...props}
                           className={`px-1.5 py-0.5 rounded text-[15px] break-all ${
                             message.role === "assistant"
-                              ? "bg-muted/50"
+                              ? "bg-neutral-100 dark:bg-neutral-800"
                               : "bg-primary-foreground/20"
                           }`}
                         >

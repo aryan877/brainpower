@@ -4,7 +4,7 @@ import { useChat } from "ai/react";
 import { useEffect, useRef } from "react";
 import { AlertCircle, RefreshCcw, Square, ArrowUpCircle } from "lucide-react";
 import { useClusterStore } from "../store/clusterStore";
-import { useThreadMessages } from "../hooks/chat";
+import { useThreadMessages, useSaveAllMessages } from "../hooks/chat";
 import ChatMessage from "./ChatMessage";
 import { nanoid } from "nanoid";
 
@@ -15,6 +15,7 @@ interface ChatInterfaceProps {
 export default function ChatInterface({ threadId }: ChatInterfaceProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { data: initialMessages = [] } = useThreadMessages(threadId);
+  const { mutate: saveAllMessages } = useSaveAllMessages();
 
   const {
     messages,
@@ -41,6 +42,13 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
     sendExtraMessageFields: true,
   });
 
+  // Save messages when they change and not loading
+  useEffect(() => {
+    if (!isLoading && threadId && messages.length > 0) {
+      saveAllMessages({ messages, threadId });
+    }
+  }, [messages, isLoading, threadId, saveAllMessages]);
+
   // Auto scroll to bottom on new messages
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -65,16 +73,18 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
     <div className="flex flex-col h-full">
       {/* Messages container */}
       <div className="flex-1 overflow-y-auto space-y-1 scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent hover:scrollbar-thumb-muted/80">
-        {messages.map((message) => (
-          <ChatMessage key={message.id} message={message} />
-        ))}
+        {messages
+          .filter((message) => message.content?.trim())
+          .map((message) => (
+            <ChatMessage key={message.id} message={message} />
+          ))}
         <div ref={messagesEndRef} />
       </div>
 
       {/* Error display */}
       {error && (
         <div className="mx-auto w-full max-w-3xl px-4 py-2">
-          <div className="flex items-center space-x-3 rounded-lg border border-destructive/20 bg-destructive/10 p-3">
+          <div className="flex items-center space-x-3 rounded-lg border border-destructive/20 bg-neutral-100 dark:bg-neutral-800 p-3">
             <AlertCircle className="h-5 w-5 text-destructive" />
             <p className="flex-1 text-[15px] text-foreground">
               {error.message}

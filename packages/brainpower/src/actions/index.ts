@@ -27,8 +27,8 @@
 // import raydiumCreateCpmmAction from "./raydium/raydiumCreateCpmm";
 // import raydiumCreateAmmV4Action from "./raydium/raydiumCreateAmmV4";
 // import createOrcaSingleSidedWhirlpoolAction from "./orca/createOrcaSingleSidedWhirlpool";
-import launchPumpfunTokenAction from "./pumpfun/launchPumpfunToken";
-import tokenDataByTickerAction from "./dexscreener/tokenDataByTicker";
+import launchPumpfunTokenAction from "./pumpfun/launchPumpfunToken.js";
+import tokenDataByTickerAction from "./dexscreener/tokenDataByTicker.js";
 // import getWalletAddressAction from "./agent/getWalletAddress";
 // import flashOpenTradeAction from "./flash/flashOpenTrade";
 // import flashCloseTradeAction from "./flash/flashCloseTrade";
@@ -127,4 +127,4 @@ export const ACTIONS = {
   // UPDATE_DRIFT_VAULT_DELEGATE_ACTION: updateDriftVaultDelegateAction,
 };
 
-export type { Action, ActionExample, Handler } from "../types/action";
+export type { Action, ActionExample, Handler } from "../types/action.js";

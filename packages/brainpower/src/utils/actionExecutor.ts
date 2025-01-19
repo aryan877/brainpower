@@ -1,6 +1,6 @@
-import { Action } from "../types/action";
-import { BrainPowerAgent } from "../agent";
-import { ACTIONS } from "../actions";
+import { Action } from "../types/action.js";
+import { BrainPowerAgent } from "../agent/index.js";
+import { ACTIONS } from "../actions/index.js";
 
 /**
  * Find an action by its name or one of its similes
@@ -10,7 +10,9 @@ export function findAction(query: string): Action | undefined {
   return Object.values(ACTIONS).find(
     (action) =>
       action.name.toLowerCase() === normalizedQuery ||
-      action.similes.some((simile) => simile.toLowerCase() === normalizedQuery),
+      action.similes.some(
+        (simile: any) => simile.toLowerCase() === normalizedQuery,
+      ),
   );
 }
 

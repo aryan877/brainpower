@@ -8,11 +8,13 @@ import {
   sendMessage,
   getThreadHistory,
   deleteThread,
+  saveAllMessages,
 } from "../controllers/chatController.js";
 import {
   validateSendMessage,
   validateThreadHistory,
   validateDeleteThread,
+  validateSaveAllMessages,
 } from "../validators/chatValidators.js";
 import { asyncHandler } from "../middleware/errors/asyncHandler.js";
 
@@ -33,6 +35,12 @@ export function setupChatRoutes(router: Router): Router {
     asyncHandler(async (req, res) => {
       await sendMessage(req, res);
     })
+  );
+
+  router.post(
+    "/save-all-messages",
+    validateSaveAllMessages,
+    asyncHandler(saveAllMessages)
   );
 
   router.get(

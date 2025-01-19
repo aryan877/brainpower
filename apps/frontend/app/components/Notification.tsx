@@ -22,31 +22,35 @@ interface NotificationProps {
 }
 
 const icons = {
-  success: <CheckCircle className="h-5 w-5 text-green-400" />,
-  error: <XCircle className="h-5 w-5 text-red-400" />,
-  warning: <AlertTriangle className="h-5 w-5 text-yellow-400" />,
-  info: <AlertCircle className="h-5 w-5 text-blue-400" />,
+  success: (
+    <CheckCircle className="h-5 w-5 text-green-500 dark:text-green-400" />
+  ),
+  error: <XCircle className="h-5 w-5 text-red-500 dark:text-red-400" />,
+  warning: (
+    <AlertTriangle className="h-5 w-5 text-yellow-500 dark:text-yellow-400" />
+  ),
+  info: <AlertCircle className="h-5 w-5 text-blue-500 dark:text-blue-400" />,
 };
 
 const bgColors = {
-  success: "bg-green-950/50",
-  error: "bg-red-950/50",
-  warning: "bg-yellow-950/50",
-  info: "bg-blue-950/50",
+  success: "bg-green-50 dark:bg-green-950/50",
+  error: "bg-red-50 dark:bg-red-950/50",
+  warning: "bg-yellow-50 dark:bg-yellow-950/50",
+  info: "bg-blue-50 dark:bg-blue-950/50",
 };
 
 const borderColors = {
-  success: "border-green-500/20",
-  error: "border-red-500/20",
-  warning: "border-yellow-500/20",
-  info: "border-blue-500/20",
+  success: "border-green-200 dark:border-green-500/20",
+  error: "border-red-200 dark:border-red-500/20",
+  warning: "border-yellow-200 dark:border-yellow-500/20",
+  info: "border-blue-200 dark:border-blue-500/20",
 };
 
 const textColors = {
-  success: "text-green-400",
-  error: "text-red-400",
-  warning: "text-yellow-400",
-  info: "text-blue-400",
+  success: "text-green-700 dark:text-green-400",
+  error: "text-red-700 dark:text-red-400",
+  warning: "text-yellow-700 dark:text-yellow-400",
+  info: "text-blue-700 dark:text-blue-400",
 };
 
 const formatDetails = (details: unknown): string => {
@@ -102,20 +106,20 @@ export const Notification = ({
       }`}
     >
       <div
-        className={`flex items-start gap-3 p-3 rounded-lg border backdrop-blur-sm ${bgColors[type]} ${borderColors[type]} shadow-lg shadow-black/10`}
+        className={`flex items-start gap-3 p-3 rounded-lg border backdrop-blur-sm ${bgColors[type]} ${borderColors[type]} shadow-lg shadow-black/5 dark:shadow-black/10`}
       >
         <div className="flex-shrink-0 mt-1">{icons[type]}</div>
         <div className="flex-1 mr-2">
           <p className={`text-sm font-medium ${textColors[type]}`}>{message}</p>
           {formattedDetails && (
-            <pre className="mt-2 text-xs text-gray-400 whitespace-pre-wrap font-mono bg-black/20 p-2 rounded">
+            <pre className="mt-2 text-xs text-gray-600 dark:text-gray-400 whitespace-pre-wrap font-mono bg-black/5 dark:bg-black/20 p-2 rounded">
               {formattedDetails}
             </pre>
           )}
         </div>
         <button
           onClick={onClose}
-          className="text-gray-400 hover:text-gray-300 transition-colors duration-150"
+          className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 transition-colors duration-150"
         >
           <X className="h-4 w-4" />
         </button>

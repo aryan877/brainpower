@@ -1,7 +1,7 @@
-import { Action } from "../../types/action";
-import { BrainPowerAgent } from "../../agent";
+import { Action } from "../../types/action.js";
+import { BrainPowerAgent } from "../../agent/index.js";
 import { z } from "zod";
-import { getTokenDataByTicker } from "../../tools/dexscreener";
+import { getTokenDataByTicker } from "../../tools/dexscreener/index.js";
 
 const tokenDataByTickerAction: Action = {
   name: "GET_TOKEN_DATA_BY_TICKER",
