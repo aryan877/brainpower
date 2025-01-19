@@ -33,8 +33,6 @@ export function WalletInfo({
 
   if (!ready) return null;
 
-  console.log(isLoadingBalance);
-
   const copyAddress = async () => {
     if (walletAddress) {
       await navigator.clipboard.writeText(walletAddress);
