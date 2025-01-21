@@ -3,7 +3,7 @@ import { ChatThread } from "../models/ChatThread.js";
 import { AuthenticatedRequest } from "../middleware/auth/index.js";
 import { NotFoundError } from "../middleware/errors/types.js";
 import { getUserCluster, getUserId } from "../utils/userIdentification.js";
-import { createSolanaTools } from "brainpower-agent";
+import { createSolanaTools } from "@repo/brainpower-agent";
 import { streamText, smoothStream } from "ai";
 import { generateBrainpowerAgent } from "../utils/generateBrainpowerAgent.js";
 import { assistantPrompt } from "../const/prompt.js";

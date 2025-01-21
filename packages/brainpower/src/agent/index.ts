@@ -145,8 +145,15 @@ export class BrainPowerAgent {
     );
 
     // Handle both old and new patterns
-    if (typeof configOrKey === "string" || configOrKey === null) {
-      this.config = { OPENAI_API_KEY: configOrKey || "" };
+    if (configOrKey === null) {
+      throw new Error("Config is required");
+    }
+
+    if (typeof configOrKey === "string") {
+      if (!configOrKey) {
+        throw new Error("OPENAI_API_KEY is required if passing string config");
+      }
+      this.config = { OPENAI_API_KEY: configOrKey };
     } else {
       this.config = configOrKey;
     }

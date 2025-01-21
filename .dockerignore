@@ -1,0 +1,10 @@
+node_modules
+.turbo
+.next
+.git
+.DS_Store
+
+.env
+.env.*
+
+**/dist

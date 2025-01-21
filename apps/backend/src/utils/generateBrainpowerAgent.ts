@@ -1,4 +1,4 @@
-import { BrainPowerAgent } from "brainpower-agent";
+import { BrainPowerAgent } from "@repo/brainpower-agent";
 import { privyClient } from "../lib/privyClient.js";
 import { SOLANA_CAIP2 } from "../middleware/auth/cluster.js";
 import { config } from "dotenv";

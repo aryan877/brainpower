@@ -11,7 +11,7 @@ import {
 
 export type NotificationType = "success" | "error" | "info" | "warning";
 
-interface NotificationProps {
+export interface NotificationProps {
   type: NotificationType;
   message: string;
   details?: unknown;
