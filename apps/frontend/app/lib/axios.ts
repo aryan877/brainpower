@@ -8,7 +8,10 @@ import { useClusterStore } from "../store/clusterStore";
 import { ErrorResponse } from "../types";
 
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_BACKEND_URL,
+  baseURL:
+    process.env.NODE_ENV === "production"
+      ? process.env.NEXT_PUBLIC_PROD_BACKEND_URL
+      : process.env.NEXT_PUBLIC_LOCAL_BACKEND_URL,
   headers: {
     "Content-Type": "application/json",
   },

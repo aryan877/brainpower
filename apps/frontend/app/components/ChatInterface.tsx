@@ -27,7 +27,11 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
     reload,
     stop,
   } = useChat({
-    api: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/chat/message`,
+    api: `${
+      process.env.NODE_ENV === "production"
+        ? process.env.NEXT_PUBLIC_PROD_BACKEND_URL
+        : process.env.NEXT_PUBLIC_LOCAL_BACKEND_URL
+    }/api/chat/message`,
     id: threadId || undefined,
     credentials: "include",
     headers: {
