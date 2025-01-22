@@ -57,7 +57,6 @@ COPY --from=pruner --chown=nodeapp:nodeapp /app/out/full/ .
 # Build all packages
 RUN pnpm turbo run build --filter=brainpower-backend
 
-ENV NODE_ENV=production
 EXPOSE 5000
 
 # Simple healthcheck
