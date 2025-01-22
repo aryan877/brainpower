@@ -16,7 +16,6 @@ const httpServer = createServer(app);
 
 // Security middleware
 app.use(helmet());
-
 // CORS configuration
 app.use(
   cors({

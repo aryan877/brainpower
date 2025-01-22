@@ -11,6 +11,9 @@ services:
       - ./apps/backend/.env
     environment:
       - NODE_ENV=production
+      - PORT=5000
+    volumes:
+      - ./apps/backend/.env:/app/apps/backend/.env:ro
     restart: unless-stopped
     networks:
       - app_network
