@@ -8,8 +8,9 @@ import { ThemeProvider } from "./providers/ThemeProvider";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "Brainpower",
-  description: "AI-powered learning platform",
+  title: "BrainPower",
+  description:
+    "An AI-powered blockchain agent that can interact with the Solana blockchain",
 };
 
 export default function RootLayout({
