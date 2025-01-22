@@ -4,6 +4,7 @@ import { NotificationContainer } from "./components/NotificationContainer";
 import { PrivyProvider } from "./providers/PrivyProvider";
 import { ReactQueryProvider } from "./providers/ReactQueryProvider";
 import { ThemeProvider } from "./providers/ThemeProvider";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -27,9 +28,11 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <ReactQueryProvider>
-            <PrivyProvider>{children}</PrivyProvider>
-          </ReactQueryProvider>
+          <TooltipProvider>
+            <ReactQueryProvider>
+              <PrivyProvider>{children}</PrivyProvider>
+            </ReactQueryProvider>
+          </TooltipProvider>
           <NotificationContainer />
         </ThemeProvider>
       </body>

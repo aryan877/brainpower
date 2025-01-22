@@ -10,29 +10,24 @@ export function AuthGuard({ children }: { children: ReactNode }) {
 
   if (!ready) {
     return (
-      <div className="h-screen w-screen flex flex-col items-center justify-center gap-4 bg-[var(--background)]">
-        <Loader2 className="h-8 w-8 animate-spin text-[var(--primary)]" />
-        <p className="text-[var(--text-secondary)]">
-          Loading authentication...
-        </p>
+      <div className="h-screen w-screen flex flex-col items-center justify-center gap-4 bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="text-muted-foreground">Loading authentication...</p>
       </div>
     );
   }
 
   if (!authenticated) {
     return (
-      <div className="h-screen w-screen flex flex-col items-center justify-center gap-6 bg-[var(--background)]">
-        <h1 className="text-3xl font-bold text-[var(--text-primary)]">
+      <div className="h-screen w-screen flex flex-col items-center justify-center gap-6 bg-background">
+        <h1 className="text-3xl font-bold text-foreground">
           Welcome to BrainPower
         </h1>
-        <p className="text-[var(--text-secondary)] max-w-md text-center">
+        <p className="text-muted-foreground max-w-md text-center">
           Connect with your wallet or email to get started with your AI-powered
           chat experience.
         </p>
-        <Button
-          onClick={login}
-          className="px-6 py-3 gradient-button rounded-xl text-white font-medium hover:scale-105 transition-all duration-200"
-        >
+        <Button onClick={login} size="lg" className="font-medium">
           Login to continue
         </Button>
       </div>

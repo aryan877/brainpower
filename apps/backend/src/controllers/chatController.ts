@@ -71,11 +71,6 @@ export const sendMessage = async (req: AuthenticatedRequest, res: Response) => {
 
     const tools = createSolanaTools(agent);
 
-    // Set headers before any potential errors
-    res.setHeader("Content-Type", "text/event-stream");
-    res.setHeader("Cache-Control", "no-cache");
-    res.setHeader("Connection", "keep-alive");
-
     const result = streamText({
       model: openai("gpt-4o"),
       messages,

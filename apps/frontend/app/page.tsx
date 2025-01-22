@@ -24,7 +24,10 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "../components/ui/dialog";
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 function HomeContent() {
   const router = useRouter();
@@ -161,12 +164,10 @@ function HomeContent() {
     showConfirmDialog({
       title: "Delete Chat",
       content: (
-        <p className="text-[var(--text-secondary)] text-sm md:text-base">
+        <p className="text-muted-foreground">
           Are you sure you want to delete{" "}
-          <span className="text-[var(--text-primary)]">
-            {formatThreadName(thread)}
-          </span>
-          ? This action cannot be undone.
+          <span className="text-foreground">{formatThreadName(thread)}</span>?
+          This action cannot be undone.
         </p>
       ),
       onConfirm: async () => {
@@ -191,7 +192,7 @@ function HomeContent() {
     showConfirmDialog({
       title: "Confirm Logout",
       content: (
-        <div className="text-[var(--text-secondary)]">
+        <div className="text-muted-foreground">
           <p>Are you sure you want to log out?</p>
           {user?.wallet && (
             <p className="mt-2 text-sm">
@@ -327,23 +328,20 @@ function HomeContent() {
           </DialogHeader>
           <div className="py-4">{confirmDialogConfig?.content}</div>
           <DialogFooter>
-            <button
-              onClick={handleConfirmDialogClose}
-              className="px-4 py-2 rounded-xl border text-foreground hover:bg-muted/50 transition-all duration-200"
-            >
+            <Button variant="outline" onClick={handleConfirmDialogClose}>
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="destructive"
               onClick={async () => {
                 if (confirmDialogConfig) {
                   await confirmDialogConfig.onConfirm();
                   handleConfirmDialogClose();
                 }
               }}
-              className="px-4 py-2 rounded-xl bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-all duration-200"
             >
               Confirm
-            </button>
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -358,30 +356,26 @@ function HomeContent() {
             <DialogTitle>Withdraw SOL</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1">
-                Amount (SOL)
-              </label>
-              <input
+            <div className="space-y-2">
+              <Label htmlFor="amount">Amount (SOL)</Label>
+              <Input
+                id="amount"
                 type="number"
                 value={withdrawAmount}
                 onChange={(e) => setWithdrawAmount(e.target.value)}
                 placeholder="0.0"
-                className="w-full px-3 py-2 bg-background border rounded-lg text-foreground placeholder-muted-foreground"
                 step="0.000001"
                 min="0"
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1">
-                Recipient Address
-              </label>
-              <input
+            <div className="space-y-2">
+              <Label htmlFor="recipient">Recipient Address</Label>
+              <Input
+                id="recipient"
                 type="text"
                 value={recipientAddress}
                 onChange={(e) => setRecipientAddress(e.target.value)}
                 placeholder="Solana address"
-                className="w-full px-3 py-2 bg-background border rounded-lg text-foreground placeholder-muted-foreground"
               />
             </div>
             {withdrawError && (
@@ -394,37 +388,37 @@ function HomeContent() {
                   ? "Loading..."
                   : `${balance?.toFixed(6) || "0"} SOL`}
               </p>
-              <button
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={handleRefreshBalance}
                 disabled={isLoadingBalance || isRefetchingBalance}
-                className="p-1.5 hover:bg-muted/50 rounded-md transition-colors disabled:opacity-50"
                 title="Refresh balance"
               >
                 <RefreshCw
-                  className={`h-3.5 w-3.5 ${
+                  className={`h-4 w-4 ${
                     isLoadingBalance || isRefetchingBalance
                       ? "animate-spin"
                       : ""
                   }`}
                 />
-              </button>
+              </Button>
             </div>
           </div>
           <DialogFooter>
-            <button
+            <Button
+              variant="outline"
               onClick={closeWithdrawDialog}
-              className="px-4 py-2 rounded-xl border text-foreground hover:bg-muted/50 transition-all duration-200"
               disabled={isWithdrawing}
             >
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={handleWithdraw}
-              className="px-4 py-2 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-200 disabled:opacity-50"
               disabled={isWithdrawing || !withdrawAmount || !recipientAddress}
             >
               {isWithdrawing ? "Processing..." : "Withdraw"}
-            </button>
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -458,17 +452,17 @@ function HomeContent() {
       {/* Main content */}
       <main className="flex-1 relative h-full">
         {/* Header with burger menu */}
-        <header className="absolute top-0 left-0 right-0 h-12 bg-background border-b flex items-center px-4 z-10">
+        <header className="absolute top-0 left-0 right-0 h-12 bg-background border-b dark:border-neutral-800 flex items-center px-4 z-10">
           <div className="flex items-center gap-4">
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={toggleSidebar}
-              className="p-1 hover:bg-muted/50 rounded-lg md:hidden"
+              className="md:hidden"
             >
-              <Menu className="h-5 w-5 text-foreground" />
-            </button>
-            <h1 className="text-lg font-medium text-foreground">
-              BrainPower 🧠⚡
-            </h1>
+              <Menu className="h-5 w-5" />
+            </Button>
+            <h1 className="text-lg font-medium">BrainPower 🧠⚡</h1>
           </div>
         </header>
 

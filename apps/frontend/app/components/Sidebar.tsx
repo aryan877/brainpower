@@ -6,6 +6,7 @@ import { useSolanaWallets } from "@privy-io/react-auth/solana";
 import { usePrivy } from "@privy-io/react-auth";
 import { useStoreWallet } from "../hooks/wallet";
 import { ThemeToggle } from "./ThemeToggle";
+import { Button } from "@/components/ui/button";
 
 export interface SidebarProps {
   threads: ThreadPreview[];
@@ -57,29 +58,33 @@ export default function Sidebar({
   };
 
   return (
-    <aside className="flex flex-col h-full bg-background border-r">
+    <aside className="flex flex-col h-full bg-background border-r dark:border-neutral-800">
       <div className="p-4">
         <div className="flex items-center gap-2 mb-4">
-          <button
+          <Button
             onClick={onCreateThread}
             disabled={isLoading}
-            className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg py-3 font-medium disabled:opacity-50 text-sm"
+            className="flex-1"
+            variant="default"
+            size="default"
           >
             {isLoading ? "Creating..." : "New Chat"}
-          </button>
+          </Button>
           <ThemeToggle />
         </div>
 
         {!user?.wallet && (
-          <button
+          <Button
             onClick={handleCreateSolanaWallet}
             disabled={isCreatingWallet}
-            className="w-full bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg py-2 font-medium disabled:opacity-50 text-sm"
+            className="w-full"
+            variant="default"
+            size="default"
           >
             {isCreatingWallet
               ? "Creating Solana Wallet..."
               : "Create Solana Wallet"}
-          </button>
+          </Button>
         )}
       </div>
 
@@ -98,24 +103,24 @@ export default function Sidebar({
               <li
                 key={thread.threadId}
                 onClick={() => onSelectThread(thread.threadId)}
-                className={`flex justify-between items-center p-3 cursor-pointer rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-all duration-200 ${
-                  selectedThread === thread.threadId
-                    ? "bg-neutral-100 dark:bg-neutral-800 border"
-                    : ""
+                className={`flex justify-between items-center p-3 cursor-pointer rounded-lg hover:bg-muted transition-all duration-200 ${
+                  selectedThread === thread.threadId ? "bg-muted" : ""
                 }`}
               >
                 <span className="truncate text-foreground font-medium text-sm md:text-base">
                   {formatThreadName(thread)}
                 </span>
-                <button
+                <Button
                   onClick={(e) => {
                     e.stopPropagation();
                     onDeleteClick(thread);
                   }}
-                  className="text-destructive hover:text-destructive/90 p-1.5 rounded-lg transition-all duration-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 flex-shrink-0"
+                  variant="ghost"
+                  size="icon"
+                  className="text-destructive hover:text-destructive/90 hover:bg-muted flex-shrink-0"
                 >
                   <Trash2 className="w-5 h-5" />
-                </button>
+                </Button>
               </li>
             ))}
           </ul>
@@ -123,7 +128,7 @@ export default function Sidebar({
       </div>
 
       {/* Wallet info at the bottom */}
-      <div className="mt-auto border-t">
+      <div className="mt-auto border-t dark:border-neutral-800">
         <WalletInfo
           onLogoutClick={onLogoutClick}
           onWithdrawClick={onWithdrawClick}
