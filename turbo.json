@@ -3,17 +3,19 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**", ".next/**", "!.next/cache/**"]
+      "outputs": ["dist/**", ".next/**", "!.next/cache/**"],
+      "env": ["NODE_ENV"]
     },
     "dev": {
-      "dependsOn": ["^build"]
+      "dependsOn": ["^build"],
+      "env": ["NODE_ENV"]
     },
     "start": {
-      "dependsOn": []
+      "dependsOn": [],
+      "env": ["NODE_ENV", "PORT"]
     },
     "clean": {
       "cache": false
     }
-  },
-  "globalPassThroughEnv": ["NODE_ENV", "PORT"]
+  }
 }
