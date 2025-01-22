@@ -7,6 +7,7 @@ import { useState } from "react";
 import { useClusterStore } from "../store/clusterStore";
 import { useWallet, useStoreWallet } from "../hooks/wallet";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -70,8 +71,8 @@ export function WalletInfo({
   };
 
   return (
-    <div className="p-4 space-y-4">
-      <div className="flex items-center justify-between">
+    <div className="p-4">
+      <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <Wallet className="h-4 w-4 text-muted-foreground" />
           <span className="text-sm font-medium text-foreground">
@@ -91,14 +92,14 @@ export function WalletInfo({
         )}
       </div>
 
-      <div>
+      <div className="mb-3">
         <Select
           value={selectedCluster}
           onValueChange={(value) =>
             setSelectedCluster(value as "mainnet-beta" | "devnet")
           }
         >
-          <SelectTrigger className="w-full text-xs h-8 border-0 bg-muted/50">
+          <SelectTrigger className="w-full text-xs">
             <SelectValue placeholder="Select network" />
           </SelectTrigger>
           <SelectContent>
@@ -109,42 +110,42 @@ export function WalletInfo({
       </div>
 
       {wallet ? (
-        <div className="space-y-3">
-          <div className="bg-muted/50 rounded-lg p-2.5 flex items-center justify-between gap-2 text-xs text-muted-foreground break-all">
-            <span>{walletAddress}</span>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  onClick={copyAddress}
-                  variant="ghost"
-                  size="sm"
-                  className="p-1 h-auto hover:bg-muted"
-                >
-                  <Copy className="h-3 w-3" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                {copied ? "Copied!" : "Copy address"}
-              </TooltipContent>
-            </Tooltip>
+        <div className="space-y-2">
+          <div className="text-xs text-muted-foreground break-all">
+            <Card className="p-2 flex items-center justify-between gap-2">
+              <span>{walletAddress}</span>
+              <Tooltip open={copied}>
+                <TooltipTrigger asChild>
+                  <Button
+                    onClick={copyAddress}
+                    variant="ghost"
+                    size="sm"
+                    className="p-1 h-auto"
+                  >
+                    <Copy className="h-3 w-3" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {copied ? "Copied!" : "Copy address"}
+                </TooltipContent>
+              </Tooltip>
+            </Card>
           </div>
-
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-muted-foreground">Status</span>
-            <div className="bg-muted/50 rounded-lg px-2.5 py-1.5 flex items-center gap-1.5">
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <span>Status:</span>
+            <Card className="px-2 py-1 flex items-center gap-1">
               <span className="h-1.5 w-1.5 rounded-full bg-green-500"></span>
-              <span>Connected</span>
-            </div>
+              Connected
+            </Card>
           </div>
-
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-muted-foreground">Balance</span>
-            <div className="flex items-center gap-1.5">
-              <div className="bg-muted/50 rounded-lg px-2.5 py-1.5">
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <span>Balance:</span>
+            <div className="flex items-center gap-2">
+              <Card className="px-2 py-1">
                 {isLoadingBalance
                   ? "Loading..."
                   : `${balance?.toFixed(4) || "0"} SOL`}
-              </div>
+              </Card>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
@@ -152,7 +153,7 @@ export function WalletInfo({
                     disabled={isLoadingBalance || isRefetchingBalance}
                     variant="ghost"
                     size="sm"
-                    className="p-1.5 h-auto hover:bg-muted"
+                    className="p-1.5 h-auto"
                   >
                     <RefreshCw
                       className={`h-3.5 w-3.5 ${
@@ -171,7 +172,7 @@ export function WalletInfo({
                     onClick={onWithdrawClick}
                     variant="ghost"
                     size="sm"
-                    className="p-1.5 h-auto hover:bg-muted"
+                    className="p-1.5 h-auto"
                   >
                     <Send className="h-3.5 w-3.5" />
                   </Button>
@@ -182,17 +183,15 @@ export function WalletInfo({
           </div>
         </div>
       ) : (
-        <div className="bg-muted/50 rounded-lg p-4">
+        <Card className="p-3">
           {isCreating ? (
             <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
-              <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-primary" />
+              <div className="animate-spin rounded-full h-3 w-3 border-b border-primary" />
               <span>Creating Solana wallet...</span>
             </div>
           ) : (
-            <div className="flex flex-col gap-3 text-xs">
-              <p className="text-muted-foreground">
-                Create a Solana wallet to get started
-              </p>
+            <div className="flex flex-col gap-2 text-xs text-muted-foreground">
+              <p>Create a Solana wallet to get started</p>
               <Button
                 onClick={handleCreateWallet}
                 disabled={isCreating}
@@ -204,7 +203,7 @@ export function WalletInfo({
               </Button>
             </div>
           )}
-        </div>
+        </Card>
       )}
     </div>
   );

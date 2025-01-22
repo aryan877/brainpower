@@ -452,7 +452,7 @@ function HomeContent() {
       {/* Main content */}
       <main className="flex-1 relative h-full">
         {/* Header with burger menu */}
-        <header className="absolute top-0 left-0 right-0 h-12 bg-background border-b dark:border-neutral-800 flex items-center px-4 z-10">
+        <header className="absolute top-0 left-0 right-0 h-12 bg-background border-b flex items-center px-4 z-10">
           <div className="flex items-center gap-4">
             <Button
               variant="ghost"

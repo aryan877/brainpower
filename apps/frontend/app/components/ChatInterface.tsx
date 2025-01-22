@@ -59,12 +59,12 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
 
   if (!threadId) {
     return (
-      <div className="flex h-full items-center justify-center p-4">
+      <div className="flex h-full items-center justify-center">
         <div className="text-center">
-          <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-3 sm:mb-4">
+          <h2 className="text-2xl font-bold text-foreground mb-4">
             Welcome to BrainPower 🧠⚡
           </h2>
-          <p className="text-sm sm:text-base text-muted-foreground mb-6 sm:mb-8">
+          <p className="text-muted-foreground mb-8">
             Start a new chat or select an existing one to begin
           </p>
         </div>
@@ -86,31 +86,27 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
 
       {/* Error display */}
       {error && (
-        <div className="mx-auto w-full max-w-3xl px-3 sm:px-4 py-2">
-          <Card className="flex items-center space-x-2 sm:space-x-3 border-destructive/20 bg-neutral-100 dark:bg-neutral-800 dark:border-neutral-700 p-2 sm:p-3">
-            <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5 text-destructive" />
-            <p className="flex-1 text-sm sm:text-[15px] text-foreground">
+        <div className="mx-auto w-full max-w-3xl px-4 py-2">
+          <Card className="flex items-center space-x-3 border-destructive/20 bg-neutral-100 dark:bg-neutral-800 p-3">
+            <AlertCircle className="h-5 w-5 text-destructive" />
+            <p className="flex-1 text-[15px] text-foreground">
               {error.message}
             </p>
             <Button
               onClick={() => reload()}
               variant="outline"
-              size="sm"
-              className="text-destructive hover:bg-destructive/20 border-destructive/20 dark:border-neutral-700"
+              className="text-destructive hover:bg-destructive/20 border-destructive/20"
             >
-              <RefreshCcw className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-1.5" />
-              <span className="text-sm">Retry</span>
+              <RefreshCcw className="h-4 w-4 mr-1.5" />
+              <span>Retry</span>
             </Button>
           </Card>
         </div>
       )}
 
       {/* Input form */}
-      <div className="border-t dark:border-neutral-800 bg-background">
-        <form
-          onSubmit={handleSubmit}
-          className="max-w-3xl mx-auto px-3 sm:px-4 py-2 sm:py-3"
-        >
+      <div className="border-t bg-background">
+        <form onSubmit={handleSubmit} className="max-w-3xl mx-auto px-4 py-3">
           <div className="relative flex items-center">
             <Textarea
               value={input}
@@ -122,8 +118,8 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
               }}
               placeholder="Type your message..."
               rows={1}
-              className="resize-none pr-12 sm:pr-14 text-sm sm:text-[15px]"
-              style={{ minHeight: "44px", maxHeight: "200px" }}
+              className="resize-none pr-14 text-[15px]"
+              style={{ minHeight: "52px", maxHeight: "200px" }}
               disabled={isLoading}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
@@ -134,14 +130,14 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
                 }
               }}
             />
-            <div className="absolute right-2 sm:right-3 flex items-center space-x-1.5 sm:space-x-2">
+            <div className="absolute right-3 flex items-center space-x-2">
               <Button
                 type="submit"
                 size="icon"
                 disabled={isLoading || !input.trim()}
-                className="h-8 w-8 sm:h-9 sm:w-9 hover:-translate-y-0.5 active:translate-y-0"
+                className="hover:-translate-y-0.5 active:translate-y-0"
               >
-                <ArrowUpCircle className="h-4 w-4 sm:h-5 sm:w-5" />
+                <ArrowUpCircle className="h-5 w-5" />
               </Button>
               {isLoading && (
                 <Button
@@ -149,9 +145,9 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
                   size="icon"
                   variant="ghost"
                   onClick={() => stop()}
-                  className="h-8 w-8 sm:h-9 sm:w-9 text-destructive hover:text-destructive/90 hover:bg-destructive/10"
+                  className="text-destructive hover:text-destructive/90 hover:bg-destructive/10"
                 >
-                  <Square className="h-3 w-3 sm:h-4 sm:w-4" />
+                  <Square className="h-4 w-4" />
                 </Button>
               )}
             </div>

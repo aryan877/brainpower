@@ -58,7 +58,7 @@ export default function Sidebar({
   };
 
   return (
-    <aside className="flex flex-col h-full bg-background border-r dark:border-neutral-800">
+    <aside className="flex flex-col h-full bg-background border-r">
       <div className="p-4">
         <div className="flex items-center gap-2 mb-4">
           <Button
@@ -104,7 +104,7 @@ export default function Sidebar({
                 key={thread.threadId}
                 onClick={() => onSelectThread(thread.threadId)}
                 className={`flex justify-between items-center p-3 cursor-pointer rounded-lg hover:bg-muted transition-all duration-200 ${
-                  selectedThread === thread.threadId ? "bg-muted" : ""
+                  selectedThread === thread.threadId ? "bg-muted border" : ""
                 }`}
               >
                 <span className="truncate text-foreground font-medium text-sm md:text-base">
@@ -128,7 +128,7 @@ export default function Sidebar({
       </div>
 
       {/* Wallet info at the bottom */}
-      <div className="mt-auto border-t dark:border-neutral-800">
+      <div className="mt-auto border-t">
         <WalletInfo
           onLogoutClick={onLogoutClick}
           onWithdrawClick={onWithdrawClick}
