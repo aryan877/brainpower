@@ -16,6 +16,7 @@ const httpServer = createServer(app);
 
 // Security middleware
 app.use(helmet());
+
 // CORS configuration
 app.use(
   cors({
@@ -44,6 +45,20 @@ app.use(limiter);
 
 // Add cookie parser middleware before routes
 app.use(cookieParser());
+
+// Configure default cookie options
+app.use((req, res, next) => {
+  res.cookie = res.cookie.bind(res);
+  const cookieOptions = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    domain:
+      process.env.NODE_ENV === "production" ? ".brainpower.sh" : undefined,
+  };
+  res.locals.cookieOptions = cookieOptions;
+  next();
+});
 
 // Body parser middleware
 app.use(express.json({ limit: "10mb" }));
