@@ -28,7 +28,7 @@ RUN mkdir -p /home/nodeapp/.npm-global /app && \
 USER nodeapp
 
 # Install global packages
-RUN npm install -g pnpm@9.0.4 turbo@2.3.3
+RUN npm install -g pnpm@9.15.0 turbo@2.3.3
 
 #
 # 2) Pruner
