@@ -7,11 +7,21 @@ config();
 
 const {
   OPENAI_API_KEY,
-  PRIVY_APP_ID,
-  PRIVY_APP_SECRET,
+  PRIVY_DEV_APP_ID,
+  PRIVY_PROD_APP_ID,
+  PRIVY_DEV_APP_SECRET,
+  PRIVY_PROD_APP_SECRET,
   SOLANA_MAINNET_RPC_URL,
   SOLANA_DEVNET_RPC_URL,
 } = process.env;
+
+const PRIVY_APP_ID =
+  process.env.NODE_ENV === "production" ? PRIVY_PROD_APP_ID : PRIVY_DEV_APP_ID;
+
+const PRIVY_APP_SECRET =
+  process.env.NODE_ENV === "production"
+    ? PRIVY_PROD_APP_SECRET
+    : PRIVY_DEV_APP_SECRET;
 
 if (
   !OPENAI_API_KEY ||
@@ -20,7 +30,17 @@ if (
   !SOLANA_MAINNET_RPC_URL ||
   !SOLANA_DEVNET_RPC_URL
 ) {
-  throw new Error("Missing required environment variables");
+  throw new Error(
+    `Missing required environment variables: ${[
+      !OPENAI_API_KEY && "OPENAI_API_KEY",
+      !PRIVY_APP_ID && "PRIVY_APP_ID",
+      !PRIVY_APP_SECRET && "PRIVY_APP_SECRET",
+      !SOLANA_MAINNET_RPC_URL && "SOLANA_MAINNET_RPC_URL",
+      !SOLANA_DEVNET_RPC_URL && "SOLANA_DEVNET_RPC_URL",
+    ]
+      .filter(Boolean)
+      .join(", ")}`
+  );
 }
 
 interface GenerateBrainpowerAgentParams {
