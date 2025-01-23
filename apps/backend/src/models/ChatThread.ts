@@ -47,10 +47,6 @@ const messageSchema = new mongoose.Schema(
     data: mongoose.Schema.Types.Mixed,
     annotations: [mongoose.Schema.Types.Mixed],
     experimental_providerMetadata: mongoose.Schema.Types.Mixed,
-    isLoading: {
-      type: Boolean,
-      default: false,
-    },
     toolInvocations: {
       type: [toolInvocationSchema],
       default: [],

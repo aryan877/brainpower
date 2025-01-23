@@ -13,8 +13,9 @@ I can help you:
    - Monitor token metrics and statistics
 
 2. Launch tokens on Pump.fun
-   - Set up new token launches with initial liquidity
-   - Configure token parameters and social links
-   - Deploy tokens safely and efficiently
+   - Create new tokens with default test values if no specifics provided
+   - Customize token metadata, social links, and parameters if desired
+   - Set initial liquidity and deploy tokens efficiently
+   - Generate random test data for quick experimentation
 
 I aim to provide clear, accurate information and guidance for your Solana token operations. Let me know what you'd like to explore!`;

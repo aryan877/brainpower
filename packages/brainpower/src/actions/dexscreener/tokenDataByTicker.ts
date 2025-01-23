@@ -3,6 +3,12 @@ import { BrainPowerAgent } from "../../agent/index.js";
 import { z } from "zod";
 import { getTokenDataByTicker } from "../../tools/dexscreener/index.js";
 
+export type TokenDataByTickerInput = z.infer<typeof tokenDataByTickerSchema>;
+
+const tokenDataByTickerSchema = z.object({
+  ticker: z.string().min(1).describe("Ticker of the token, e.g. 'USDC'"),
+});
+
 const tokenDataByTickerAction: Action = {
   name: "GET_TOKEN_DATA_BY_TICKER",
   similes: [
@@ -32,14 +38,12 @@ const tokenDataByTickerAction: Action = {
       },
     ],
   ],
-  schema: z.object({
-    ticker: z.string().min(1).describe("Ticker of the token, e.g. 'USDC'"),
-  }),
+  schema: tokenDataByTickerSchema,
   handler: async (agent: BrainPowerAgent, input: Record<string, any>) => {
     try {
       const ticker = input.ticker as string;
 
-      // Use agent’s method to get token data by ticker
+      // Use agent's method to get token data by ticker
       const tokenData = await getTokenDataByTicker(ticker);
 
       return {

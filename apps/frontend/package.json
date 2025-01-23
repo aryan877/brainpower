@@ -19,6 +19,7 @@
     "@radix-ui/react-slot": "^1.1.1",
     "@radix-ui/react-switch": "^1.1.2",
     "@radix-ui/react-tooltip": "^1.1.6",
+    "@repo/brainpower-agent": "workspace:*",
     "@solana/web3.js": "1.94.0",
     "@tailwindcss/typography": "^0.5.15",
     "@tanstack/react-query": "^5.64.1",

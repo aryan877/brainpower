@@ -29,6 +29,7 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
     error,
     reload,
     stop,
+    addToolResult,
   } = useChat({
     api: "/api/chat/message",
     id: threadId || undefined,
@@ -62,7 +63,7 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
       <div className="flex h-full items-center justify-center">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-foreground mb-4">
-            Welcome to BrainPower 🧠⚡
+            Welcome to BrainPower
           </h2>
           <p className="text-muted-foreground mb-8">
             Start a new chat or select an existing one to begin
@@ -75,27 +76,34 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
   return (
     <div className="flex flex-col h-full">
       {/* Messages container */}
-      <div className="flex-1 overflow-y-auto space-y-1 scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent hover:scrollbar-thumb-muted/80">
-        {messages
-          .filter((message) => message.content?.trim())
-          .map((message) => (
-            <ChatMessage key={message.id} message={message} />
-          ))}
+      <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent hover:scrollbar-thumb-muted/80">
+        {messages.map((message) => (
+          <ChatMessage
+            key={message.id}
+            message={message}
+            isLoading={
+              isLoading &&
+              messages.length > 0 &&
+              message.id === messages[messages.length - 1].id &&
+              message.role === "assistant"
+            }
+            addToolResult={addToolResult}
+          />
+        ))}
         <div ref={messagesEndRef} />
       </div>
-
       {/* Error display */}
       {error && (
         <div className="mx-auto w-full max-w-3xl px-4 py-2">
-          <Card className="flex items-center space-x-3 border-destructive/20 bg-neutral-100 dark:bg-neutral-800 p-3">
-            <AlertCircle className="h-5 w-5 text-destructive" />
-            <p className="flex-1 text-[15px] text-foreground">
+          <Card className="flex items-center gap-3 border-destructive/20 bg-neutral-100 dark:bg-neutral-800 p-4">
+            <AlertCircle className="h-5 w-5 flex-shrink-0 text-destructive" />
+            <p className="flex-1 text-[15px] text-foreground break-words line-clamp-3">
               {error.message}
             </p>
             <Button
               onClick={() => reload()}
               variant="outline"
-              className="text-destructive hover:bg-destructive/20 border-destructive/20"
+              className="flex-shrink-0 text-destructive hover:bg-destructive/20 border-destructive/20"
             >
               <RefreshCcw className="h-4 w-4 mr-1.5" />
               <span>Retry</span>

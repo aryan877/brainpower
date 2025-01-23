@@ -3,6 +3,68 @@ import { Action } from "../../types/action.js";
 import { z } from "zod";
 // import { launchPumpFunToken } from "../../tools";
 
+export type LaunchPumpfunTokenInput = z.infer<typeof launchPumpfunTokenSchema>;
+
+const launchPumpfunTokenSchema = z.object({
+  tokenName: z
+    .string()
+    .min(1)
+    .max(32)
+    .describe("Name of the token")
+    .default("Test Token"),
+  tokenTicker: z
+    .string()
+    .min(2)
+    .max(10)
+    .describe("Ticker symbol of the token")
+    .default("TEST"),
+  description: z
+    .string()
+    .min(1)
+    .max(1000)
+    .describe("Description of the token")
+    .default("A test token for demonstration purposes"),
+  imageUrl: z
+    .string()
+    .url()
+    .describe("URL of the token image")
+    .default("https://picsum.photos/200"),
+  twitter: z
+    .string()
+    .nullable()
+    .transform((val) => val ?? "")
+    .default("")
+    .describe("Twitter handle (optional)"),
+  telegram: z
+    .string()
+    .nullable()
+    .transform((val) => val ?? "")
+    .default("")
+    .describe("Telegram group link (optional)"),
+  website: z
+    .string()
+    .nullable()
+    .transform((val) => val ?? "")
+    .default("")
+    .describe("Website URL (optional)"),
+  initialLiquiditySOL: z
+    .number()
+    .min(0.0001)
+    .default(0.0001)
+    .describe("Initial liquidity in SOL"),
+  slippageBps: z
+    .number()
+    .min(1)
+    .max(1000)
+    .default(5)
+    .describe("Slippage tolerance in basis points"),
+  priorityFee: z
+    .number()
+    .min(0.00001)
+    .default(0.00005)
+    .describe("Priority fee in SOL"),
+});
+
 const launchPumpfunTokenAction: Action = {
   name: "LAUNCH_PUMPFUN_TOKEN",
   similes: [
@@ -14,7 +76,7 @@ const launchPumpfunTokenAction: Action = {
     "create pump token",
   ],
   description:
-    "Launch a new token on Pump.fun with customizable metadata and initial liquidity",
+    "Launch a new token on Pump.fun with customizable metadata and initial liquidity. If no data is provided, test data will be used based on user's request or default test values.",
   examples: [
     [
       {
@@ -42,54 +104,7 @@ const launchPumpfunTokenAction: Action = {
       },
     ],
   ],
-  schema: z.object({
-    tokenName: z.string().min(1).max(32).describe("Name of the token"),
-    tokenTicker: z
-      .string()
-      .min(2)
-      .max(10)
-      .describe("Ticker symbol of the token"),
-    description: z
-      .string()
-      .min(1)
-      .max(1000)
-      .describe("Description of the token"),
-    imageUrl: z.string().url().describe("URL of the token image"),
-    twitter: z
-      .string()
-      .nullable()
-      .transform((val) => val ?? "")
-      .default("")
-      .describe("Twitter handle (optional)"),
-    telegram: z
-      .string()
-      .nullable()
-      .transform((val) => val ?? "")
-      .default("")
-      .describe("Telegram group link (optional)"),
-    website: z
-      .string()
-      .nullable()
-      .transform((val) => val ?? "")
-      .default("")
-      .describe("Website URL (optional)"),
-    initialLiquiditySOL: z
-      .number()
-      .min(0.0001)
-      .default(0.0001)
-      .describe("Initial liquidity in SOL"),
-    slippageBps: z
-      .number()
-      .min(1)
-      .max(1000)
-      .default(5)
-      .describe("Slippage tolerance in basis points"),
-    priorityFee: z
-      .number()
-      .min(0.00001)
-      .default(0.00005)
-      .describe("Priority fee in SOL"),
-  }),
+  schema: launchPumpfunTokenSchema,
   // handler: async (agent: BrainPowerAgent, input: Record<string, any>) => {
   //   try {
   //     const { tokenName, tokenTicker, description, imageUrl } = input;

@@ -6,6 +6,7 @@ import rateLimit from "express-rate-limit";
 import helmet from "helmet";
 import { setupChatRoutes } from "./routes/chatRoutes.js";
 import { setupWalletRoutes } from "./routes/walletRoutes.js";
+import { setupIPFSRoutes } from "./routes/ipfsRoutes.js";
 import { errorHandler } from "./middleware/errors/errorHandler.js";
 import { notFoundHandler } from "./middleware/errors/notFoundHandler.js";
 import { ErrorCode, ErrorResponse } from "./middleware/errors/types.js";
@@ -83,6 +84,7 @@ const router = express.Router();
 export const initializeRoutes = async () => {
   app.use("/api/chat", setupChatRoutes(router));
   app.use("/api/wallet", setupWalletRoutes(express.Router()));
+  app.use("/api/ipfs", setupIPFSRoutes(express.Router()));
   console.log("🛠️ Routes configured");
 
   // Handle 404 for undefined routes

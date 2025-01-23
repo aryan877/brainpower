@@ -2,19 +2,17 @@
 
 import { useState, useCallback, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Menu, RefreshCw } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 import Sidebar from "./components/Sidebar";
 import ChatInterface from "./components/ChatInterface";
 import { AuthGuard } from "./components/AuthGuard";
 import { usePrivy } from "@privy-io/react-auth";
 import {
-  Connection,
   LAMPORTS_PER_SOL,
   PublicKey,
   SystemProgram,
   Transaction,
 } from "@solana/web3.js";
-import { useClusterStore } from "./store/clusterStore";
 import { useWallet } from "./hooks/wallet";
 import { ThreadPreview } from "./types";
 import { useThreads, useCreateThread, useDeleteThread } from "./hooks/chat";
@@ -28,19 +26,20 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import Navbar from "./components/Navbar";
 
 function HomeContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const { user, logout } = usePrivy();
-  const { getRpcUrl } = useClusterStore();
   const {
     wallet,
     balance,
     isLoadingBalance,
     refreshBalance,
     isRefetchingBalance,
+    sendTransaction,
   } = useWallet();
 
   // Use hooks for thread operations
@@ -231,7 +230,7 @@ function HomeContent() {
 
   const handleWithdraw = async () => {
     if (!wallet?.address) {
-      setWithdrawError("No Solana wallet found");
+      setWithdrawError("No Solana wallet connected");
       return;
     }
 
@@ -239,14 +238,6 @@ function HomeContent() {
     setIsWithdrawing(true);
 
     try {
-      // Create connection
-      const connection = new Connection(getRpcUrl(), "confirmed");
-
-      // Get current balance
-      const balance = await connection.getBalance(
-        new PublicKey(wallet.address)
-      );
-
       // Validate amount
       const amount = parseFloat(withdrawAmount);
       if (isNaN(amount) || amount <= 0) {
@@ -254,7 +245,7 @@ function HomeContent() {
       }
 
       const lamports = Math.floor(amount * LAMPORTS_PER_SOL);
-      if (lamports > balance) {
+      if (lamports > (balance || 0) * LAMPORTS_PER_SOL) {
         throw new Error("Insufficient balance");
       }
 
@@ -266,15 +257,8 @@ function HomeContent() {
         throw new Error("Invalid recipient address");
       }
 
-      // Get latest blockhash
-      const { blockhash, lastValidBlockHeight } =
-        await connection.getLatestBlockhash("confirmed");
-
       // Create transaction
-      const transaction = new Transaction({
-        feePayer: new PublicKey(wallet.address),
-        recentBlockhash: blockhash,
-      }).add(
+      const transaction = new Transaction().add(
         SystemProgram.transfer({
           fromPubkey: new PublicKey(wallet.address),
           toPubkey: recipientPubkey,
@@ -282,33 +266,16 @@ function HomeContent() {
         })
       );
 
-      // Sign and send transaction
-      try {
-        const signedTx = await wallet.signTransaction(transaction);
-        const signature = await connection.sendRawTransaction(
-          signedTx.serialize()
-        );
+      // Send transaction using the new hook
+      const { confirmation } = await sendTransaction(transaction);
 
-        // Wait for confirmation
-        const confirmation = await connection.confirmTransaction({
-          signature,
-          blockhash,
-          lastValidBlockHeight,
-        });
-
-        if (confirmation.value.err) {
-          throw new Error("Transaction failed to confirm");
-        }
-
-        closeWithdrawDialog();
-        refreshBalance();
-      } catch (error) {
-        console.error("Transaction error:", error);
-        throw new Error(
-          error instanceof Error ? error.message : "Failed to send transaction"
-        );
+      if (confirmation?.value.err) {
+        throw new Error("Transaction failed to confirm");
       }
-    } catch (error: unknown) {
+
+      closeWithdrawDialog();
+      refreshBalance();
+    } catch (error) {
       console.error("Withdrawal error:", error);
       setWithdrawError(
         error instanceof Error ? error.message : "Failed to withdraw"
@@ -451,21 +418,7 @@ function HomeContent() {
 
       {/* Main content */}
       <main className="flex-1 relative h-full">
-        {/* Header with burger menu */}
-        <header className="absolute top-0 left-0 right-0 h-12 bg-background border-b flex items-center px-4 z-10">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleSidebar}
-              className="md:hidden"
-            >
-              <Menu className="h-5 w-5" />
-            </Button>
-            <h1 className="text-lg font-medium">BrainPower 🧠⚡</h1>
-          </div>
-        </header>
-
+        <Navbar onMenuClick={toggleSidebar} />
         <div className="absolute inset-0 top-12">
           <ChatInterface threadId={selectedThread} />
         </div>

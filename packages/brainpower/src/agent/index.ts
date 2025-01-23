@@ -285,20 +285,20 @@ export class BrainPowerAgent {
     return getTokenDataByTicker(ticker);
   }
 
-  async launchPumpFunToken(
-    tokenName: string,
-    tokenTicker: string,
-    description: string,
-    imageUrl: string,
-    options?: PumpFunTokenOptions,
-  ): Promise<PumpfunLaunchResponse> {
-    return launchPumpFunToken(
-      this,
-      tokenName,
-      tokenTicker,
-      description,
-      imageUrl,
-      options,
-    );
-  }
+  // async launchPumpFunToken(
+  //   tokenName: string,
+  //   tokenTicker: string,
+  //   description: string,
+  //   imageUrl: string,
+  //   options?: PumpFunTokenOptions,
+  // ): Promise<PumpfunLaunchResponse> {
+  //   return launchPumpFunToken(
+  //     this,
+  //     tokenName,
+  //     tokenTicker,
+  //     description,
+  //     imageUrl,
+  //     options,
+  //   );
+  // }
 }

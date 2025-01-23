@@ -1,10 +1,6 @@
 import { Message as AIMessage } from "ai";
 
-export interface Message extends AIMessage {
-  id: string;
-  createdAt?: Date;
-  isLoading?: boolean;
-}
+export type Message = AIMessage;
 
 export interface ChatThread {
   userId: string;
