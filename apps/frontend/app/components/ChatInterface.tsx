@@ -108,7 +108,7 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
   return (
     <div className="flex flex-col h-full">
       {/* Messages container */}
-      <div className="flex-1 overflow-y-auto brainpower-scrollbar px-2 md:px-4">
+      <div className="flex-1 overflow-y-auto brainpower-scrollbar">
         {messages.map((message, index) => (
           <ChatMessage
             key={message.id}
@@ -129,8 +129,8 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
 
       {/* Error display */}
       {error && (
-        <div className="mx-auto w-full max-w-3xl px-2 md:px-4 py-2">
-          <Card className="flex items-center gap-3 border-destructive/20 bg-neutral-100 dark:bg-neutral-800 p-3 md:p-4">
+        <div className="mx-auto w-full max-w-3xl px-4">
+          <Card className="flex items-center gap-3 border-destructive/20 bg-neutral-100 dark:bg-neutral-800 p-3 md:p-4 my-2">
             <AlertCircle className="h-4 md:h-5 w-4 md:w-5 flex-shrink-0 text-destructive" />
             <p className="flex-1 text-sm md:text-[15px] text-foreground break-words line-clamp-3">
               {error.message}
@@ -150,8 +150,8 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
 
       {/* Braining indicator */}
       {isWaitingForResponse && (
-        <div className="mx-auto w-full max-w-3xl px-2 md:px-4 py-2">
-          <div className="flex items-center gap-2 text-primary">
+        <div className="mx-auto w-full max-w-3xl px-4">
+          <div className="flex items-center gap-2 text-primary my-2">
             <div className="animate-spin rounded-full h-4 w-4 md:h-5 md:w-5 border-2 border-primary border-t-transparent" />
             <span className="text-sm md:text-base font-medium">
               BrainPower is braining...
@@ -164,7 +164,7 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
       <div className="border-t bg-background mt-auto">
         <form
           onSubmit={wrappedHandleSubmit}
-          className="max-w-3xl mx-auto px-2 md:px-4 py-2 md:py-3"
+          className="max-w-3xl mx-auto px-4 py-3"
         >
           <div className="relative flex items-center">
             <Textarea
@@ -185,7 +185,7 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
               disabled={isLoading || hasActiveToolCall}
               onKeyDown={handleKeyDown}
             />
-            <div className="absolute right-2 md:right-3 flex items-center space-x-2">
+            <div className="absolute right-3 flex items-center space-x-2">
               <Button
                 type="submit"
                 size="icon"
