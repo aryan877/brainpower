@@ -1,4 +1,4 @@
-import { BrainPowerAgent } from "@repo/brainpower-agent";
+import { BrainPowerAgent, Cluster } from "@repo/brainpower-agent";
 import { privyClient } from "../lib/privyClient.js";
 import { SOLANA_CAIP2 } from "../middleware/auth/cluster.js";
 import { config } from "dotenv";
@@ -45,7 +45,7 @@ if (
 
 interface GenerateBrainpowerAgentParams {
   walletId: string;
-  cluster: "mainnet-beta" | "devnet";
+  cluster: Cluster;
 }
 
 export function generateBrainpowerAgent({

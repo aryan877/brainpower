@@ -2,7 +2,15 @@
 
 import { usePrivy } from "@privy-io/react-auth";
 import { useSolanaWallets } from "@privy-io/react-auth/solana";
-import { Copy, Wallet, Plus, LogOut, Send, RefreshCw } from "lucide-react";
+import {
+  Copy,
+  Wallet,
+  Plus,
+  LogOut,
+  Send,
+  RefreshCw,
+  ExternalLink,
+} from "lucide-react";
 import { useState } from "react";
 import { useClusterStore } from "../store/clusterStore";
 import { useWallet, useStoreWallet } from "../hooks/wallet";
@@ -20,16 +28,15 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Cluster } from "@repo/brainpower-agent";
+import Link from "next/link";
+import { useWalletModal } from "../providers/WalletProvider";
 
 interface WalletInfoProps {
   onLogoutClick: () => void;
-  onWithdrawClick: () => void;
 }
 
-export function WalletInfo({
-  onLogoutClick,
-  onWithdrawClick,
-}: WalletInfoProps) {
+export function WalletInfo({ onLogoutClick }: WalletInfoProps) {
   const { user, ready } = usePrivy();
   const { createWallet } = useSolanaWallets();
   const { selectedCluster, setSelectedCluster } = useClusterStore();
@@ -44,6 +51,7 @@ export function WalletInfo({
   const { mutateAsync: storeWallet } = useStoreWallet();
   const [copied, setCopied] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+  const { openWalletModal } = useWalletModal();
 
   if (!ready) return null;
 
@@ -95,9 +103,7 @@ export function WalletInfo({
       <div className="mb-3">
         <Select
           value={selectedCluster}
-          onValueChange={(value) =>
-            setSelectedCluster(value as "mainnet-beta" | "devnet")
-          }
+          onValueChange={(value) => setSelectedCluster(value as Cluster)}
         >
           <SelectTrigger className="w-full text-xs">
             <SelectValue placeholder="Select network" />
@@ -114,21 +120,28 @@ export function WalletInfo({
           <div className="text-xs text-muted-foreground break-all">
             <Card className="p-2 flex items-center justify-between gap-2">
               <span>{walletAddress}</span>
-              <Tooltip open={copied}>
-                <TooltipTrigger asChild>
-                  <Button
-                    onClick={copyAddress}
-                    variant="ghost"
-                    size="sm"
-                    className="p-1 h-auto"
-                  >
-                    <Copy className="h-3 w-3" />
+              <div className="flex items-center gap-1">
+                <Tooltip open={copied}>
+                  <TooltipTrigger asChild>
+                    <Button
+                      onClick={copyAddress}
+                      variant="ghost"
+                      size="sm"
+                      className="p-1 h-auto"
+                    >
+                      <Copy className="h-3 w-3" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {copied ? "Copied!" : "Copy address"}
+                  </TooltipContent>
+                </Tooltip>
+                <Link href="/wallet">
+                  <Button variant="ghost" size="sm" className="p-1 h-auto">
+                    <ExternalLink className="h-3 w-3" />
                   </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  {copied ? "Copied!" : "Copy address"}
-                </TooltipContent>
-              </Tooltip>
+                </Link>
+              </div>
             </Card>
           </div>
           <div className="flex items-center justify-between text-xs text-muted-foreground">
@@ -169,7 +182,7 @@ export function WalletInfo({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
-                    onClick={onWithdrawClick}
+                    onClick={openWalletModal}
                     variant="ghost"
                     size="sm"
                     className="p-1.5 h-auto"

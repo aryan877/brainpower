@@ -4,6 +4,7 @@ import { NotificationContainer } from "./components/NotificationContainer";
 import { PrivyProvider } from "./providers/PrivyProvider";
 import { ReactQueryProvider } from "./providers/ReactQueryProvider";
 import { ThemeProvider } from "./providers/ThemeProvider";
+import { WalletProvider } from "./providers/WalletProvider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -30,7 +31,11 @@ export default function RootLayout({
         >
           <TooltipProvider>
             <ReactQueryProvider>
-              <PrivyProvider>{children}</PrivyProvider>
+              <PrivyProvider>
+                <WalletProvider>
+                  {children}
+                </WalletProvider>
+              </PrivyProvider>
             </ReactQueryProvider>
           </TooltipProvider>
           <NotificationContainer />

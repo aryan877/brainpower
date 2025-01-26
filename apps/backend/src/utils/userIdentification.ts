@@ -1,6 +1,7 @@
 import { User } from "../models/User.js";
 import { UnauthorizedError } from "../middleware/errors/types.js";
 import { AuthenticatedRequest } from "../middleware/auth/index.js";
+import { Cluster } from "@repo/brainpower-agent";
 
 export function getUserId(req: AuthenticatedRequest): string {
   // If no user object exists in request, throw error
@@ -31,9 +32,7 @@ export async function getUserWalletAddress(
   return activeWallet?.address || null;
 }
 
-export function getUserCluster(
-  req: AuthenticatedRequest
-): "mainnet-beta" | "devnet" {
+export function getUserCluster(req: AuthenticatedRequest): Cluster {
   if (!req.user?.cluster) {
     throw new UnauthorizedError("Solana cluster not specified");
   }

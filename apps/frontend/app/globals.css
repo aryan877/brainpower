@@ -66,3 +66,9 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer components {
+  .brainpower-scrollbar {
+    @apply scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent hover:scrollbar-thumb-muted/80;
+  }
+}

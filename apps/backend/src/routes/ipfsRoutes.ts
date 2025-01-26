@@ -8,6 +8,8 @@ import {
 import { asyncHandler } from "../middleware/errors/asyncHandler.js";
 import multer from "multer";
 import { BadRequestError } from "../middleware/errors/types.js";
+import { validateRequest } from "../validators/validateRequest.js";
+import { pumpFunUploadSchema } from "../validators/ipfsValidators.js";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const ALLOWED_MIME_TYPES = [
@@ -15,6 +17,12 @@ const ALLOWED_MIME_TYPES = [
   "image/png",
   "image/gif",
   "image/webp",
+  "video/mp4",
+  "video/quicktime",
+  "application/pdf",
+  "text/plain",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 ];
 
 // Configure multer with file validation
@@ -27,7 +35,7 @@ const upload = multer({
     if (!ALLOWED_MIME_TYPES.includes(file.mimetype)) {
       cb(
         new BadRequestError(
-          "Invalid file type. Only JPEG, PNG, GIF, and WebP images are allowed"
+          `Invalid file type. Supported types: ${ALLOWED_MIME_TYPES.join(", ")}`
         )
       );
       return;
@@ -44,6 +52,7 @@ export function setupIPFSRoutes(router: Router): Router {
   router.post(
     "/upload-pumpfun",
     upload.single("file"),
+    validateRequest({ body: pumpFunUploadSchema }),
     asyncHandler(uploadToPumpFunIPFS)
   );
 

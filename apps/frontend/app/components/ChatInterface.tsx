@@ -1,7 +1,7 @@
 "use client";
 
 import { useChat } from "ai/react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState, FormEvent } from "react";
 import { AlertCircle, RefreshCcw, Square, ArrowUpCircle } from "lucide-react";
 import { useClusterStore } from "../store/clusterStore";
 import { useThreadMessages, useSaveAllMessages } from "../hooks/chat";
@@ -19,6 +19,8 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { data: initialMessages = [] } = useThreadMessages(threadId);
   const { mutate: saveAllMessages } = useSaveAllMessages();
+  const [isWaitingForResponse, setIsWaitingForResponse] = useState(false);
+  const [hasActiveToolCall, setHasActiveToolCall] = useState(false);
 
   const {
     messages,
@@ -41,10 +43,21 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
     body: {
       threadId,
     },
+    onResponse: () => {
+      setIsWaitingForResponse(false);
+    },
     initialMessages,
     generateId: () => `msg_${nanoid()}`,
     sendExtraMessageFields: true,
   });
+
+  // Check for active tool calls in any message
+  useEffect(() => {
+    const hasActiveTool = messages.some(
+      (message) => message?.toolInvocations?.some((t) => t.state === "call")
+    );
+    setHasActiveToolCall(hasActiveTool);
+  }, [messages]);
 
   // Save messages when they change and not loading
   useEffect(() => {
@@ -57,6 +70,25 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // Wrap handleSubmit to set waiting state
+  const wrappedHandleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    setIsWaitingForResponse(true);
+    handleSubmit(e);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      if (input.trim()) {
+        const formEvent = new Event("submit", {
+          bubbles: true,
+          cancelable: true,
+        }) as unknown as FormEvent<HTMLFormElement>;
+        wrappedHandleSubmit(formEvent);
+      }
+    }
+  };
 
   if (!threadId) {
     return (
@@ -76,17 +108,19 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
   return (
     <div className="flex flex-col h-full">
       {/* Messages container */}
-      <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent hover:scrollbar-thumb-muted/80">
-        {messages.map((message) => (
+      <div className="flex-1 overflow-y-auto brainpower-scrollbar">
+        {messages.map((message, index) => (
           <ChatMessage
             key={message.id}
             message={message}
+            previousMessageRole={index > 0 ? messages[index - 1].role : null}
             isLoading={
               isLoading &&
               messages.length > 0 &&
               message.id === messages[messages.length - 1].id &&
               message.role === "assistant"
             }
+            isWaitingForResponse={isWaitingForResponse}
             addToolResult={addToolResult}
           />
         ))}
@@ -112,9 +146,24 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
         </div>
       )}
 
+      {/* Braining indicator */}
+      {isWaitingForResponse && (
+        <div className="mx-auto w-full max-w-3xl px-4 py-2">
+          <div className="flex items-center gap-2 text-primary">
+            <div className="animate-spin rounded-full h-5 w-5 border-2 border-primary border-t-transparent" />
+            <span className="text-base font-medium">
+              BrainPower is braining...
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Input form */}
       <div className="border-t bg-background">
-        <form onSubmit={handleSubmit} className="max-w-3xl mx-auto px-4 py-3">
+        <form
+          onSubmit={wrappedHandleSubmit}
+          className="max-w-3xl mx-auto px-4 py-3"
+        >
           <div className="relative flex items-center">
             <Textarea
               value={input}
@@ -124,30 +173,27 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
                 e.target.style.height = "inherit";
                 e.target.style.height = `${Math.min(e.target.scrollHeight, 200)}px`;
               }}
-              placeholder="Type your message..."
+              placeholder={
+                hasActiveToolCall
+                  ? "Please complete/cancel action first..."
+                  : "Type your message..."
+              }
               rows={1}
               className="resize-none pr-14 text-[15px]"
               style={{ minHeight: "52px", maxHeight: "200px" }}
-              disabled={isLoading}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  if (input.trim()) {
-                    handleSubmit(e);
-                  }
-                }
-              }}
+              disabled={isLoading || hasActiveToolCall}
+              onKeyDown={handleKeyDown}
             />
             <div className="absolute right-3 flex items-center space-x-2">
               <Button
                 type="submit"
                 size="icon"
-                disabled={isLoading || !input.trim()}
+                disabled={isLoading || hasActiveToolCall || !input.trim()}
                 className="hover:-translate-y-0.5 active:translate-y-0"
               >
                 <ArrowUpCircle className="h-5 w-5" />
               </Button>
-              {isLoading && (
+              {isLoading && !hasActiveToolCall && (
                 <Button
                   type="button"
                   size="icon"

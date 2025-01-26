@@ -1,6 +1,5 @@
+import { Cluster } from "@repo/brainpower-agent";
 import { create } from "zustand";
-
-type Cluster = "mainnet-beta" | "devnet";
 
 interface ClusterState {
   selectedCluster: Cluster;

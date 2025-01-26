@@ -13,7 +13,17 @@ import {
   PublicKey,
   TransactionError,
 } from "@solana/web3.js";
+import { Cluster } from "@repo/brainpower-agent";
 
+/**
+ * Query key factory for wallet-related queries
+ *
+ *
+ * This object provides consistent query keys for React Query caching.
+ * - all: Base key for all wallet queries
+ * - user: Key for user-specific wallet queries
+ * - balance: Key for wallet balance queries, includes address and cluster
+ */
 export const walletKeys = {
   all: ["wallets"] as const,
   user: () => [...walletKeys.all, "user"] as const,
@@ -21,12 +31,29 @@ export const walletKeys = {
     [...walletKeys.all, "balance", address, cluster] as const,
 };
 
+/**
+ * Options for sending Solana transactions
+ *
+ *
+ * These options control how transactions are processed:
+ * - commitment: How many confirmations to wait for (processed, confirmed, finalized)
+ * - skipPreflight: Skip simulation check before sending (not recommended)
+ * - maxRetries: Number of times to retry failed transactions
+ */
 interface SendTransactionOptions {
   commitment?: Commitment;
   skipPreflight?: boolean;
   maxRetries?: number;
 }
 
+/**
+ * Response format for transaction operations
+ *
+ *
+ * This defines what we get back after sending a transaction:
+ * - signature: Unique ID for the transaction
+ * - confirmation: Contains error info if transaction failed
+ */
 interface TransactionResponse {
   signature: TransactionSignature;
   confirmation?: {
@@ -36,7 +63,17 @@ interface TransactionResponse {
   };
 }
 
-// wallet connection hook
+/**
+ * Hook to access the connected Solana wallet
+ *
+ * Uses hooks:
+ * - useSolanaWallets
+ *
+ *
+ * This hook gets the user's connected Solana wallet from Privy.
+ * We take the first wallet since we only support one connection.
+ * Returns both the wallet object and its address for convenience.
+ */
 export function useWalletConnection() {
   const { wallets } = useSolanaWallets();
   const solanaWallet = wallets[0];
@@ -47,11 +84,51 @@ export function useWalletConnection() {
   };
 }
 
-// hook for sending transactions
+/**
+ * Hook for sending Solana transactions
+ *
+ * Uses hooks:
+ * - useClusterStore
+ * - useWalletConnection
+ *
+ *
+ * This hook provides a function to send transactions on Solana.
+ * It handles both legacy Transaction and newer VersionedTransaction types.
+ * The hook sets up the connection and handles signing/sending/confirming.
+ *
+ * Usage example:
+ * const { sendTransaction } = useSendTransaction();
+ *
+ * // Basic usage
+ * await sendTransaction(transaction);
+ *
+ * // With options
+ * await sendTransaction(transaction, {
+ *   commitment: 'finalized',
+ *   skipPreflight: true,
+ *   maxRetries: 5
+ * });
+ */
 export function useSendTransaction() {
   const { getRpcUrl } = useClusterStore();
   const { wallet } = useWalletConnection();
 
+  /**
+   * Sends and confirms a Solana transaction
+   *
+   *
+   * This function:
+   * 1. Checks wallet is connected
+   * 2. Sets up network connection
+   * 3. Prepares transaction (adds blockhash & fee payer)
+   * 4. Signs transaction with user's wallet
+   * 5. Sends to network and waits for confirmation
+   *
+   * @param transaction - Transaction to send
+   * @param options - Optional settings for sending
+   * @returns Transaction signature and confirmation
+   * @throws If wallet not connected or transaction fails
+   */
   const sendTransaction = async (
     transaction: Transaction | VersionedTransaction,
     options: SendTransactionOptions = {}
@@ -67,35 +144,23 @@ export function useSendTransaction() {
     } = options;
 
     try {
-      // Create connection
       const connection = new Connection(getRpcUrl(), commitment);
 
-      // Get latest blockhash if it's a regular transaction
       if (transaction instanceof Transaction) {
         const { blockhash } = await connection.getLatestBlockhash(commitment);
         transaction.recentBlockhash = blockhash;
         transaction.feePayer = new PublicKey(wallet.address);
       }
 
-      // Sign transaction
       const signedTx = await wallet.signTransaction(transaction);
-
-      // Send transaction
       const signature = await connection.sendRawTransaction(
         signedTx.serialize(),
-        {
-          skipPreflight,
-          maxRetries,
-        }
+        { skipPreflight, maxRetries }
       );
 
-      // Wait for confirmation
       const confirmation = await connection.confirmTransaction(signature);
 
-      return {
-        signature,
-        confirmation,
-      };
+      return { signature, confirmation };
     } catch (error) {
       console.error("Transaction error:", error);
       throw error;
@@ -105,10 +170,21 @@ export function useSendTransaction() {
   return { sendTransaction };
 }
 
-//  balance hook
+/**
+ * Hook to fetch and monitor wallet balance
+ *
+ * Uses hooks:
+ * - useQuery
+ *
+ *
+ * This hook keeps track of a wallet's SOL balance.
+ * It automatically converts from lamports (smallest unit) to SOL.
+ * Provides loading states and error handling.
+ * Use refreshBalance() to manually update the balance.
+ */
 export function useWalletBalance(
   walletAddress: string | undefined,
-  cluster: "mainnet-beta" | "devnet"
+  cluster: Cluster
 ) {
   const {
     data: balance,
@@ -137,7 +213,22 @@ export function useWalletBalance(
   };
 }
 
-// Combined hook
+/**
+ * Main wallet hook that combines connection, balance and transaction functionality
+ *
+ * Uses hooks:
+ * - useWalletConnection
+ * - useClusterStore
+ * - useWalletBalance
+ * - useSendTransaction
+ *
+ *
+ * This is the primary hook you should use for wallet interactions.
+ * It combines all wallet functionality in one place:
+ * - Wallet connection status
+ * - SOL balance with loading states
+ * - Transaction sending capability
+ */
 export function useWallet() {
   const { wallet, walletAddress } = useWalletConnection();
   const { selectedCluster } = useClusterStore();
@@ -162,6 +253,16 @@ export function useWallet() {
   };
 }
 
+/**
+ * Hook to fetch all wallets associated with the user
+ *
+ * Uses hooks:
+ * - useQuery
+ *
+ *
+ * This hook gets all wallets the user has connected.
+ * Uses React Query for automatic caching and refetching.
+ */
 export function useUserWallets() {
   return useQuery({
     queryKey: walletKeys.user(),
@@ -169,6 +270,17 @@ export function useUserWallets() {
   });
 }
 
+/**
+ * Hook to store a new wallet address for the user
+ *
+ * Uses hooks:
+ * - useMutation
+ *
+ *
+ * This hook saves a wallet address to our backend.
+ * Uses React Query's mutation for handling the API call.
+ * Default chain is Solana but supports other chains too.
+ */
 export function useStoreWallet() {
   return useMutation({
     mutationFn: ({

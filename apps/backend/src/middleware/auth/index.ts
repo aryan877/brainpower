@@ -2,12 +2,13 @@ import { Request, Response, NextFunction } from "express";
 import { privyClient } from "../../lib/privyClient.js";
 import { UnauthorizedError } from "../errors/types.js";
 import { SOLANA_CAIP2 } from "./cluster.js";
+import { Cluster } from "@repo/brainpower-agent";
 
 export interface AuthenticatedRequest extends Request {
   user?: {
     userId: string;
     walletAddress?: string;
-    cluster?: "mainnet-beta" | "devnet";
+    cluster?: Cluster;
     caip2?: (typeof SOLANA_CAIP2)[keyof typeof SOLANA_CAIP2];
   };
 }

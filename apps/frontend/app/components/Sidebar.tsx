@@ -16,7 +16,6 @@ export interface SidebarProps {
   isLoading: boolean;
   onDeleteClick: (thread: ThreadPreview) => void;
   onLogoutClick: () => void;
-  onWithdrawClick: () => void;
 }
 
 export default function Sidebar({
@@ -27,7 +26,6 @@ export default function Sidebar({
   isLoading,
   onDeleteClick,
   onLogoutClick,
-  onWithdrawClick,
 }: SidebarProps) {
   const { createWallet } = useSolanaWallets();
   const { user } = usePrivy();
@@ -129,10 +127,7 @@ export default function Sidebar({
 
       {/* Wallet info at the bottom */}
       <div className="mt-auto border-t">
-        <WalletInfo
-          onLogoutClick={onLogoutClick}
-          onWithdrawClick={onWithdrawClick}
-        />
+        <WalletInfo onLogoutClick={onLogoutClick} />
       </div>
     </aside>
   );

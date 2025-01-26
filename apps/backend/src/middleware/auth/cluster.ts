@@ -2,6 +2,7 @@ import { Response, NextFunction } from "express";
 import { AuthenticatedRequest } from "./index.js";
 import { BadRequestError } from "../errors/types.js";
 import { SolanaCaip2ChainId } from "@privy-io/server-auth";
+import { Cluster } from "@repo/brainpower-agent";
 
 export const SOLANA_CAIP2 = {
   MAINNET: "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp" as SolanaCaip2ChainId,
@@ -14,7 +15,7 @@ export const validateCluster = (
   res: Response,
   next: NextFunction
 ) => {
-  const cluster = req.headers["x-solana-cluster"] as "mainnet-beta" | "devnet";
+  const cluster = req.headers["x-solana-cluster"] as Cluster;
 
   if (!cluster || !["mainnet-beta", "devnet"].includes(cluster)) {
     throw new BadRequestError(

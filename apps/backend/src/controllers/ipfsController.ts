@@ -3,9 +3,11 @@ import { AuthenticatedRequest } from "../middleware/auth/index.js";
 import axios from "axios";
 import FormData from "form-data";
 import { BadRequestError, DatabaseError } from "../middleware/errors/types.js";
+import { PumpFunUploadRequest } from "../validators/ipfsValidators.js";
 
 interface FileRequest extends AuthenticatedRequest {
   file?: Express.Multer.File;
+  body: PumpFunUploadRequest;
 }
 
 export const uploadToIPFS = async (req: FileRequest, res: Response) => {
@@ -65,6 +67,9 @@ export const uploadToPumpFunIPFS = async (req: FileRequest, res: Response) => {
   if (!req.file) {
     throw new BadRequestError("No file provided");
   }
+
+  //   // Throw fake error for testing purposes
+  //   throw new BadRequestError("Testing error - upload disabled temporarily");
 
   try {
     const formData = new FormData();

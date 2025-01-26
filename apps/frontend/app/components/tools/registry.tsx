@@ -1,6 +1,10 @@
 import { PumpFunLaunchTool } from "./PumpFunLaunchTool";
 import { ToolInvocation } from "ai";
-import { ToolResultType, ToolResultTypes } from "../../types/tools";
+import {
+  ToolResultType,
+  ToolResultTypes,
+  isToolResult,
+} from "../../types/tools";
 
 interface ToolConfig<T extends keyof ToolResultTypes> {
   component: React.ComponentType<{
@@ -20,6 +24,9 @@ export const toolRegistry: ToolRegistry = {
   },
 };
 
+export type ValidToolName = keyof typeof toolRegistry;
+export const VALID_TOOL_NAMES = Object.keys(toolRegistry) as ValidToolName[];
+
 export function getToolComponent(toolInvocation: ToolInvocation) {
   const { toolName } = toolInvocation;
   const config = toolRegistry[toolName as keyof ToolResultTypes];
@@ -29,23 +36,18 @@ export function getToolComponent(toolInvocation: ToolInvocation) {
 export function preprocessToolResult<T extends keyof ToolResultTypes>(
   toolName: T,
   result: unknown
-): ToolResultType<T> | unknown {
+): ToolResultType<T> {
   const preprocessor = toolRegistry[toolName]?.preprocess;
 
   if (!preprocessor) {
-    if (
-      typeof result === "object" &&
-      result !== null &&
-      "status" in result &&
-      "message" in result
-    ) {
-      return result;
+    if (isToolResult(result)) {
+      return result as ToolResultType<T>;
     }
     return {
       status: "success",
       message: "Operation completed successfully",
       data: result,
-    };
+    } as ToolResultType<T>;
   }
 
   try {
@@ -59,6 +61,6 @@ export function preprocessToolResult<T extends keyof ToolResultTypes>(
         message: error instanceof Error ? error.message : "Unknown error",
         details: error,
       },
-    };
+    } as ToolResultType<T>;
   }
 }

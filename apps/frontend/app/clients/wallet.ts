@@ -5,6 +5,7 @@ import {
   StoreWalletResponse,
 } from "../types/api/wallet";
 import api from "../lib/axios";
+import { Cluster } from "@repo/brainpower-agent";
 
 async function storeWallet(
   address: string,
@@ -24,7 +25,7 @@ async function getUserWallets(): Promise<GetUserWalletsResponse> {
 
 async function getBalance(
   address: string,
-  cluster: "mainnet-beta" | "devnet" = "mainnet-beta"
+  cluster: Cluster = "mainnet-beta"
 ): Promise<GetBalanceResponse> {
   const { data } = await api.get<GetBalanceResponse>(
     `/api/wallet/balance?address=${address}`,

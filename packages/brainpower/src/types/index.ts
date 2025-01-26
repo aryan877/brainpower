@@ -2,6 +2,7 @@ import { PublicKey } from "@solana/web3.js";
 import { BrainPowerAgent } from "../agent/index.js";
 import { z } from "zod";
 export * from "./input.js";
+export * from "./cluster.js";
 
 export interface Config {
   OPENAI_API_KEY?: string;

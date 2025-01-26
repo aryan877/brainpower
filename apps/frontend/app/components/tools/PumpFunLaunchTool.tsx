@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, Upload, Rocket } from "lucide-react";
+import { Loader2, Upload, Rocket, X } from "lucide-react";
 import Image from "next/image";
 import { LaunchPumpfunTokenInput } from "@repo/brainpower-agent";
 import { PumpFunLaunchToolResult } from "../../types/tools";
@@ -13,6 +13,21 @@ import { useWallet } from "../../hooks/wallet";
 import { cn } from "@/lib/utils";
 import { useNotificationStore } from "../../store/notificationStore";
 import { ipfsClient } from "../../clients/ipfs";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+
+const formSchema = z.object({
+  tokenName: z.string().min(1, "Token name is required"),
+  tokenTicker: z.string().min(1, "Token ticker is required"),
+  description: z.string().min(1, "Description is required"),
+  twitter: z.string().optional(),
+  telegram: z.string().optional(),
+  website: z.string().optional(),
+  initialLiquiditySOL: z.number().min(0.0001, "Must be at least 0.0001 SOL"),
+  slippageBps: z.number().min(1).max(1000, "Must be between 1 and 1000 BPS"),
+  priorityFee: z.number().min(0.00001, "Must be at least 0.00001 SOL"),
+});
 
 interface PumpFunLaunchToolProps {
   args: Partial<LaunchPumpfunTokenInput>;
@@ -20,15 +35,28 @@ interface PumpFunLaunchToolProps {
 }
 
 export function PumpFunLaunchTool({ args, onSubmit }: PumpFunLaunchToolProps) {
-  const [formData, setFormData] =
-    useState<Partial<LaunchPumpfunTokenInput>>(args);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
   const [transactionError, setTransactionError] = useState<string>("");
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageError, setImageError] = useState<string>("");
   const { wallet, sendTransaction } = useWallet();
   const { addNotification } = useNotificationStore();
+
+  const form = useForm({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      tokenName: args.tokenName || "",
+      tokenTicker: args.tokenTicker || "",
+      description: args.description || "",
+      twitter: args.twitter || "",
+      telegram: args.telegram || "",
+      website: args.website || "",
+      initialLiquiditySOL: args.initialLiquiditySOL || 0.0001,
+      slippageBps: args.slippageBps || 5,
+      priorityFee: args.priorityFee || 0.00005,
+    },
+  });
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -40,21 +68,22 @@ export function PumpFunLaunchTool({ args, onSubmit }: PumpFunLaunchToolProps) {
           setImagePreview(reader.result as string);
         };
         reader.readAsDataURL(file);
-        setErrors((prev) => ({ ...prev, imageUrl: "" }));
+        setImageError("");
       } else {
-        setErrors((prev) => ({
-          ...prev,
-          imageUrl: "Please select an image file",
-        }));
+        setImageError("Please select an image file");
       }
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (data: z.infer<typeof formSchema>) => {
     setIsSubmitting(true);
-    setErrors({});
     setTransactionError("");
+
+    if (!selectedImage) {
+      setImageError("Token image is required");
+      setIsSubmitting(false);
+      return;
+    }
 
     if (!wallet?.address) {
       addNotification(
@@ -75,66 +104,31 @@ export function PumpFunLaunchTool({ args, onSubmit }: PumpFunLaunchToolProps) {
       return;
     }
 
-    // Basic validation
-    const newErrors: Record<string, string> = {};
-    if (!formData.tokenName?.trim()) {
-      newErrors.tokenName = "Token name is required";
-    }
-    if (!formData.tokenTicker?.trim()) {
-      newErrors.tokenTicker = "Token ticker is required";
-    }
-    if (!formData.description?.trim()) {
-      newErrors.description = "Description is required";
-    }
-    if (!selectedImage) {
-      newErrors.imageUrl = "Token image is required";
-    }
-
-    if (Object.keys(newErrors).length > 0) {
-      onSubmit({
-        status: "error",
-        message: "Please fill in all required fields.",
-        error: {
-          code: "VALIDATION_ERROR",
-          message: "Validation failed",
-          details: newErrors,
-        },
-      });
-      setErrors(newErrors);
-      setIsSubmitting(false);
-      return;
-    }
-
     try {
-      // Generate mint keypair
       const mintKeypair = Keypair.generate();
 
-      // Upload metadata to pump.fun's IPFS
-      const pumpFunResponse = await ipfsClient.uploadToPumpFun(selectedImage!, {
-        name: formData.tokenName!,
-        symbol: formData.tokenTicker!,
-        description: formData.description!,
-        twitter: formData.twitter,
-        telegram: formData.telegram,
-        website: formData.website,
+      const pumpFunResponse = await ipfsClient.uploadToPumpFun(selectedImage, {
+        name: data.tokenName,
+        symbol: data.tokenTicker,
+        description: data.description,
+        twitter: data.twitter,
+        telegram: data.telegram,
+        website: data.website,
       });
 
-      console.log(pumpFunResponse);
-
-      // Create token transaction
       const payload = {
         publicKey: wallet.address,
         action: "create",
         tokenMetadata: {
-          name: formData.tokenName!,
-          symbol: formData.tokenTicker!,
+          name: data.tokenName,
+          symbol: data.tokenTicker,
           uri: pumpFunResponse.metadataUri,
         },
         mint: mintKeypair.publicKey.toBase58(),
         denominatedInSol: "true",
-        amount: formData.initialLiquiditySOL || 0.0001,
-        slippage: formData.slippageBps || 5,
-        priorityFee: formData.priorityFee || 0.00005,
+        amount: data.initialLiquiditySOL,
+        slippage: data.slippageBps,
+        priorityFee: data.priorityFee,
         pool: "pump",
       };
 
@@ -152,11 +146,8 @@ export function PumpFunLaunchTool({ args, onSubmit }: PumpFunLaunchToolProps) {
 
       const txBuffer = await txResponse.arrayBuffer();
       const tx = VersionedTransaction.deserialize(new Uint8Array(txBuffer));
-
-      // Sign with mint keypair first
       tx.sign([mintKeypair]);
 
-      // Send transaction using the wallet hook
       const { signature, confirmation } = await sendTransaction(tx, {
         skipPreflight: false,
         maxRetries: 5,
@@ -168,7 +159,6 @@ export function PumpFunLaunchTool({ args, onSubmit }: PumpFunLaunchToolProps) {
         );
       }
 
-      // Submit success result
       onSubmit({
         status: "success",
         message: "Token launched successfully! View on pump.fun soon.",
@@ -182,8 +172,6 @@ export function PumpFunLaunchTool({ args, onSubmit }: PumpFunLaunchToolProps) {
       console.error("Launch error:", error);
       const errorMessage =
         error instanceof Error ? error.message : "Failed to launch token";
-
-      // Add more descriptive error message for users
       const userMessage =
         error instanceof Error && error.message.includes("timeout")
           ? "Transaction is taking longer than expected. Please check pump.fun in a few minutes to see your token."
@@ -203,21 +191,6 @@ export function PumpFunLaunchTool({ args, onSubmit }: PumpFunLaunchToolProps) {
     }
   };
 
-  const handleChange = (
-    field: keyof LaunchPumpfunTokenInput,
-    value: string
-  ) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]:
-        field === "initialLiquiditySOL" ||
-        field === "slippageBps" ||
-        field === "priorityFee"
-          ? parseFloat(value)
-          : value,
-    }));
-  };
-
   return (
     <Card className="p-6 bg-gradient-to-br from-primary/5 to-background">
       <div className="flex items-center justify-center mb-6">
@@ -227,60 +200,74 @@ export function PumpFunLaunchTool({ args, onSubmit }: PumpFunLaunchToolProps) {
         </h2>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
         <div className="grid gap-6 md:grid-cols-2">
           <div className="space-y-2">
-            <Label htmlFor="tokenName">Token Name</Label>
+            <Label htmlFor="tokenName">
+              Token Name <span className="text-destructive">*</span>
+            </Label>
             <Input
-              id="tokenName"
-              value={formData.tokenName || ""}
-              onChange={(e) => handleChange("tokenName", e.target.value)}
-              className={errors.tokenName ? "border-destructive" : ""}
+              {...form.register("tokenName")}
+              className={cn(
+                form.formState.errors.tokenName && "border-destructive"
+              )}
               placeholder="Enter token name"
             />
-            {errors.tokenName && (
-              <p className="text-sm text-destructive">{errors.tokenName}</p>
+            {form.formState.errors.tokenName && (
+              <p className="text-sm text-destructive">
+                {form.formState.errors.tokenName.message}
+              </p>
             )}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="tokenTicker">Token Ticker</Label>
+            <Label htmlFor="tokenTicker">
+              Token Ticker <span className="text-destructive">*</span>
+            </Label>
             <Input
-              id="tokenTicker"
-              value={formData.tokenTicker || ""}
-              onChange={(e) => handleChange("tokenTicker", e.target.value)}
-              className={errors.tokenTicker ? "border-destructive" : ""}
+              {...form.register("tokenTicker")}
+              className={cn(
+                form.formState.errors.tokenTicker && "border-destructive"
+              )}
               placeholder="Enter token ticker"
             />
-            {errors.tokenTicker && (
-              <p className="text-sm text-destructive">{errors.tokenTicker}</p>
+            {form.formState.errors.tokenTicker && (
+              <p className="text-sm text-destructive">
+                {form.formState.errors.tokenTicker.message}
+              </p>
             )}
           </div>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="description">Description</Label>
+          <Label htmlFor="description">
+            Description <span className="text-destructive">*</span>
+          </Label>
           <Textarea
-            id="description"
-            value={formData.description || ""}
-            onChange={(e) => handleChange("description", e.target.value)}
-            className={errors.description ? "border-destructive" : ""}
+            {...form.register("description")}
+            className={cn(
+              form.formState.errors.description && "border-destructive"
+            )}
             placeholder="Enter token description"
           />
-          {errors.description && (
-            <p className="text-sm text-destructive">{errors.description}</p>
+          {form.formState.errors.description && (
+            <p className="text-sm text-destructive">
+              {form.formState.errors.description.message}
+            </p>
           )}
         </div>
 
         <div className="space-y-2">
-          <Label>Token Image</Label>
+          <Label>
+            Token Image <span className="text-destructive">*</span>
+          </Label>
           <div className="flex items-center gap-4">
             <div className="flex-1">
               <label
                 htmlFor="image-upload"
                 className={cn(
                   "flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer hover:bg-primary/5 transition-colors",
-                  errors.imageUrl ? "border-destructive" : "border-primary/20"
+                  imageError ? "border-destructive" : "border-primary/20"
                 )}
               >
                 {imagePreview ? (
@@ -307,10 +294,8 @@ export function PumpFunLaunchTool({ args, onSubmit }: PumpFunLaunchToolProps) {
                   onChange={handleImageChange}
                 />
               </label>
-              {errors.imageUrl && (
-                <p className="text-sm text-destructive mt-1">
-                  {errors.imageUrl}
-                </p>
+              {imageError && (
+                <p className="text-sm text-destructive mt-1">{imageError}</p>
               )}
             </div>
           </div>
@@ -319,85 +304,76 @@ export function PumpFunLaunchTool({ args, onSubmit }: PumpFunLaunchToolProps) {
         <div className="grid gap-6 md:grid-cols-3">
           <div className="space-y-2">
             <Label htmlFor="twitter">Twitter (Optional)</Label>
-            <Input
-              id="twitter"
-              value={formData.twitter || ""}
-              onChange={(e) => handleChange("twitter", e.target.value)}
-              placeholder="@handle"
-            />
+            <Input {...form.register("twitter")} placeholder="@handle" />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="telegram">Telegram (Optional)</Label>
-            <Input
-              id="telegram"
-              value={formData.telegram || ""}
-              onChange={(e) => handleChange("telegram", e.target.value)}
-              placeholder="t.me/group"
-            />
+            <Input {...form.register("telegram")} placeholder="t.me/group" />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="website">Website (Optional)</Label>
-            <Input
-              id="website"
-              value={formData.website || ""}
-              onChange={(e) => handleChange("website", e.target.value)}
-              placeholder="https://"
-            />
+            <Input {...form.register("website")} placeholder="https://" />
           </div>
         </div>
 
         <div className="grid gap-6 md:grid-cols-3">
           <div className="space-y-2">
-            <Label htmlFor="initialLiquiditySOL">Initial Liquidity (SOL)</Label>
+            <Label htmlFor="initialLiquiditySOL">
+              Initial Liquidity (SOL){" "}
+              <span className="text-destructive">*</span>
+            </Label>
             <Input
-              id="initialLiquiditySOL"
               type="number"
               step="0.0001"
-              min="0.0001"
-              value={formData.initialLiquiditySOL || 0.0001}
-              onChange={(e) =>
-                handleChange("initialLiquiditySOL", e.target.value)
-              }
-              className={errors.initialLiquiditySOL ? "border-destructive" : ""}
+              {...form.register("initialLiquiditySOL", { valueAsNumber: true })}
+              className={cn(
+                form.formState.errors.initialLiquiditySOL &&
+                  "border-destructive"
+              )}
             />
-            {errors.initialLiquiditySOL && (
+            {form.formState.errors.initialLiquiditySOL && (
               <p className="text-sm text-destructive">
-                {errors.initialLiquiditySOL}
+                {form.formState.errors.initialLiquiditySOL.message}
               </p>
             )}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="slippageBps">Slippage (BPS)</Label>
+            <Label htmlFor="slippageBps">
+              Slippage (BPS) <span className="text-destructive">*</span>
+            </Label>
             <Input
-              id="slippageBps"
               type="number"
-              min="1"
-              max="1000"
-              value={formData.slippageBps || 5}
-              onChange={(e) => handleChange("slippageBps", e.target.value)}
-              className={errors.slippageBps ? "border-destructive" : ""}
+              {...form.register("slippageBps", { valueAsNumber: true })}
+              className={cn(
+                form.formState.errors.slippageBps && "border-destructive"
+              )}
             />
-            {errors.slippageBps && (
-              <p className="text-sm text-destructive">{errors.slippageBps}</p>
+            {form.formState.errors.slippageBps && (
+              <p className="text-sm text-destructive">
+                {form.formState.errors.slippageBps.message}
+              </p>
             )}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="priorityFee">Priority Fee (SOL)</Label>
+            <Label htmlFor="priorityFee">
+              Priority Fee (SOL) <span className="text-destructive">*</span>
+            </Label>
             <Input
-              id="priorityFee"
               type="number"
               step="0.00001"
-              min="0.00001"
-              value={formData.priorityFee || 0.00005}
-              onChange={(e) => handleChange("priorityFee", e.target.value)}
-              className={errors.priorityFee ? "border-destructive" : ""}
+              {...form.register("priorityFee", { valueAsNumber: true })}
+              className={cn(
+                form.formState.errors.priorityFee && "border-destructive"
+              )}
             />
-            {errors.priorityFee && (
-              <p className="text-sm text-destructive">{errors.priorityFee}</p>
+            {form.formState.errors.priorityFee && (
+              <p className="text-sm text-destructive">
+                {form.formState.errors.priorityFee.message}
+              </p>
             )}
           </div>
         </div>
@@ -408,24 +384,42 @@ export function PumpFunLaunchTool({ args, onSubmit }: PumpFunLaunchToolProps) {
           </p>
         )}
 
-        <Button
-          type="submit"
-          className="w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
-          disabled={isSubmitting}
-          size="lg"
-        >
-          {isSubmitting ? (
-            <>
-              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-              Launching Token...
-            </>
-          ) : (
-            <>
-              <Rocket className="mr-2 h-5 w-5" />
-              Launch Token
-            </>
-          )}
-        </Button>
+        <div className="grid grid-cols-2 gap-4">
+          <Button
+            type="submit"
+            className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
+            disabled={isSubmitting}
+            size="lg"
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                Launching Token...
+              </>
+            ) : (
+              <>
+                <Rocket className="mr-2 h-5 w-5" />
+                Launch Token
+              </>
+            )}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="lg"
+            onClick={() => {
+              onSubmit({
+                status: "cancelled",
+                message: "Token launch cancelled by user",
+              });
+            }}
+            disabled={isSubmitting}
+            className="border-2"
+          >
+            <X className="mr-2 h-5 w-5" />
+            Cancel
+          </Button>
+        </div>
       </form>
     </Card>
   );
