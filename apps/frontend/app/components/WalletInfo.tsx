@@ -9,7 +9,7 @@ import {
   LogOut,
   Send,
   RefreshCw,
-  ExternalLink,
+  ArrowRight,
 } from "lucide-react";
 import { useState } from "react";
 import { useClusterStore } from "../store/clusterStore";
@@ -138,7 +138,7 @@ export function WalletInfo({ onLogoutClick }: WalletInfoProps) {
                 </Tooltip>
                 <Link href="/wallet">
                   <Button variant="ghost" size="sm" className="p-1 h-auto">
-                    <ExternalLink className="h-3 w-3" />
+                    <ArrowRight className="h-3 w-3" />
                   </Button>
                 </Link>
               </div>

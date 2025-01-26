@@ -55,11 +55,11 @@ export const sendMessage = async (req: AuthenticatedRequest, res: Response) => {
       return res.status(404).json({ error: "Thread not found" });
     }
 
-    // Update title if first message
-    if (chatThread.messages.length === 1 && messages.length > 0) {
-      const firstMessage = messages[messages.length - 1];
-      if (firstMessage.role === "user") {
-        chatThread.title = firstMessage.content.slice(0, 100);
+    // Update title if first user message and no title exists
+    if (!chatThread.title && messages.length > 0) {
+      const firstUserMessage = messages.find(msg => msg.role === "user");
+      if (firstUserMessage) {
+        chatThread.title = firstUserMessage.content.slice(0, 100);
         await chatThread.save();
       }
     }

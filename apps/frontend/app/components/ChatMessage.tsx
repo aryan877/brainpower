@@ -154,34 +154,52 @@ export default function ChatMessage({
   };
 
   return (
-    <div
-      className={cn(
-        "w-full transition-colors",
-        message.role === "assistant" ? "bg-muted/30" : "bg-background",
-        // Only add border if previous message was from a different role
-        previousMessageRole !== message.role && "border-t"
-      )}
-    >
-      <div className="max-w-3xl mx-auto py-3 px-4">
-        <div className="flex items-start gap-4">
-          <div className="flex-shrink-0 mt-1 w-8">
-            {previousMessageRole !== message.role &&
-              (message.role === "assistant" ? (
-                <Avatar className="w-8 h-8 ring-2 ring-primary/10 shadow-md bg-primary/5 flex items-center justify-center">
-                  <div className="text-primary font-medium text-lg">🧠</div>
-                </Avatar>
-              ) : (
-                <Avatar className="w-8 h-8 ring-2 ring-primary/20 shadow-md bg-primary/10 flex items-center justify-center">
-                  <User className="w-4 h-4 text-primary" />
-                </Avatar>
-              ))}
+    <div className="w-full">
+      <div className="max-w-3xl mx-auto px-4 py-4 group/message">
+        <div className="flex items-start gap-4 relative">
+          <div className="flex-shrink-0">
+            {(previousMessageRole !== message.role || !previousMessageRole) && (
+              <div className="sticky top-0 pt-1">
+                {message.role === "assistant" ? (
+                  <div className="relative">
+                    <div className="absolute -left-1 -right-1 -top-1 -bottom-1 bg-gradient-to-br from-primary/30 via-primary/20 to-primary/5 blur-lg rounded-full dark:from-primary/20 dark:via-primary/10" />
+                    <Avatar className="relative w-8 h-8 ring-1 ring-primary/30 bg-gradient-to-br from-primary/20 via-background to-background flex items-center justify-center transition-all duration-300 hover:scale-110 hover:ring-primary/50 dark:from-primary/20">
+                      <div className="text-primary font-medium text-lg">🧠</div>
+                    </Avatar>
+                  </div>
+                ) : (
+                  <div className="relative">
+                    <div className="absolute -left-1 -right-1 -top-1 -bottom-1 bg-gradient-to-br from-primary/20 via-primary/10 to-primary/5 blur-lg rounded-full" />
+                    <Avatar className="relative w-8 h-8 ring-1 ring-primary/40 bg-gradient-to-br from-primary/10 via-background to-background flex items-center justify-center transition-all duration-300 hover:scale-110 hover:ring-primary/60">
+                      <User className="w-4 h-4 text-primary" />
+                    </Avatar>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
           <div className="flex-1 min-w-0">
-            <div className={cn("p-1")}>
+            {previousMessageRole !== message.role && (
+              <div className="w-[calc(100%-2rem)] mb-3 h-px bg-gradient-to-r from-transparent via-border/30 to-transparent dark:via-border/20" />
+            )}
+            <div 
+              className={cn(
+                "rounded-2xl px-4 py-3 relative group",
+                message.role === "assistant" 
+                  ? "bg-gradient-to-r from-primary/[0.08] via-primary/[0.03] to-background/40 border border-primary/20 dark:from-primary/10 dark:via-primary/5 dark:to-background/60 dark:border-primary/30" 
+                  : "bg-gradient-to-r from-muted/20 via-muted/10 to-background/40 border border-border/40 dark:from-primary/5 dark:to-background/60",
+                "transition-all duration-300",
+                "hover:shadow-[0_0_1.5rem_-0.5rem] hover:shadow-primary/10",
+                "hover:border-primary/30 dark:hover:border-primary/40"
+              )}
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-primary/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl dark:from-primary/[0.05]" />
               <div
                 className={cn(
-                  "prose prose-base max-w-none break-words",
-                  "dark:prose-invert",
+                  "prose prose-base max-w-none break-words relative",
+                  "prose-p:text-foreground/90 prose-p:leading-relaxed prose-p:my-1 dark:prose-p:text-foreground/95",
+                  "prose-code:bg-muted/60 prose-code:text-foreground/90 prose-code:rounded-md dark:prose-code:bg-muted/40",
+                  "dark:prose-invert dark:prose-pre:bg-muted/20",
                   isLoading && "opacity-60"
                 )}
               >
@@ -194,14 +212,14 @@ export default function ChatMessage({
                         return !isInline && match ? (
                           <div
                             key={nanoid()}
-                            className="relative group/code mt-2 mb-1"
+                            className="relative group/code mt-4 mb-1"
                           >
-                            <div className="absolute -top-4 left-0 right-0 h-6 bg-neutral-100 dark:bg-neutral-800 rounded-t-lg flex items-center px-4">
-                              <span className="text-xs text-muted-foreground">
+                            <div className="absolute -top-4 left-0 right-0 h-6 bg-muted/60 backdrop-blur supports-[backdrop-filter]:bg-muted/40 rounded-t-lg flex items-center px-4 dark:bg-muted/30">
+                              <span className="text-xs font-medium text-foreground/70 dark:text-foreground/80">
                                 {match[1].toUpperCase()}
                               </span>
                             </div>
-                            <div className="!bg-card !rounded-lg !rounded-tl-none !pt-4 text-sm !mt-0 !mb-0 whitespace-pre-wrap break-all">
+                            <div className="!bg-muted/40 dark:!bg-muted/20 !rounded-lg !rounded-tl-none !pt-4 text-sm !mt-0 !mb-0 whitespace-pre-wrap break-all">
                               <SyntaxHighlighter
                                 style={vscDarkPlus}
                                 language={match[1]}
@@ -215,10 +233,10 @@ export default function ChatMessage({
                             key={nanoid()}
                             {...props}
                             className={cn(
-                              "px-1.5 py-0.5 rounded text-[15px] break-all",
+                              "px-1.5 py-0.5 rounded-md text-[15px] break-all",
                               message.role === "assistant"
-                                ? "bg-neutral-100 dark:bg-neutral-800"
-                                : "bg-primary/10"
+                                ? "bg-muted/50 dark:bg-muted/30"
+                                : "bg-primary/20 dark:bg-primary/10"
                             )}
                           >
                             {children}
@@ -229,7 +247,7 @@ export default function ChatMessage({
                         return (
                           <p
                             key={nanoid()}
-                            className="mb-2 last:mb-0 break-words text-[15px] leading-relaxed"
+                            className="mb-3 last:mb-0 break-words text-[15px] leading-relaxed"
                           >
                             {children}
                           </p>
@@ -239,7 +257,7 @@ export default function ChatMessage({
                         return (
                           <ul
                             key={nanoid()}
-                            className="mb-2 last:mb-0 space-y-1.5 text-[15px] list-disc pl-4"
+                            className="mb-3 last:mb-0 space-y-2 text-[15px] list-disc pl-4 marker:text-muted-foreground"
                           >
                             {children}
                           </ul>
@@ -249,7 +267,7 @@ export default function ChatMessage({
                         return (
                           <ol
                             key={nanoid()}
-                            className="mb-2 last:mb-0 space-y-1.5 text-[15px] list-decimal pl-4"
+                            className="mb-3 last:mb-0 space-y-2 text-[15px] list-decimal pl-4 marker:text-muted-foreground"
                           >
                             {children}
                           </ol>
@@ -264,8 +282,8 @@ export default function ChatMessage({
                   message.toolInvocations.length > 0 && (
                     <div
                       className={cn(
-                        "space-y-3",
-                        message.content?.trim() && "mt-4"
+                        "relative space-y-3",
+                        message.content?.trim() && "mt-4 pt-4 border-t border-border/30"
                       )}
                     >
                       {message.toolInvocations.map((toolInvocation) =>
