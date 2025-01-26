@@ -92,12 +92,12 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
 
   if (!threadId) {
     return (
-      <div className="flex h-full items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-foreground mb-4">
+      <div className="flex h-full items-center justify-center p-4">
+        <div className="text-center max-w-md mx-auto">
+          <h2 className="text-xl md:text-2xl font-bold text-foreground mb-4">
             Welcome to BrainPower
           </h2>
-          <p className="text-muted-foreground mb-8">
+          <p className="text-sm md:text-base text-muted-foreground mb-8">
             Start a new chat or select an existing one to begin
           </p>
         </div>
@@ -108,7 +108,7 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
   return (
     <div className="flex flex-col h-full">
       {/* Messages container */}
-      <div className="flex-1 overflow-y-auto brainpower-scrollbar">
+      <div className="flex-1 overflow-y-auto brainpower-scrollbar px-2 md:px-4">
         {messages.map((message, index) => (
           <ChatMessage
             key={message.id}
@@ -126,20 +126,22 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
         ))}
         <div ref={messagesEndRef} />
       </div>
+
       {/* Error display */}
       {error && (
-        <div className="mx-auto w-full max-w-3xl px-4 py-2">
-          <Card className="flex items-center gap-3 border-destructive/20 bg-neutral-100 dark:bg-neutral-800 p-4">
-            <AlertCircle className="h-5 w-5 flex-shrink-0 text-destructive" />
-            <p className="flex-1 text-[15px] text-foreground break-words line-clamp-3">
+        <div className="mx-auto w-full max-w-3xl px-2 md:px-4 py-2">
+          <Card className="flex items-center gap-3 border-destructive/20 bg-neutral-100 dark:bg-neutral-800 p-3 md:p-4">
+            <AlertCircle className="h-4 md:h-5 w-4 md:w-5 flex-shrink-0 text-destructive" />
+            <p className="flex-1 text-sm md:text-[15px] text-foreground break-words line-clamp-3">
               {error.message}
             </p>
             <Button
               onClick={() => reload()}
               variant="outline"
+              size="sm"
               className="flex-shrink-0 text-destructive hover:bg-destructive/20 border-destructive/20"
             >
-              <RefreshCcw className="h-4 w-4 mr-1.5" />
+              <RefreshCcw className="h-3 w-3 md:h-4 md:w-4 mr-1.5" />
               <span>Retry</span>
             </Button>
           </Card>
@@ -148,10 +150,10 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
 
       {/* Braining indicator */}
       {isWaitingForResponse && (
-        <div className="mx-auto w-full max-w-3xl px-4 py-2">
+        <div className="mx-auto w-full max-w-3xl px-2 md:px-4 py-2">
           <div className="flex items-center gap-2 text-primary">
-            <div className="animate-spin rounded-full h-5 w-5 border-2 border-primary border-t-transparent" />
-            <span className="text-base font-medium">
+            <div className="animate-spin rounded-full h-4 w-4 md:h-5 md:w-5 border-2 border-primary border-t-transparent" />
+            <span className="text-sm md:text-base font-medium">
               BrainPower is braining...
             </span>
           </div>
@@ -159,17 +161,16 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
       )}
 
       {/* Input form */}
-      <div className="border-t bg-background">
+      <div className="border-t bg-background mt-auto">
         <form
           onSubmit={wrappedHandleSubmit}
-          className="max-w-3xl mx-auto px-4 py-3"
+          className="max-w-3xl mx-auto px-2 md:px-4 py-2 md:py-3"
         >
           <div className="relative flex items-center">
             <Textarea
               value={input}
               onChange={(e) => {
                 handleInputChange(e);
-                // Auto-resize
                 e.target.style.height = "inherit";
                 e.target.style.height = `${Math.min(e.target.scrollHeight, 200)}px`;
               }}
@@ -179,19 +180,19 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
                   : "Type your message..."
               }
               rows={1}
-              className="resize-none pr-14 text-[15px]"
-              style={{ minHeight: "52px", maxHeight: "200px" }}
+              className="resize-none pr-14 text-sm md:text-[15px]"
+              style={{ minHeight: "44px", maxHeight: "200px" }}
               disabled={isLoading || hasActiveToolCall}
               onKeyDown={handleKeyDown}
             />
-            <div className="absolute right-3 flex items-center space-x-2">
+            <div className="absolute right-2 md:right-3 flex items-center space-x-2">
               <Button
                 type="submit"
                 size="icon"
                 disabled={isLoading || hasActiveToolCall || !input.trim()}
-                className="hover:-translate-y-0.5 active:translate-y-0"
+                className="h-8 w-8 md:h-9 md:w-9 hover:-translate-y-0.5 active:translate-y-0"
               >
-                <ArrowUpCircle className="h-5 w-5" />
+                <ArrowUpCircle className="h-4 w-4 md:h-5 md:w-5" />
               </Button>
               {isLoading && !hasActiveToolCall && (
                 <Button
@@ -199,9 +200,9 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
                   size="icon"
                   variant="ghost"
                   onClick={() => stop()}
-                  className="text-destructive hover:text-destructive/90 hover:bg-destructive/10"
+                  className="h-8 w-8 md:h-9 md:w-9 text-destructive hover:text-destructive/90 hover:bg-destructive/10"
                 >
-                  <Square className="h-4 w-4" />
+                  <Square className="h-3 w-3 md:h-4 md:w-4" />
                 </Button>
               )}
             </div>

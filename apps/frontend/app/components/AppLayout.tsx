@@ -128,7 +128,7 @@ export function AppLayout({
 
   return (
     <WalletProvider>
-      <div className="flex h-screen overflow-hidden bg-background">
+      <div className="flex h-screen overflow-hidden bg-background relative">
         {/* Confirm Dialog */}
         <Dialog open={isConfirmDialogOpen} onOpenChange={setIsConfirmDialogOpen}>
           <DialogContent>
@@ -158,16 +158,16 @@ export function AppLayout({
         {/* Mobile sidebar overlay */}
         {isSidebarOpen && window.innerWidth < 768 && (
           <div
-            className="fixed inset-0 bg-background/80 backdrop-blur-sm z-20 md:hidden"
+            className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[60] md:hidden"
             onClick={toggleSidebar}
           />
         )}
 
         {/* Sidebar container */}
         <div
-          className={`fixed md:static w-[260px] h-full z-30 transition-transform duration-300 ease-in-out ${
+          className={`fixed md:static w-[260px] h-full z-[70] transition-transform duration-300 ease-in-out ${
             isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-          } md:translate-x-0`}
+          } md:translate-x-0 md:z-0`}
         >
           <Sidebar
             threads={threads}
@@ -181,12 +181,12 @@ export function AppLayout({
         </div>
 
         {/* Main content */}
-        <main className="flex-1 flex flex-col h-full">
+        <div className="flex-1 flex flex-col min-h-screen overflow-hidden">
           {showNavbar && <Navbar onMenuClick={toggleSidebar} />}
-          <div className={`flex-1 overflow-y-auto brainpower-scrollbar ${showNavbar ? "mt-12" : ""}`}>
+          <div className="flex-1 overflow-y-auto brainpower-scrollbar">
             {children}
           </div>
-        </main>
+        </div>
       </div>
     </WalletProvider>
   );

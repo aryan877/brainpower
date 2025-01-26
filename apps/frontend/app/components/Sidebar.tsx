@@ -7,6 +7,7 @@ import { usePrivy } from "@privy-io/react-auth";
 import { useStoreWallet } from "../hooks/wallet";
 import { ThemeToggle } from "./ThemeToggle";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export interface SidebarProps {
   threads: ThreadPreview[];
@@ -31,6 +32,7 @@ export default function Sidebar({
   const { user } = usePrivy();
   const { mutateAsync: storeWallet } = useStoreWallet();
   const [isCreatingWallet, setIsCreatingWallet] = useState(false);
+  const [showWalletDialog, setShowWalletDialog] = useState(false);
 
   const handleCreateSolanaWallet = async () => {
     try {
@@ -44,6 +46,15 @@ export default function Sidebar({
       console.error("Error creating Solana wallet:", error);
     } finally {
       setIsCreatingWallet(false);
+      setShowWalletDialog(false);
+    }
+  };
+
+  const handleNewChatClick = () => {
+    if (!user?.wallet) {
+      setShowWalletDialog(true);
+    } else {
+      onCreateThread();
     }
   };
 
@@ -56,79 +67,88 @@ export default function Sidebar({
   };
 
   return (
-    <aside className="flex flex-col h-full bg-background border-r">
-      <div className="p-4">
-        <div className="flex items-center gap-2 mb-4">
-          <Button
-            onClick={onCreateThread}
-            disabled={isLoading}
-            className="flex-1"
-            variant="default"
-            size="default"
-          >
-            {isLoading ? "Creating..." : "New Chat"}
-          </Button>
-          <ThemeToggle />
+    <>
+      <Dialog open={showWalletDialog} onOpenChange={setShowWalletDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create a Solana Wallet</DialogTitle>
+            <DialogDescription className="pt-2">
+              You need a Solana wallet to use BrainPower. Create one now to get started.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-3">
+            <Button variant="outline" onClick={() => setShowWalletDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleCreateSolanaWallet} disabled={isCreatingWallet}>
+              {isCreatingWallet ? "Creating..." : "Create Wallet"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <aside className="flex flex-col h-full bg-background border-r">
+        <div className="p-4">
+          <div className="flex items-center gap-2 mb-4">
+            <Button
+              onClick={handleNewChatClick}
+              disabled={isLoading}
+              className="flex-1"
+              variant="default"
+              size="default"
+            >
+              {isLoading ? "Creating..." : "New Chat"}
+            </Button>
+            <ThemeToggle />
+          </div>
         </div>
 
-        {!user?.wallet && (
-          <Button
-            onClick={handleCreateSolanaWallet}
-            disabled={isCreatingWallet}
-            className="w-full"
-            variant="default"
-            size="default"
-          >
-            {isCreatingWallet
-              ? "Creating Solana Wallet..."
-              : "Create Solana Wallet"}
-          </Button>
-        )}
-      </div>
-
-      {/* Chat threads list */}
-      <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent pb-4">
-        {threads.length === 0 ? (
-          <div className="p-4 text-center text-muted-foreground">
-            <p className="text-sm md:text-base">No chats yet</p>
-            <p className="text-xs md:text-sm mt-2">
-              Click &apos;New Chat&apos; to start a conversation
-            </p>
-          </div>
-        ) : (
-          <ul className="space-y-2 px-4">
-            {threads.map((thread) => (
-              <li
-                key={thread.threadId}
-                onClick={() => onSelectThread(thread.threadId)}
-                className={`flex justify-between items-center p-3 cursor-pointer rounded-lg hover:bg-muted transition-all duration-200 ${
-                  selectedThread === thread.threadId ? "bg-muted border" : ""
-                }`}
-              >
-                <span className="truncate text-foreground font-medium text-sm md:text-base">
-                  {formatThreadName(thread)}
-                </span>
-                <Button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onDeleteClick(thread);
-                  }}
-                  variant="ghost"
-                  size="icon"
-                  className="text-destructive hover:text-destructive/90 hover:bg-muted flex-shrink-0"
+        {/* Chat threads list */}
+        <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent pb-4">
+          {threads.length === 0 ? (
+            <div className="p-4 text-center text-muted-foreground">
+              <p className="text-sm md:text-base">No chats yet</p>
+              <p className="text-xs md:text-sm mt-2">
+                {user?.wallet 
+                  ? "Click 'New Chat' to start a conversation"
+                  : "Create a Solana wallet to start chatting"}
+              </p>
+            </div>
+          ) : (
+            <ul className="space-y-2 px-4">
+              {threads.map((thread) => (
+                <li
+                  key={thread.threadId}
+                  onClick={() => onSelectThread(thread.threadId)}
+                  className={`flex justify-between items-center p-3 cursor-pointer rounded-lg hover:bg-muted transition-all duration-200 ${
+                    selectedThread === thread.threadId ? "bg-muted border" : ""
+                  }`}
                 >
-                  <Trash2 className="w-5 h-5" />
-                </Button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+                  <span className="truncate text-foreground font-medium text-sm md:text-base">
+                    {formatThreadName(thread)}
+                  </span>
+                  <Button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDeleteClick(thread);
+                    }}
+                    variant="ghost"
+                    size="icon"
+                    className="text-destructive hover:text-destructive/90 hover:bg-muted flex-shrink-0"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
 
-      {/* Wallet info at the bottom */}
-      <div className="mt-auto border-t">
-        <WalletInfo onLogoutClick={onLogoutClick} />
-      </div>
-    </aside>
+        {/* Wallet info at the bottom */}
+        <div className="mt-auto border-t">
+          <WalletInfo onLogoutClick={onLogoutClick} />
+        </div>
+      </aside>
+    </>
   );
 }
