@@ -72,16 +72,16 @@ export default function ChatMessage({
         <div
           key={toolInvocation.toolCallId}
           className={cn(
-            "relative overflow-hidden rounded-lg border",
+            "relative overflow-hidden rounded-lg border pl-4",
             isError
               ? "bg-destructive/5 border-destructive/20"
               : "bg-muted/10 border-muted/30"
           )}
         >
-          <div className="px-4 py-3.5 flex items-center gap-3">
+          <div className="py-3.5 flex items-start gap-3">
             <div
               className={cn(
-                "flex items-center justify-center flex-shrink-0 w-6 h-6 rounded-full",
+                "flex items-center justify-center flex-shrink-0 w-6 h-6 rounded-full mt-0.5",
                 isError ? "bg-destructive/10" : "bg-muted/20"
               )}
             >
@@ -92,7 +92,7 @@ export default function ChatMessage({
                 )}
               />
             </div>
-            <div className="flex-1 min-w-0">
+            <div className="flex-1 min-w-0 pr-4">
               <p
                 className={cn(
                   "font-medium text-[0.9375rem]",
