@@ -109,11 +109,10 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
     <div className="flex flex-col h-full">
       {/* Messages container */}
       <div className="flex-1 overflow-y-auto brainpower-scrollbar">
-        {messages.map((message, index) => (
+        {messages.map((message) => (
           <ChatMessage
-            key={message.id}
+             key={message.id}
             message={message}
-            previousMessageRole={index > 0 ? messages[index - 1].role : null}
             isLoading={
               isLoading &&
               messages.length > 0 &&

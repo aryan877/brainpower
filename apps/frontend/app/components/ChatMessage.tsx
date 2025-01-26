@@ -18,7 +18,6 @@ import Image from "next/image";
 
 interface ChatMessageProps {
   message: Message;
-  previousMessageRole: "user" | "assistant" | "system" | "data" | null;
   isLoading?: boolean;
   isWaitingForResponse?: boolean;
   addToolResult: (result: { toolCallId: string; result: unknown }) => void;
@@ -31,7 +30,6 @@ function isValidToolName(name: string): name is ValidToolName {
 
 export default function ChatMessage({
   message,
-  previousMessageRole,
   isLoading,
   addToolResult,
 }: ChatMessageProps) {
@@ -157,10 +155,6 @@ export default function ChatMessage({
   return (
     <div className="w-full py-3">
       <div className="max-w-3xl mx-auto px-4">
-        {previousMessageRole !== message.role && (
-          <div className="w-full h-px bg-border/30 dark:bg-border/20 mb-3" />
-        )}
-        
         <div className={cn(
           "rounded-2xl",
           message.role === "assistant" 

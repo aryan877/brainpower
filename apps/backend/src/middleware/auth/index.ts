@@ -29,24 +29,26 @@ export async function authenticateUser(
         throw new UnauthorizedError("No authentication token provided");
       }
 
-      const verifiedClaims = await privyClient.verifyAuthToken(accessToken);
+      try {
+        const verifiedClaims = await privyClient.verifyAuthToken(accessToken);
 
-      if (idToken) {
-        try {
-          const user = await privyClient.getUser({ idToken });
-          req.user = {
-            userId: verifiedClaims.userId,
-            walletAddress: user.wallet?.address,
-          };
-        } catch (error) {
+        if (idToken) {
+          try {
+            const user = await privyClient.getUser({ idToken });
+            req.user = {
+              userId: verifiedClaims.userId,
+              walletAddress: user.wallet?.address,
+            };
+          } catch (error) {
+            throw new UnauthorizedError("invalid auth token");
+          }
+        } else {
           req.user = {
             userId: verifiedClaims.userId,
           };
         }
-      } else {
-        req.user = {
-          userId: verifiedClaims.userId,
-        };
+      } catch (error: any) {
+        throw new UnauthorizedError("invalid auth token");
       }
 
       next();
@@ -54,14 +56,22 @@ export async function authenticateUser(
     }
 
     const token = authHeader.split(" ")[1];
-    const verifiedClaims = await privyClient.verifyAuthToken(token);
+    try {
+      const verifiedClaims = await privyClient.verifyAuthToken(token);
 
-    req.user = {
-      userId: verifiedClaims.userId,
-    };
+      req.user = {
+        userId: verifiedClaims.userId,
+      };
 
-    next();
+      next();
+    } catch (error: any) {
+      throw new UnauthorizedError("invalid auth token");
+    }
   } catch (error) {
-    next(new UnauthorizedError("Invalid authentication token"));
+    if (error instanceof UnauthorizedError) {
+      next(error);
+    } else {
+      next(new UnauthorizedError("invalid auth token"));
+    }
   }
 }
