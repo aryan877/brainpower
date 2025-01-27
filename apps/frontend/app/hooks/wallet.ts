@@ -2,7 +2,7 @@ import { useSolanaWallets } from "@privy-io/react-auth/solana";
 import { useClusterStore } from "../store/clusterStore";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { walletClient } from "../clients/wallet";
-import { ChainType } from "../types/api/wallet";
+import { ChainType, GetTransactionHistoryResponse } from "../types/api/wallet";
 import {
   LAMPORTS_PER_SOL,
   Transaction,
@@ -10,6 +10,7 @@ import {
   Commitment,
   TransactionSignature,
   TransactionError,
+  PublicKey,
 } from "@solana/web3.js";
 import { Cluster } from "@repo/brainpower-agent";
 
@@ -21,12 +22,17 @@ import { Cluster } from "@repo/brainpower-agent";
  * - all: Base key for all wallet queries
  * - user: Key for user-specific wallet queries
  * - balance: Key for wallet balance queries, includes address and cluster
+ * - history: Key for wallet transaction history queries, includes address
+ * - priorityFees: Key for priority fees queries
  */
 export const walletKeys = {
   all: ["wallets"] as const,
   user: () => [...walletKeys.all, "user"] as const,
   balance: (address: string, cluster: string) =>
     [...walletKeys.all, "balance", address, cluster] as const,
+  history: (address: string) =>
+    [...walletKeys.all, "history", address] as const,
+  priorityFees: () => [...walletKeys.all, "priorityFees"] as const,
 };
 
 /**
@@ -86,26 +92,11 @@ export function useWalletConnection() {
  * Hook for sending Solana transactions
  *
  * Uses hooks:
- * - useClusterStore
  * - useWalletConnection
- *
  *
  * This hook provides a function to send transactions on Solana.
  * It handles both legacy Transaction and newer VersionedTransaction types.
  * The hook sets up the connection and handles signing/sending/confirming.
- *
- * Usage example:
- * const { sendTransaction } = useSendTransaction();
- *
- * // Basic usage
- * await sendTransaction(transaction);
- *
- * // With options
- * await sendTransaction(transaction, {
- *   commitment: 'finalized',
- *   skipPreflight: true,
- *   maxRetries: 5
- * });
  */
 export function useSendTransaction() {
   const { wallet } = useWalletConnection();
@@ -119,21 +110,32 @@ export function useSendTransaction() {
     }
 
     try {
-      // Sign the transaction with the user's wallet
-      const signedTx = await wallet.signTransaction(transaction);
+      // Convert legacy transaction to versioned transaction if needed
+      let versionedTx: VersionedTransaction;
+      if (transaction instanceof Transaction) {
+        const { blockhash } = await walletClient.getLatestBlockhash(
+          options.commitment
+        );
+        transaction.recentBlockhash = blockhash;
+        transaction.feePayer = new PublicKey(wallet.address);
 
-      // Serialize the signed transaction
+        // Convert to versioned transaction
+        versionedTx = new VersionedTransaction(transaction.compileMessage());
+      } else {
+        versionedTx = transaction;
+      }
+
+      // Sign and send the transaction
+      const signedTx = await wallet.signTransaction(versionedTx);
       const serializedTransaction = Buffer.from(signedTx.serialize()).toString(
         "base64"
       );
 
-      // Send the transaction through our backend
-      const { signature, confirmation } = await walletClient.sendTransaction(
-        serializedTransaction,
-        options
-      );
-
-      return { signature, confirmation };
+      return await walletClient.sendTransaction(serializedTransaction, {
+        commitment: options.commitment || "processed",
+        skipPreflight: options.skipPreflight || false,
+        maxRetries: options.maxRetries || 3,
+      });
     } catch (error) {
       console.error("Transaction error:", error);
       throw error;
@@ -184,6 +186,34 @@ export function useWalletBalance(
     error,
     refreshBalance: () => refetch(),
   };
+}
+
+/**
+ * Hook to fetch transaction history for a wallet
+ *
+ * Uses hooks:
+ * - useQuery
+ *
+ * This hook fetches and caches the transaction history for a wallet address.
+ * It automatically handles loading states and errors.
+ */
+export function useTransactionHistory(
+  walletAddress: string | undefined,
+  options?: {
+    before?: string;
+  }
+) {
+  const { before } = options || {};
+
+  return useQuery<GetTransactionHistoryResponse>({
+    queryKey: [...walletKeys.history(walletAddress || ""), { before }],
+    queryFn: async () => {
+      if (!walletAddress) throw new Error("No wallet address");
+      return walletClient.getTransactionHistory(walletAddress, { before });
+    },
+    enabled: !!walletAddress,
+    staleTime: 30 * 1000,
+  });
 }
 
 /**
@@ -264,5 +294,24 @@ export function useStoreWallet() {
       chainType?: ChainType;
     }) => walletClient.storeWallet(address, chainType),
     onSuccess: () => {},
+  });
+}
+
+/**
+ * Hook to fetch current priority fees
+ *
+ * Uses hooks:
+ * - useQuery
+ *
+ * This hook fetches the current priority fee levels from Helius.
+ * It automatically caches and refreshes the data.
+ * Optionally accepts a serialized transaction for more accurate fee estimates.
+ */
+export function usePriorityFees(serializedTransaction?: string) {
+  return useQuery({
+    queryKey: [...walletKeys.priorityFees(), serializedTransaction],
+    queryFn: () => walletClient.getPriorityFees(serializedTransaction),
+    refetchInterval: 60000, // Refresh every 60 seconds
+    staleTime: 30000, // Consider data stale after 30 seconds
   });
 }

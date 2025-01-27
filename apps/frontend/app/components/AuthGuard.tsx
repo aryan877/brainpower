@@ -3,7 +3,8 @@
 import { usePrivy } from "@privy-io/react-auth";
 import { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
+import { motion } from "framer-motion";
+import Image from "next/image";
 
 export function AuthGuard({ children }: { children: ReactNode }) {
   const { ready, authenticated, login } = usePrivy();
@@ -11,7 +12,24 @@ export function AuthGuard({ children }: { children: ReactNode }) {
   if (!ready) {
     return (
       <div className="h-screen w-screen flex flex-col items-center justify-center gap-4 bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <motion.div
+          animate={{
+            scale: 1.2,
+          }}
+          transition={{
+            duration: 0.5,
+            repeat: Infinity,
+            repeatType: "reverse",
+          }}
+        >
+          <Image
+            src="/text-logo.svg"
+            alt="BrainPower Logo"
+            width={200}
+            height={40}
+            priority
+          />
+        </motion.div>
         <p className="text-muted-foreground">Loading authentication...</p>
       </div>
     );

@@ -2,15 +2,7 @@
 
 import { usePrivy } from "@privy-io/react-auth";
 import { useSolanaWallets } from "@privy-io/react-auth/solana";
-import {
-  Copy,
-  Wallet,
-  Plus,
-  LogOut,
-  Send,
-  RefreshCw,
-  ArrowRight,
-} from "lucide-react";
+import { Copy, Wallet, Plus, LogOut, Send, RefreshCw } from "lucide-react";
 import { useState } from "react";
 import { useClusterStore } from "../store/clusterStore";
 import { useWallet, useStoreWallet } from "../hooks/wallet";
@@ -140,13 +132,8 @@ export function WalletInfo({ onLogoutClick }: WalletInfoProps) {
               <div className="break-all text-foreground">{walletAddress}</div>
               <div className="pt-1">
                 <Link href="/wallet" className="no-underline w-full block">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="w-full text-xs h-7 flex items-center justify-between hover:bg-accent"
-                  >
-                    <span className="text-muted-foreground">Manage Wallet</span>
-                    <ArrowRight className="h-3 w-3 text-muted-foreground" />
+                  <Button variant="default" size="default" className="w-full">
+                    Manage Wallet
                   </Button>
                 </Link>
               </div>

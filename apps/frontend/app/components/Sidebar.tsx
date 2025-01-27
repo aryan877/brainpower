@@ -1,4 +1,4 @@
-import { Trash2 } from "lucide-react";
+import { XCircle, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { ThreadPreview } from "../types";
 import { WalletInfo } from "./WalletInfo";
@@ -7,7 +7,13 @@ import { usePrivy } from "@privy-io/react-auth";
 import { useStoreWallet } from "../hooks/wallet";
 import { ThemeToggle } from "./ThemeToggle";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export interface SidebarProps {
   threads: ThreadPreview[];
@@ -33,6 +39,7 @@ export default function Sidebar({
   const { mutateAsync: storeWallet } = useStoreWallet();
   const [isCreatingWallet, setIsCreatingWallet] = useState(false);
   const [showWalletDialog, setShowWalletDialog] = useState(false);
+  const [deletingThreadId, setDeletingThreadId] = useState<string | null>(null);
 
   const handleCreateSolanaWallet = async () => {
     try {
@@ -58,6 +65,21 @@ export default function Sidebar({
     }
   };
 
+  const handleDeleteClick = async (
+    thread: ThreadPreview,
+    e: React.MouseEvent
+  ) => {
+    e.stopPropagation();
+    if (deletingThreadId) return; // Prevent multiple deletion attempts
+
+    setDeletingThreadId(thread.threadId);
+    try {
+      await onDeleteClick(thread);
+    } finally {
+      setDeletingThreadId(null);
+    }
+  };
+
   const formatThreadName = (thread: ThreadPreview) => {
     if (thread.title) {
       return thread.title;
@@ -73,14 +95,21 @@ export default function Sidebar({
           <DialogHeader>
             <DialogTitle>Create a Solana Wallet</DialogTitle>
             <DialogDescription className="pt-2">
-              You need a Solana wallet to use BrainPower. Create one now to get started.
+              You need a Solana wallet to use BrainPower. Create one now to get
+              started.
             </DialogDescription>
           </DialogHeader>
           <div className="flex justify-end gap-3">
-            <Button variant="outline" onClick={() => setShowWalletDialog(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setShowWalletDialog(false)}
+            >
               Cancel
             </Button>
-            <Button onClick={handleCreateSolanaWallet} disabled={isCreatingWallet}>
+            <Button
+              onClick={handleCreateSolanaWallet}
+              disabled={isCreatingWallet}
+            >
               {isCreatingWallet ? "Creating..." : "Create Wallet"}
             </Button>
           </div>
@@ -109,18 +138,18 @@ export default function Sidebar({
             <div className="p-4 text-center text-muted-foreground">
               <p className="text-sm md:text-base">No chats yet</p>
               <p className="text-xs md:text-sm mt-2">
-                {user?.wallet 
+                {user?.wallet
                   ? "Click 'New Chat' to start a conversation"
                   : "Create a Solana wallet to start chatting"}
               </p>
             </div>
           ) : (
-            <ul className="space-y-2 px-4">
+            <ul className="space-y-1 px-4">
               {threads.map((thread) => (
                 <li
                   key={thread.threadId}
                   onClick={() => onSelectThread(thread.threadId)}
-                  className={`flex justify-between items-center p-3 cursor-pointer rounded-lg hover:bg-muted transition-all duration-200 ${
+                  className={`flex justify-between items-center p-2 cursor-pointer rounded-lg hover:bg-muted transition-all duration-200 ${
                     selectedThread === thread.threadId ? "bg-muted border" : ""
                   }`}
                 >
@@ -128,15 +157,17 @@ export default function Sidebar({
                     {formatThreadName(thread)}
                   </span>
                   <Button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onDeleteClick(thread);
-                    }}
+                    onClick={(e) => handleDeleteClick(thread, e)}
                     variant="ghost"
                     size="icon"
+                    disabled={deletingThreadId === thread.threadId}
                     className="text-destructive hover:text-destructive/90 hover:bg-muted flex-shrink-0"
                   >
-                    <Trash2 className="w-5 h-5" />
+                    {deletingThreadId === thread.threadId ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <XCircle className="h-4 w-4 transition-transform hover:scale-110" />
+                    )}
                   </Button>
                 </li>
               ))}

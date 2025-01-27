@@ -3,7 +3,12 @@ import { AuthenticatedRequest } from "../middleware/auth/index.js";
 import { BadRequestError } from "../middleware/errors/types.js";
 import { User } from "../models/User.js";
 import { getUserId } from "../utils/userIdentification.js";
-import { Connection, PublicKey } from "@solana/web3.js";
+import {
+  Connection,
+  PublicKey,
+  Transaction,
+  VersionedTransaction,
+} from "@solana/web3.js";
 import { getRpcUrl } from "../utils/getRpcUrl.js";
 
 export const storeWallet = async (req: AuthenticatedRequest, res: Response) => {
@@ -56,7 +61,7 @@ export const getBalance = async (req: AuthenticatedRequest, res: Response) => {
 
   try {
     const rpcUrl = getRpcUrl(cluster);
-    const connection = new Connection(rpcUrl, "confirmed");
+    const connection = new Connection(rpcUrl, "processed");
     const pubkey = new PublicKey(address);
     const balance = await connection.getBalance(pubkey);
 
@@ -64,6 +69,26 @@ export const getBalance = async (req: AuthenticatedRequest, res: Response) => {
   } catch (error) {
     console.error("Error fetching balance:", error);
     throw new BadRequestError("Failed to fetch balance");
+  }
+};
+
+export const getLatestBlockhash = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
+  const cluster = req.user.cluster;
+  const commitment = req.query.commitment || "processed";
+
+  try {
+    const rpcUrl = getRpcUrl(cluster);
+    const connection = new Connection(rpcUrl, commitment as any);
+    const { blockhash, lastValidBlockHeight } =
+      await connection.getLatestBlockhash(commitment as any);
+
+    res.json({ blockhash, lastValidBlockHeight });
+  } catch (error) {
+    console.error("Error getting latest blockhash:", error);
+    throw new BadRequestError("Failed to get latest blockhash");
   }
 };
 
@@ -82,22 +107,453 @@ export const sendTransaction = async (
     const rpcUrl = getRpcUrl(cluster);
     const connection = new Connection(
       rpcUrl,
-      options?.commitment || "confirmed"
+      options?.commitment || "processed"
     );
 
-    const signature = await connection.sendRawTransaction(
-      Buffer.from(serializedTransaction, "base64"),
-      {
-        skipPreflight: options?.skipPreflight || false,
-        maxRetries: options?.maxRetries || 3,
-      }
-    );
+    // Always try to deserialize as VersionedTransaction first
+    let tx: VersionedTransaction;
+    try {
+      tx = VersionedTransaction.deserialize(
+        Buffer.from(serializedTransaction, "base64")
+      );
+    } catch {
+      // If that fails, try legacy Transaction and convert to VersionedTransaction
+      const legacyTx = Transaction.from(
+        Buffer.from(serializedTransaction, "base64")
+      );
+      tx = new VersionedTransaction(legacyTx.compileMessage());
+    }
 
-    const confirmation = await connection.confirmTransaction(signature);
+    const signature = await connection.sendRawTransaction(tx.serialize(), {
+      preflightCommitment: "processed",
+      skipPreflight: options?.skipPreflight || false,
+      maxRetries: options?.maxRetries || 3,
+    });
+
+    const confirmation = await connection.confirmTransaction({
+      signature,
+      blockhash: tx.message.recentBlockhash || "",
+      lastValidBlockHeight: (
+        await connection.getLatestBlockhash({ commitment: "processed" })
+      ).lastValidBlockHeight,
+    });
 
     res.json({ signature, confirmation });
   } catch (error) {
     console.error("Error sending transaction:", error);
     throw new BadRequestError("Failed to send transaction", error);
+  }
+};
+
+export const simulateTransactionFee = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
+  const { serializedTransaction } = req.body;
+  const cluster = req.user.cluster;
+
+  if (!serializedTransaction) {
+    throw new BadRequestError("Serialized transaction is required");
+  }
+
+  try {
+    const rpcUrl = getRpcUrl(cluster);
+    const connection = new Connection(rpcUrl, "processed");
+
+    // Deserialize and simulate transaction
+    let transaction;
+    try {
+      transaction = VersionedTransaction.deserialize(
+        Buffer.from(serializedTransaction, "base64")
+      );
+    } catch {
+      transaction = Transaction.from(
+        Buffer.from(serializedTransaction, "base64")
+      );
+    }
+
+    const simulationResponse =
+      await connection.simulateTransaction(transaction);
+
+    res.json({
+      simulation: {
+        logs: simulationResponse.value.logs || [],
+        error: simulationResponse.value.err,
+        unitsConsumed: simulationResponse.value.unitsConsumed,
+      },
+    });
+  } catch (error) {
+    console.error("Error simulating transaction:", error);
+    throw new BadRequestError("Failed to simulate transaction", error);
+  }
+};
+
+async function fetchWithRetry(url: string, retries = 3, delay = 1000) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response;
+    } catch (error) {
+      if (i === retries - 1) throw error;
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
+  }
+}
+
+export const getTransactionHistory = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
+  const { address, before, limit = 5 } = req.query;
+  const cluster = req.user.cluster;
+
+  if (!address || typeof address !== "string") {
+    throw new BadRequestError("Address is required");
+  }
+
+  try {
+    const apiUrl =
+      cluster === "mainnet-beta"
+        ? "https://api.helius.xyz/v0/addresses"
+        : "https://api-devnet.helius.xyz/v0/addresses";
+
+    // Build the URL with pagination parameters
+    let url = `${apiUrl}/${address}/transactions?api-key=${process.env.HELIUS_API_KEY}&limit=${limit}`;
+    if (before) url += `&before=${before}`;
+
+    // Try to fetch with retries
+    const heliusResponse = await fetchWithRetry(url);
+    const transactions = await heliusResponse.json();
+
+    // Validate response
+    if (!Array.isArray(transactions)) {
+      console.error("Invalid response format from Helius:", transactions);
+      throw new Error("Invalid response from Helius API");
+    }
+
+    // Get the last signature for pagination
+    const lastSignature = transactions[transactions.length - 1]?.signature;
+    const hasMore = transactions.length === limit;
+
+    res.json({
+      transactions,
+      lastSignature,
+      hasMore,
+      warning:
+        "This endpoint may return incomplete data. For critical applications, use getSignaturesForAddress and fetch transactions individually.",
+    });
+  } catch (error) {
+    console.error("Error fetching transaction history:", error);
+
+    // Check if it's an API key issue
+    if (error instanceof Error && error.message.includes("401")) {
+      throw new BadRequestError("Invalid API key or unauthorized access");
+    }
+
+    // Check if it's a rate limit issue
+    if (error instanceof Error && error.message.includes("429")) {
+      throw new BadRequestError("Rate limit exceeded. Please try again later");
+    }
+
+    // For other errors, return a generic message
+    throw new BadRequestError(
+      "Unable to fetch transaction history. Please try again later"
+    );
+  }
+};
+
+export const getAssets = async (req: AuthenticatedRequest, res: Response) => {
+  const { ownerAddress, page = 1, limit = 1000, displayOptions } = req.body;
+  const cluster = req.user.cluster;
+
+  if (!ownerAddress) {
+    throw new BadRequestError("Owner address is required");
+  }
+
+  try {
+    const apiUrl =
+      cluster === "mainnet-beta"
+        ? "https://mainnet.helius-rpc.com"
+        : "https://devnet.helius-rpc.com";
+
+    // Make RPC call to getAssetsByOwner
+    const response = await fetch(
+      `${apiUrl}/addresses/${ownerAddress}/assets?api-key=${process.env.HELIUS_API_KEY}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          jsonrpc: "2.0",
+          id: "helius-test",
+          method: "getAssetsByOwner",
+          params: {
+            ownerAddress,
+            page,
+            limit,
+            displayOptions: {
+              ...displayOptions,
+              showFungible: true,
+              showNativeBalance: true,
+            },
+          },
+        }),
+      }
+    );
+
+    const data = await response.json();
+
+    if (data.error) {
+      console.error("Helius API error:");
+      console.error(data.error);
+      throw new Error(
+        data.error.message || "Failed to fetch assets from Helius"
+      );
+    }
+
+    // Validate response
+    if (!data.result) {
+      console.error("Invalid response format from Helius:");
+      console.error(data);
+      throw new Error("Invalid response from Helius API");
+    }
+
+    res.json({
+      result: {
+        items: data.result.items || [],
+        total: data.result.total || 0,
+        limit: data.result.limit || limit,
+        page: data.result.page || page,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching assets:");
+    console.error(error);
+
+    // Check if it's an API key issue
+    if (error instanceof Error && error.message.includes("401")) {
+      throw new BadRequestError("Invalid API key or unauthorized access");
+    }
+
+    // Check if it's a rate limit issue
+    if (error instanceof Error && error.message.includes("429")) {
+      throw new BadRequestError("Rate limit exceeded. Please try again later");
+    }
+
+    // For other errors, return a generic message
+    throw new BadRequestError("Failed to fetch assets. Please try again later");
+  }
+};
+
+interface TokenAccountResponse {
+  address: string;
+  mint: string;
+  owner: string;
+  amount: number;
+  delegated_amount: number;
+  frozen: boolean;
+}
+
+interface GetTokenAccountsResponse {
+  total: number;
+  limit: number;
+  cursor?: string;
+  token_accounts: TokenAccountResponse[];
+}
+
+export const getTokenAccount = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
+  const { mint, owner } = req.query;
+  const cluster = req.user.cluster;
+
+  if (
+    !mint ||
+    !owner ||
+    typeof mint !== "string" ||
+    typeof owner !== "string"
+  ) {
+    throw new BadRequestError("Mint and owner addresses are required");
+  }
+
+  try {
+    const apiUrl =
+      cluster === "mainnet-beta"
+        ? "https://mainnet.helius-rpc.com"
+        : "https://devnet.helius-rpc.com";
+
+    // Get token accounts from Helius
+    const response = await fetch(
+      `${apiUrl}/?api-key=${process.env.HELIUS_API_KEY}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          jsonrpc: "2.0",
+          id: "helius-test",
+          method: "getTokenAccounts",
+          params: {
+            mint,
+            owner,
+            displayOptions: {
+              showZeroBalance: true,
+            },
+          },
+        }),
+      }
+    );
+
+    const data = await response.json();
+
+    if (data.error) {
+      console.error("Helius API error:", data.error);
+      throw new Error(data.error.message || "Failed to fetch token accounts");
+    }
+
+    const result = data.result as GetTokenAccountsResponse;
+    const tokenAccount = result.token_accounts[0];
+
+    // Add token account existence check
+    const exists = tokenAccount !== undefined;
+
+    res.json({ tokenAccount, exists });
+  } catch (error) {
+    console.error("Error fetching token account:", error);
+    throw new BadRequestError("Failed to fetch token account");
+  }
+};
+
+export const getPriorityFees = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
+  const cluster = req.user.cluster;
+  const { serializedTransaction } = req.query;
+
+  try {
+    const apiUrl =
+      cluster === "mainnet-beta"
+        ? "https://mainnet.helius-rpc.com"
+        : "https://devnet.helius-rpc.com";
+
+    // Build the request body based on whether we have a transaction
+    const requestBody = {
+      jsonrpc: "2.0",
+      id: "helius-priority-fee",
+      method: "getPriorityFeeEstimate",
+      params: [
+        {
+          ...(serializedTransaction
+            ? { transaction: serializedTransaction }
+            : {}),
+          options: {
+            includeAllPriorityFeeLevels: true,
+            lookbackSlots: 150,
+            includeVote: false,
+            transactionEncoding: "base58",
+          },
+        },
+      ],
+    };
+
+    const response = await fetch(
+      `${apiUrl}/?api-key=${process.env.HELIUS_API_KEY}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    if (data.error) {
+      console.error("Helius API error:", data.error);
+      throw new Error(data.error.message || "Failed to fetch priority fees");
+    }
+
+    // Set minimum baseline fees for each level
+    const MIN_BASE_FEE = 10000;
+    const priorityFees = {
+      min: Math.max(data.result?.priorityFeeLevels?.min || 0, MIN_BASE_FEE),
+      low: Math.max(
+        data.result?.priorityFeeLevels?.low || 0,
+        MIN_BASE_FEE * 1.5
+      ),
+      medium: Math.max(
+        data.result?.priorityFeeLevels?.medium || 0,
+        MIN_BASE_FEE * 2
+      ),
+      high: Math.max(
+        data.result?.priorityFeeLevels?.high || 0,
+        MIN_BASE_FEE * 3
+      ),
+      veryHigh: Math.max(
+        data.result?.priorityFeeLevels?.veryHigh || 0,
+        MIN_BASE_FEE * 5
+      ),
+      unsafeMax: Math.max(
+        data.result?.priorityFeeLevels?.unsafeMax || 0,
+        MIN_BASE_FEE * 10
+      ),
+      recommended: Math.max(
+        data.result?.priorityFeeEstimate || 0,
+        MIN_BASE_FEE * 2
+      ),
+      priorityFeeLevels: {
+        min: Math.max(data.result?.priorityFeeLevels?.min || 0, MIN_BASE_FEE),
+        low: Math.max(
+          data.result?.priorityFeeLevels?.low || 0,
+          MIN_BASE_FEE * 1.5
+        ),
+        medium: Math.max(
+          data.result?.priorityFeeLevels?.medium || 0,
+          MIN_BASE_FEE * 2
+        ),
+        high: Math.max(
+          data.result?.priorityFeeLevels?.high || 0,
+          MIN_BASE_FEE * 3
+        ),
+        veryHigh: Math.max(
+          data.result?.priorityFeeLevels?.veryHigh || 0,
+          MIN_BASE_FEE * 5
+        ),
+        unsafeMax: Math.max(
+          data.result?.priorityFeeLevels?.unsafeMax || 0,
+          MIN_BASE_FEE * 10
+        ),
+      },
+    };
+
+    // Return early if headers have been sent
+    if (res.headersSent) {
+      console.warn("Headers already sent, skipping response");
+      return;
+    }
+
+    // Send the response
+    return res.status(200).json(priorityFees);
+  } catch (error) {
+    // Return early if headers have been sent
+    if (res.headersSent) {
+      console.warn("Headers already sent in error handler, skipping response");
+      return;
+    }
+
+    console.error("Error fetching priority fees:", error);
+    throw new BadRequestError("Failed to fetch priority fees");
   }
 };

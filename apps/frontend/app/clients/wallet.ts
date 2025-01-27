@@ -4,6 +4,12 @@ import {
   GetUserWalletsResponse,
   StoreWalletResponse,
   SendTransactionResponse,
+  GetLatestBlockhashResponse,
+  SimulateTransactionFeeResponse,
+  GetTransactionHistoryResponse,
+  GetAssetsResponse,
+  GetAssetsOptions,
+  PriorityFeeResponse,
 } from "../types/api/wallet";
 import api from "../lib/axios";
 import { Cluster } from "@repo/brainpower-agent";
@@ -58,9 +64,77 @@ async function sendTransaction(
   return data;
 }
 
+async function getLatestBlockhash(
+  commitment: Commitment = "processed"
+): Promise<GetLatestBlockhashResponse> {
+  const { data } = await api.get<GetLatestBlockhashResponse>(
+    `/api/wallet/latest-blockhash?commitment=${commitment}`
+  );
+  return data;
+}
+
+async function simulateTransactionFee(
+  serializedTransaction: string
+): Promise<SimulateTransactionFeeResponse> {
+  const { data } = await api.post<SimulateTransactionFeeResponse>(
+    "/api/wallet/simulate-fee",
+    {
+      serializedTransaction,
+    }
+  );
+  return data;
+}
+
+async function getTransactionHistory(
+  address: string,
+  options?: {
+    before?: string;
+  }
+): Promise<GetTransactionHistoryResponse> {
+  const { before } = options || {};
+  let url = `/api/wallet/history?address=${address}`;
+  if (before) url += `&before=${before}`;
+  const { data } = await api.get<GetTransactionHistoryResponse>(url);
+  return data;
+}
+
+async function getAssets(
+  ownerAddress: string,
+  options?: GetAssetsOptions
+): Promise<GetAssetsResponse> {
+  const response = await api.post<GetAssetsResponse>("/api/wallet/assets", {
+    ownerAddress,
+    ...options,
+  });
+  return response.data;
+}
+
+async function getTokenAccount(mint: string, owner: string) {
+  const { data } = await api.get(
+    `/api/wallet/token-account?mint=${mint}&owner=${owner}`
+  );
+  return { tokenAccount: data.tokenAccount, exists: data.exists };
+}
+
+async function getPriorityFees(
+  serializedTransaction?: string
+): Promise<PriorityFeeResponse> {
+  const url = serializedTransaction
+    ? `/api/wallet/priority-fees?serializedTransaction=${encodeURIComponent(serializedTransaction)}`
+    : "/api/wallet/priority-fees";
+  const { data } = await api.get<PriorityFeeResponse>(url);
+  return data;
+}
+
 export const walletClient = {
   storeWallet,
   getUserWallets,
   getBalance,
   sendTransaction,
+  getLatestBlockhash,
+  simulateTransactionFee,
+  getTransactionHistory,
+  getAssets,
+  getTokenAccount,
+  getPriorityFees,
 };

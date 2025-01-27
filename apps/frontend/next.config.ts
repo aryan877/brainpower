@@ -2,14 +2,18 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  
+
+  images: {
+    domains: ["cdn.helius-rpc.com", "ipfs.io"],
+  },
+
   async headers() {
     return [
       {
-        source: '/:path*',
+        source: "/:path*",
         headers: [
           {
-            key: 'Content-Security-Policy-Report-Only',
+            key: "Content-Security-Policy-Report-Only",
             value: [
               "default-src 'self';",
               "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com https://telegram.org;",
@@ -24,10 +28,10 @@ const nextConfig: NextConfig = {
               "form-action 'self';",
               "base-uri 'self';",
               "frame-ancestors 'none';",
-            ].join(' ')
-          }
-        ]
-      }
+            ].join(" "),
+          },
+        ],
+      },
     ];
   },
 
