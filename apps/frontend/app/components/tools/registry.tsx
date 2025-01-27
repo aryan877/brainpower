@@ -5,6 +5,7 @@ import {
   ToolResultTypes,
   isToolResult,
 } from "../../types/tools";
+import { ACTION_NAMES } from "@repo/brainpower-agent";
 
 interface ToolConfig<T extends keyof ToolResultTypes> {
   component: React.ComponentType<{
@@ -19,7 +20,7 @@ type ToolRegistry = {
 };
 
 export const toolRegistry: ToolRegistry = {
-  LAUNCH_PUMPFUN_TOKEN_ACTION: {
+  [ACTION_NAMES.LAUNCH_PUMPFUN_TOKEN]: {
     component: PumpFunLaunchTool,
   },
 };

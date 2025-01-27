@@ -1,4 +1,4 @@
-import { PumpfunLaunchResponse } from "@repo/brainpower-agent";
+import { PumpfunLaunchResponse, ACTION_NAMES } from "@repo/brainpower-agent";
 
 export type ToolResultStatus = "success" | "error" | "cancelled";
 
@@ -19,7 +19,7 @@ export type PumpFunLaunchToolResult = ToolResultBase<PumpfunLaunchResponse>;
 
 // Registry mapping tool names to their result types
 export interface ToolResultTypes {
-  LAUNCH_PUMPFUN_TOKEN_ACTION: PumpFunLaunchToolResult;
+  [ACTION_NAMES.LAUNCH_PUMPFUN_TOKEN]: PumpFunLaunchToolResult;
   // Add other tool result types here as needed
 }
 

@@ -16,6 +16,7 @@ import { ipfsClient } from "../../clients/ipfs";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { useDropzone } from "react-dropzone";
 
 const formSchema = z.object({
   tokenName: z.string().min(1, "Token name is required"),
@@ -58,22 +59,30 @@ export function PumpFunLaunchTool({ args, onSubmit }: PumpFunLaunchToolProps) {
     },
   });
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const onDrop = (acceptedFiles: File[]) => {
+    const file = acceptedFiles[0];
     if (file) {
-      if (file.type.startsWith("image/")) {
-        setSelectedImage(file);
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          setImagePreview(reader.result as string);
-        };
-        reader.readAsDataURL(file);
-        setImageError("");
-      } else {
-        setImageError("Please select an image file");
-      }
+      setSelectedImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+      setImageError("");
     }
   };
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: {
+      "image/*": [],
+    },
+    maxFiles: 1,
+    multiple: false,
+    onDropRejected: () => {
+      setImageError("Please select a valid image file");
+    },
+  });
 
   const handleSubmit = async (data: z.infer<typeof formSchema>) => {
     setIsSubmitting(true);
@@ -263,37 +272,59 @@ export function PumpFunLaunchTool({ args, onSubmit }: PumpFunLaunchToolProps) {
           </Label>
           <div className="flex items-center gap-4">
             <div className="flex-1">
-              <label
-                htmlFor="image-upload"
+              <div
+                {...getRootProps()}
                 className={cn(
-                  "flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer hover:bg-primary/5 transition-colors",
-                  imageError ? "border-destructive" : "border-primary/20"
+                  "flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer transition-all duration-200",
+                  isDragActive
+                    ? "border-primary bg-primary/5 scale-[1.02]"
+                    : "border-primary/20 hover:bg-primary/5",
+                  imageError && "border-destructive"
                 )}
               >
+                <input {...getInputProps()} />
                 {imagePreview ? (
-                  <Image
-                    src={imagePreview}
-                    alt="Preview"
-                    width={200}
-                    height={128}
-                    className="h-full object-contain"
-                  />
+                  <div className="relative w-full h-full group">
+                    <Image
+                      src={imagePreview}
+                      alt="Preview"
+                      width={200}
+                      height={128}
+                      className="h-full object-contain"
+                    />
+                    <div className="absolute inset-0 bg-black/50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <p className="text-sm">Click or drag to replace</p>
+                    </div>
+                  </div>
                 ) : (
                   <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                    <Upload className="w-8 h-8 text-primary/60 mb-2" />
-                    <p className="text-sm text-muted-foreground">
-                      Click to upload token image
+                    <Upload
+                      className={cn(
+                        "w-8 h-8 mb-2 transition-transform duration-200",
+                        isDragActive
+                          ? "text-primary scale-110"
+                          : "text-primary/60"
+                      )}
+                    />
+                    <p className="text-sm text-muted-foreground text-center px-4">
+                      {isDragActive ? (
+                        <span className="text-primary font-medium">
+                          Drop the image here
+                        </span>
+                      ) : (
+                        <>
+                          <span className="font-medium">Click to upload</span>{" "}
+                          or drag and drop
+                          <br />
+                          <span className="text-xs">
+                            PNG, JPG, GIF up to 10MB
+                          </span>
+                        </>
+                      )}
                     </p>
                   </div>
                 )}
-                <input
-                  id="image-upload"
-                  type="file"
-                  className="hidden"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                />
-              </label>
+              </div>
               {imageError && (
                 <p className="text-sm text-destructive mt-1">{imageError}</p>
               )}

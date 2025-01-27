@@ -61,6 +61,11 @@ import tokenDataByTickerAction from "./dexscreener/tokenDataByTicker.js";
 // import deriveDriftVaultAddressAction from "./drift/deriveVaultAddress";
 // import updateDriftVaultDelegateAction from "./drift/updateDriftVaultDelegate";
 
+export const ACTION_NAMES = {
+  LAUNCH_PUMPFUN_TOKEN: "LAUNCH_PUMPFUN_TOKEN_ACTION",
+  GET_TOKEN_DATA_BY_TICKER: "GET_TOKEN_DATA_BY_TICKER_ACTION",
+} as const;
+
 export const ACTIONS = {
   // WALLET_ADDRESS_ACTION: getWalletAddressAction,
   // TOKEN_BALANCES_ACTION: tokenBalancesAction,
@@ -93,8 +98,8 @@ export const ACTIONS = {
   // RAYDIUM_CREATE_AMM_V4_ACTION: raydiumCreateAmmV4Action,
   // CREATE_ORCA_SINGLE_SIDED_WHIRLPOOL_ACTION:
   //   createOrcaSingleSidedWhirlpoolAction,
-  LAUNCH_PUMPFUN_TOKEN_ACTION: launchPumpfunTokenAction,
-  GET_TOKEN_DATA_BY_TICKER_ACTION: tokenDataByTickerAction,
+  [ACTION_NAMES.LAUNCH_PUMPFUN_TOKEN]: launchPumpfunTokenAction,
+  [ACTION_NAMES.GET_TOKEN_DATA_BY_TICKER]: tokenDataByTickerAction,
   // FLASH_OPEN_TRADE_ACTION: flashOpenTradeAction,
   // FLASH_CLOSE_TRADE_ACTION: flashCloseTradeAction,
   // CREATE_MULTISIG_ACTION: createMultisigAction,
