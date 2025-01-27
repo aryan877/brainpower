@@ -117,10 +117,10 @@ export function WalletInfo({ onLogoutClick }: WalletInfoProps) {
 
       {wallet ? (
         <div className="space-y-2">
-          <div className="text-xs text-muted-foreground break-all">
-            <Card className="p-2 flex items-center justify-between gap-2">
-              <span>{walletAddress}</span>
-              <div className="flex items-center gap-1">
+          <div className="text-xs text-muted-foreground">
+            <Card className="p-2 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="font-medium">Address</span>
                 <Tooltip open={copied}>
                   <TooltipTrigger asChild>
                     <Button
@@ -136,9 +136,17 @@ export function WalletInfo({ onLogoutClick }: WalletInfoProps) {
                     {copied ? "Copied!" : "Copy address"}
                   </TooltipContent>
                 </Tooltip>
-                <Link href="/wallet">
-                  <Button variant="ghost" size="sm" className="p-1 h-auto">
-                    <ArrowRight className="h-3 w-3" />
+              </div>
+              <div className="break-all text-foreground">{walletAddress}</div>
+              <div className="pt-1">
+                <Link href="/wallet" className="no-underline w-full block">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full text-xs h-7 flex items-center justify-between hover:bg-accent"
+                  >
+                    <span className="text-muted-foreground">Manage Wallet</span>
+                    <ArrowRight className="h-3 w-3 text-muted-foreground" />
                   </Button>
                 </Link>
               </div>

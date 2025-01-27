@@ -124,11 +124,15 @@ function WalletContent() {
                 Actions
               </label>
               <Card className="p-4">
-                <div className="flex gap-2">
+                <div className="flex gap-3">
                   <Button
-                    onClick={() => walletAddress ? exportWallet({ address: walletAddress }) : null}
+                    onClick={() =>
+                      walletAddress
+                        ? exportWallet({ address: walletAddress })
+                        : null
+                    }
                     variant="outline"
-                    size="sm"
+                    size="default"
                     className="flex-1"
                     disabled={!walletAddress || !hasEmbeddedWallet}
                   >
@@ -137,8 +141,8 @@ function WalletContent() {
                   </Button>
                   <Button
                     onClick={openWalletModal}
-                    variant="outline"
-                    size="sm"
+                    variant="default"
+                    size="default"
                     className="flex-1"
                   >
                     <Send className="h-4 w-4 mr-2" />
