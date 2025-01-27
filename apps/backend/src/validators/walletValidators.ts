@@ -17,3 +17,30 @@ export const validateStoreWallet = validateRequest({
       }),
   }),
 });
+
+// Schema for sending a transaction
+export const validateSendTransaction = validateRequest({
+  body: z.object({
+    serializedTransaction: z
+      .string()
+      .min(1, "Serialized transaction is required")
+      .refine((val) => {
+        try {
+          // Check if the string is valid base64
+          Buffer.from(val, "base64");
+          return true;
+        } catch {
+          return false;
+        }
+      }, "Invalid base64 encoded transaction"),
+    options: z
+      .object({
+        commitment: z
+          .enum(["processed", "confirmed", "finalized"])
+          .default("confirmed"),
+        skipPreflight: z.boolean().default(false),
+        maxRetries: z.number().int().min(0).max(10).default(3),
+      })
+      .optional(),
+  }),
+});

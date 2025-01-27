@@ -1,3 +1,5 @@
+import { TransactionError } from "@solana/web3.js";
+
 export type ChainType = "solana" | "ethereum";
 
 export type StoreWalletResponse = {
@@ -16,3 +18,12 @@ export type GetUserWalletsResponse = {
 export type GetBalanceResponse = {
   balance: number;
 };
+
+export interface SendTransactionResponse {
+  signature: string;
+  confirmation?: {
+    value: {
+      err: TransactionError | null;
+    };
+  };
+}

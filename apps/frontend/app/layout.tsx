@@ -32,9 +32,7 @@ export default function RootLayout({
           <TooltipProvider>
             <ReactQueryProvider>
               <PrivyProvider>
-                <WalletProvider>
-                  {children}
-                </WalletProvider>
+                <WalletProvider>{children}</WalletProvider>
               </PrivyProvider>
             </ReactQueryProvider>
           </TooltipProvider>

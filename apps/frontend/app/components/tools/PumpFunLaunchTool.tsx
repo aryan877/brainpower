@@ -16,7 +16,6 @@ import { ipfsClient } from "../../clients/ipfs";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useDropzone } from "react-dropzone";
 
 const formSchema = z.object({
   tokenName: z.string().min(1, "Token name is required"),
@@ -43,6 +42,7 @@ export function PumpFunLaunchTool({ args, onSubmit }: PumpFunLaunchToolProps) {
   const [imageError, setImageError] = useState<string>("");
   const { wallet, sendTransaction } = useWallet();
   const { addNotification } = useNotificationStore();
+  const [isDragging, setIsDragging] = useState(false);
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -59,9 +59,13 @@ export function PumpFunLaunchTool({ args, onSubmit }: PumpFunLaunchToolProps) {
     },
   });
 
-  const onDrop = (acceptedFiles: File[]) => {
-    const file = acceptedFiles[0];
-    if (file) {
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) handleFile(file);
+  };
+
+  const handleFile = (file: File) => {
+    if (file.type.startsWith("image/")) {
       setSelectedImage(file);
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -69,20 +73,27 @@ export function PumpFunLaunchTool({ args, onSubmit }: PumpFunLaunchToolProps) {
       };
       reader.readAsDataURL(file);
       setImageError("");
+    } else {
+      setImageError("Please select an image file");
     }
   };
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop,
-    accept: {
-      "image/*": [],
-    },
-    maxFiles: 1,
-    multiple: false,
-    onDropRejected: () => {
-      setImageError("Please select a valid image file");
-    },
-  });
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) handleFile(file);
+  };
 
   const handleSubmit = async (data: z.infer<typeof formSchema>) => {
     setIsSubmitting(true);
@@ -201,7 +212,7 @@ export function PumpFunLaunchTool({ args, onSubmit }: PumpFunLaunchToolProps) {
   };
 
   return (
-    <Card className="p-6 bg-gradient-to-br from-primary/5 to-background">
+    <Card className="bg-gradient-to-br from-primary/5 to-background p-6">
       <div className="flex items-center justify-center mb-6">
         <h2 className="text-2xl font-bold text-center bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/70 flex items-center gap-2">
           <Rocket className="w-6 h-6 text-primary" />
@@ -273,48 +284,50 @@ export function PumpFunLaunchTool({ args, onSubmit }: PumpFunLaunchToolProps) {
           <div className="flex items-center gap-4">
             <div className="flex-1">
               <div
-                {...getRootProps()}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                onClick={() => document.getElementById("image-upload")?.click()}
                 className={cn(
-                  "flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer transition-all duration-200",
-                  isDragActive
+                  "flex flex-col items-center justify-center w-full h-[160px] border-2 border-dashed rounded-lg cursor-pointer transition-all duration-200",
+                  isDragging
                     ? "border-primary bg-primary/5 scale-[1.02]"
-                    : "border-primary/20 hover:bg-primary/5",
-                  imageError && "border-destructive"
+                    : "border-primary/20",
+                  imageError && "border-destructive",
+                  "hover:bg-primary/5"
                 )}
               >
-                <input {...getInputProps()} />
                 {imagePreview ? (
-                  <div className="relative w-full h-full group">
+                  <div className="relative w-full h-full flex items-center justify-center">
                     <Image
                       src={imagePreview}
                       alt="Preview"
-                      width={200}
+                      width={128}
                       height={128}
-                      className="h-full object-contain"
+                      className="max-h-[140px] w-auto object-contain"
                     />
-                    <div className="absolute inset-0 bg-black/50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      <p className="text-sm">Click or drag to replace</p>
+                    <div className="absolute inset-0 bg-black/50 text-white flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                      <p className="text-sm">Click or drop to replace</p>
                     </div>
                   </div>
                 ) : (
-                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                  <div className="flex flex-col items-center justify-center h-full">
                     <Upload
                       className={cn(
                         "w-8 h-8 mb-2 transition-transform duration-200",
-                        isDragActive
+                        isDragging
                           ? "text-primary scale-110"
                           : "text-primary/60"
                       )}
                     />
-                    <p className="text-sm text-muted-foreground text-center px-4">
-                      {isDragActive ? (
+                    <p className="text-sm text-muted-foreground text-center">
+                      {isDragging ? (
                         <span className="text-primary font-medium">
-                          Drop the image here
+                          Drop image here
                         </span>
                       ) : (
                         <>
-                          <span className="font-medium">Click to upload</span>{" "}
-                          or drag and drop
+                          Click to upload or drag image
                           <br />
                           <span className="text-xs">
                             PNG, JPG, GIF up to 10MB
@@ -324,6 +337,13 @@ export function PumpFunLaunchTool({ args, onSubmit }: PumpFunLaunchToolProps) {
                     </p>
                   </div>
                 )}
+                <input
+                  id="image-upload"
+                  type="file"
+                  className="hidden"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                />
               </div>
               {imageError && (
                 <p className="text-sm text-destructive mt-1">{imageError}</p>

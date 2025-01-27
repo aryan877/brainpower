@@ -5,12 +5,10 @@ import { walletClient } from "../clients/wallet";
 import { ChainType } from "../types/api/wallet";
 import {
   LAMPORTS_PER_SOL,
-  Connection,
   Transaction,
   VersionedTransaction,
   Commitment,
   TransactionSignature,
-  PublicKey,
   TransactionError,
 } from "@solana/web3.js";
 import { Cluster } from "@repo/brainpower-agent";
@@ -110,25 +108,8 @@ export function useWalletConnection() {
  * });
  */
 export function useSendTransaction() {
-  const { getRpcUrl } = useClusterStore();
   const { wallet } = useWalletConnection();
 
-  /**
-   * Sends and confirms a Solana transaction
-   *
-   *
-   * This function:
-   * 1. Checks wallet is connected
-   * 2. Sets up network connection
-   * 3. Prepares transaction (adds blockhash & fee payer)
-   * 4. Signs transaction with user's wallet
-   * 5. Sends to network and waits for confirmation
-   *
-   * @param transaction - Transaction to send
-   * @param options - Optional settings for sending
-   * @returns Transaction signature and confirmation
-   * @throws If wallet not connected or transaction fails
-   */
   const sendTransaction = async (
     transaction: Transaction | VersionedTransaction,
     options: SendTransactionOptions = {}
@@ -137,28 +118,20 @@ export function useSendTransaction() {
       throw new Error("Wallet not connected");
     }
 
-    const {
-      commitment = "confirmed",
-      skipPreflight = false,
-      maxRetries = 3,
-    } = options;
-
     try {
-      const connection = new Connection(getRpcUrl(), commitment);
-
-      if (transaction instanceof Transaction) {
-        const { blockhash } = await connection.getLatestBlockhash(commitment);
-        transaction.recentBlockhash = blockhash;
-        transaction.feePayer = new PublicKey(wallet.address);
-      }
-
+      // Sign the transaction with the user's wallet
       const signedTx = await wallet.signTransaction(transaction);
-      const signature = await connection.sendRawTransaction(
-        signedTx.serialize(),
-        { skipPreflight, maxRetries }
+
+      // Serialize the signed transaction
+      const serializedTransaction = Buffer.from(signedTx.serialize()).toString(
+        "base64"
       );
 
-      const confirmation = await connection.confirmTransaction(signature);
+      // Send the transaction through our backend
+      const { signature, confirmation } = await walletClient.sendTransaction(
+        serializedTransaction,
+        options
+      );
 
       return { signature, confirmation };
     } catch (error) {

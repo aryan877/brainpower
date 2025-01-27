@@ -66,3 +66,38 @@ export const getBalance = async (req: AuthenticatedRequest, res: Response) => {
     throw new BadRequestError("Failed to fetch balance");
   }
 };
+
+export const sendTransaction = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
+  const { serializedTransaction, options } = req.body;
+  const cluster = req.user.cluster;
+
+  if (!serializedTransaction) {
+    throw new BadRequestError("Serialized transaction is required");
+  }
+
+  try {
+    const rpcUrl = getRpcUrl(cluster);
+    const connection = new Connection(
+      rpcUrl,
+      options?.commitment || "confirmed"
+    );
+
+    const signature = await connection.sendRawTransaction(
+      Buffer.from(serializedTransaction, "base64"),
+      {
+        skipPreflight: options?.skipPreflight || false,
+        maxRetries: options?.maxRetries || 3,
+      }
+    );
+
+    const confirmation = await connection.confirmTransaction(signature);
+
+    res.json({ signature, confirmation });
+  } catch (error) {
+    console.error("Error sending transaction:", error);
+    throw new BadRequestError("Failed to send transaction", error);
+  }
+};

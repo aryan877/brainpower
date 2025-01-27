@@ -7,7 +7,13 @@ import { useThreads, useCreateThread, useDeleteThread } from "../hooks/chat";
 import { ThreadPreview } from "../types";
 import Navbar from "./Navbar";
 import { usePrivy } from "@privy-io/react-auth";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { WalletProvider } from "../providers/WalletProvider";
 
@@ -130,7 +136,10 @@ export function AppLayout({
     <WalletProvider>
       <div className="flex h-screen overflow-hidden bg-background relative">
         {/* Confirm Dialog */}
-        <Dialog open={isConfirmDialogOpen} onOpenChange={setIsConfirmDialogOpen}>
+        <Dialog
+          open={isConfirmDialogOpen}
+          onOpenChange={setIsConfirmDialogOpen}
+        >
           <DialogContent>
             <DialogHeader>
               <DialogTitle>{confirmDialogConfig?.title}</DialogTitle>
