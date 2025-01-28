@@ -69,43 +69,29 @@ export default function ChatMessage({
       return (
         <div
           key={toolInvocation.toolCallId}
-          className={cn(
-            "relative overflow-hidden rounded-lg border pl-4",
-            isError
-              ? "bg-destructive/5 border-destructive/20"
-              : "bg-muted/10 border-muted/30"
-          )}
+          className="flex items-center gap-3 py-2"
         >
-          <div className="py-3.5 flex items-start gap-3">
-            <div
+          <XCircle
+            className={cn(
+              "w-4 h-4 flex-shrink-0",
+              isError ? "text-[#ff4444]" : "text-[#ff4444]/90"
+            )}
+          />
+          <div className="flex-1 min-w-0">
+            <p
               className={cn(
-                "flex items-center justify-center flex-shrink-0 w-6 h-6 rounded-full mt-0.5",
-                isError ? "bg-destructive/10" : "bg-muted/20"
+                "text-[0.9375rem] leading-none",
+                isError ? "text-[#ff4444]" : "text-[#ff4444]/90"
               )}
             >
-              <XCircle
-                className={cn(
-                  "w-4 h-4",
-                  isError ? "text-destructive" : "text-muted-foreground/80"
-                )}
-              />
-            </div>
-            <div className="flex-1 min-w-0 pr-4">
-              <p
-                className={cn(
-                  "font-medium text-[0.9375rem]",
-                  isError ? "text-destructive" : "text-muted-foreground"
-                )}
-              >
-                {toolInvocation.result.message ||
-                  (isError ? "Operation failed" : "Operation cancelled")}
+              {toolInvocation.result.message ||
+                (isError ? "Operation failed" : "Operation cancelled")}
+            </p>
+            {isError && error?.message && (
+              <p className="text-[0.875rem] mt-1 text-[#ff4444]/80">
+                {error.message}
               </p>
-              {isError && error?.message && (
-                <p className="text-[0.875rem] mt-1 text-destructive/90">
-                  {error.message}
-                </p>
-              )}
-            </div>
+            )}
           </div>
         </div>
       );
