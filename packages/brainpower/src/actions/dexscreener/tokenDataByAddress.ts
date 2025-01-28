@@ -4,6 +4,8 @@ import { getTokenDataByAddress } from "../../tools/dexscreener/get_token_data.js
 import { BrainPowerAgent } from "../../agent/index.js";
 import { PublicKey } from "@solana/web3.js";
 
+export type TokenDataByAddressInput = z.infer<typeof schema>;
+
 const schema = z.object({
   address: z.string().describe("The token's mint address"),
 });
@@ -24,13 +26,18 @@ export const tokenDataByAddress: Action = {
           address: "So11111111111111111111111111111111111111112",
         },
         output: {
-          address: "So11111111111111111111111111111111111111112",
-          name: "Wrapped SOL",
-          symbol: "SOL",
-          decimals: 9,
-          tags: ["wrapped-solana"],
-          logoURI:
-            "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png",
+          status: "success",
+          tokenData: {
+            address: "So11111111111111111111111111111111111111112",
+            name: "Wrapped SOL",
+            symbol: "SOL",
+            decimals: 9,
+            tags: ["wrapped-solana"],
+            logoURI:
+              "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png",
+          },
+          message:
+            "Successfully fetched token data for address: So11111111111111111111111111111111111111112",
         },
         explanation:
           "Getting token data for Wrapped SOL using its mint address",
@@ -38,17 +45,30 @@ export const tokenDataByAddress: Action = {
     ],
   ],
   schema,
-  handler: async (agent: BrainPowerAgent, input: z.infer<typeof schema>) => {
+  handler: async (agent: BrainPowerAgent, input: Record<string, any>) => {
     try {
-      const tokenData = await getTokenDataByAddress(
-        new PublicKey(input.address),
-      );
+      const address = input.address as string;
+      const tokenData = await getTokenDataByAddress(new PublicKey(address));
+
       if (!tokenData) {
-        throw new Error(`No token data found for address: ${input.address}`);
+        return {
+          status: "error",
+          message: `No token data found for address: ${address}`,
+          code: "TOKEN_NOT_FOUND",
+        };
       }
-      return tokenData;
+
+      return {
+        status: "success",
+        tokenData: tokenData,
+        message: `Successfully fetched token data for address: ${address}`,
+      };
     } catch (error: any) {
-      throw new Error(`Failed to get token data: ${error.message}`);
+      return {
+        status: "error",
+        message: `Failed to get token data: ${error.message}`,
+        code: error.code || "UNKNOWN_ERROR",
+      };
     }
   },
 };
