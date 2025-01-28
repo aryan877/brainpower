@@ -40,6 +40,9 @@ export default function Sidebar({
   const [isCreatingWallet, setIsCreatingWallet] = useState(false);
   const [showWalletDialog, setShowWalletDialog] = useState(false);
   const [deletingThreadId, setDeletingThreadId] = useState<string | null>(null);
+  const [threadToDelete, setThreadToDelete] = useState<ThreadPreview | null>(
+    null
+  );
 
   const handleCreateSolanaWallet = async () => {
     try {
@@ -70,13 +73,18 @@ export default function Sidebar({
     e: React.MouseEvent
   ) => {
     e.stopPropagation();
-    if (deletingThreadId) return; // Prevent multiple deletion attempts
+    setThreadToDelete(thread);
+  };
 
-    setDeletingThreadId(thread.threadId);
+  const confirmDelete = async () => {
+    if (!threadToDelete) return;
+
+    setDeletingThreadId(threadToDelete.threadId);
     try {
-      await onDeleteClick(thread);
+      await onDeleteClick(threadToDelete);
     } finally {
       setDeletingThreadId(null);
+      setThreadToDelete(null);
     }
   };
 
@@ -111,6 +119,33 @@ export default function Sidebar({
               disabled={isCreatingWallet}
             >
               {isCreatingWallet ? "Creating..." : "Create Wallet"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={threadToDelete !== null}
+        onOpenChange={(open) => !open && setThreadToDelete(null)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Chat</DialogTitle>
+            <DialogDescription className="pt-2">
+              Are you sure you want to delete this chat? This action cannot be
+              undone.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-3">
+            <Button variant="outline" onClick={() => setThreadToDelete(null)}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={confirmDelete}
+              disabled={deletingThreadId !== null}
+            >
+              {deletingThreadId ? "Deleting..." : "Delete"}
             </Button>
           </div>
         </DialogContent>
