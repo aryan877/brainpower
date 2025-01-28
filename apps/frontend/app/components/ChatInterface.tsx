@@ -2,7 +2,12 @@
 
 import { useChat } from "ai/react";
 import { useEffect, useRef, useState, FormEvent } from "react";
-import { AlertCircle, RefreshCcw, Square, ArrowUpCircle } from "lucide-react";
+import {
+  AlertCircle,
+  RefreshCcw,
+  ArrowUpCircle,
+  StopCircle,
+} from "lucide-react";
 import { useClusterStore } from "../store/clusterStore";
 import { useThreadMessages, useSaveAllMessages } from "../hooks/chat";
 import ChatMessage from "./ChatMessage";
@@ -98,6 +103,12 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
   const wrappedHandleSubmit = (e: FormEvent<HTMLFormElement>) => {
     setIsWaitingForResponse(true);
     handleSubmit(e);
+  };
+
+  // Add handler for stopping
+  const handleStop = () => {
+    setIsWaitingForResponse(false);
+    stop();
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -234,11 +245,11 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
                 <Button
                   type="button"
                   size="icon"
-                  variant="ghost"
-                  onClick={() => stop()}
-                  className="h-8 w-8 md:h-9 md:w-9 text-destructive hover:text-destructive/90 hover:bg-destructive/10"
+                  variant="default"
+                  onClick={handleStop}
+                  className="h-8 w-8 md:h-9 md:w-9 bg-primary hover:bg-primary/90 transition-all duration-200"
                 >
-                  <Square className="h-3 w-3 md:h-4 md:w-4" />
+                  <StopCircle className="h-3.5 w-3.5 md:h-4 md:w-4 text-white fill-current" />
                 </Button>
               )}
             </div>
