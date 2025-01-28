@@ -15,6 +15,7 @@ import {
 } from "./tools/registry";
 import { isToolResult } from "../types/tools";
 import Image from "next/image";
+import { SuccessResults } from "./tools/SuccessResults";
 
 interface ChatMessageProps {
   message: Message;
@@ -34,27 +35,40 @@ export default function ChatMessage({
   addToolResult,
 }: ChatMessageProps) {
   // Determine if we have any tool results we always want to show (cancelled or errors)
-  const hasImportantToolResults = message.toolInvocations?.some(
-    (t) =>
-      t.state === "result" &&
-      isToolResult(t.result) &&
-      (t.result.status === "cancelled" || t.result.status === "error")
+  const hasToolResults = message.toolInvocations?.some(
+    (t) => t.state === "result" && isToolResult(t.result)
   );
 
   // Show if:
   // 1. Has any content, OR
   // 2. Has any tool waiting for input, OR
-  // 3. Has any cancelled/error results
+  // 3. Has any tool results
   if (
     !message.content?.trim() &&
     !message.toolInvocations?.some((t) => t.state === "call") &&
-    !hasImportantToolResults
+    !hasToolResults
   ) {
     return null;
   }
 
   const renderToolInvocation = (toolInvocation: ToolInvocation) => {
     if (!toolInvocation) return null;
+
+    // Show results for all states
+    if (
+      toolInvocation.state === "result" &&
+      isToolResult(toolInvocation.result) &&
+      toolInvocation.result.status === "success"
+    ) {
+      return (
+        <div key={toolInvocation.toolCallId} className="mt-4">
+          <SuccessResults
+            toolName={toolInvocation.toolName}
+            data={toolInvocation.result.data}
+          />
+        </div>
+      );
+    }
 
     // Show cancelled or error states if the tool invocation has such results
     if (

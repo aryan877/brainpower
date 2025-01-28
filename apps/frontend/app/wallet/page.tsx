@@ -11,7 +11,7 @@ import {
   Coins,
   FileIcon,
 } from "lucide-react";
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useClusterStore } from "../store/clusterStore";
 import { useWallet, useTransactionHistory } from "../hooks/wallet";
 import { Button } from "@/components/ui/button";
@@ -98,22 +98,26 @@ function TransactionList({
     };
   };
 
+  const TransactionSkeleton = () => (
+    <Card className="p-3">
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <Skeleton className="h-7 w-[100px] rounded-full" />
+          <Skeleton className="h-5 w-24" />
+        </div>
+        <div className="flex items-center gap-3">
+          <Skeleton className="h-4 w-20" />
+          <Skeleton className="h-4 w-4 rounded-full" />
+        </div>
+      </div>
+    </Card>
+  );
+
   if (isLoading && !transactions.length) {
     return (
-      <div className="space-y-2 min-h-[400px]">
-        {[...Array(5)].map((_, i) => (
-          <Card key={i} className="p-3">
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <Skeleton className="h-6 w-20" />
-                <Skeleton className="h-6 w-24" />
-              </div>
-              <div className="flex items-center gap-3">
-                <Skeleton className="h-4 w-16" />
-                <Skeleton className="h-4 w-4" />
-              </div>
-            </div>
-          </Card>
+      <div className="space-y-3 min-h-[400px] animate-pulse">
+        {[...Array(6)].map((_, i) => (
+          <TransactionSkeleton key={i} />
         ))}
       </div>
     );
@@ -121,13 +125,18 @@ function TransactionList({
 
   if (error) {
     return (
-      <div className="text-center py-4">
-        <p className="text-red-500 mb-2">{error.message}</p>
+      <div className="text-center py-8">
+        <div className="mb-4 text-red-500/80">
+          <ExternalLink className="h-8 w-8 mx-auto mb-2 opacity-80" />
+          <p className="text-sm">{error.message}</p>
+        </div>
         <Button
           variant="outline"
           size="sm"
           onClick={() => window.location.reload()}
+          className="gap-2"
         >
+          <RefreshCw className="h-4 w-4" />
           Try Again
         </Button>
       </div>
@@ -136,43 +145,49 @@ function TransactionList({
 
   if (!transactions?.length) {
     return (
-      <p className="text-muted-foreground text-sm text-center">
-        No transactions found for this wallet.
-      </p>
+      <div className="text-center py-8 text-muted-foreground">
+        <FileIcon className="h-8 w-8 mx-auto mb-2 opacity-60" />
+        <p>No transactions found for this wallet.</p>
+      </div>
     );
   }
 
   return (
     <div className="space-y-4">
-      <div className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-lg">
-        Note: Only NFT, Jupiter, and SPL related transactions are shown. Some
-        transactions may be missing due to data retrieval limitations.
+      <div className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-lg border border-border/50">
+        <div className="flex items-center gap-2">
+          <FileIcon className="h-4 w-4" />
+          <span>
+            Only NFT, Jupiter, and SPL related transactions are shown. Some
+            transactions may be missing due to data retrieval limitations.
+          </span>
+        </div>
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-2 relative">
         {transactions.map((tx) => {
           const badgeInfo = getBadgeInfo(tx);
           return (
             <Card
               key={tx.signature}
-              className="p-3 hover:bg-muted/50 transition-colors"
+              className="p-3 hover:bg-muted/50 transition-colors group"
             >
               <div className="flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
                   <Badge
                     variant={badgeInfo.variant}
-                    className="min-w-[100px] justify-center font-medium"
+                    className="min-w-[100px] justify-center font-medium transition-colors"
                   >
                     <span className="mr-1">{badgeInfo.icon}</span>
                     {badgeInfo.label}
                   </Badge>
                   {tx.nativeTransfers?.[0] && (
                     <span
-                      className={
+                      className={`font-medium ${
                         tx.nativeTransfers[0].fromUserAccount === walletAddress
-                          ? "text-red-500"
-                          : "text-green-500"
-                      }
+                          ? "text-red-500/90"
+                          : "text-green-500/90"
+                      }`}
                     >
                       {tx.nativeTransfers[0].fromUserAccount === walletAddress
                         ? "-"
@@ -194,7 +209,7 @@ function TransactionList({
                     href={`https://solscan.io/tx/${tx.signature}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-muted-foreground hover:text-primary"
+                    className="text-muted-foreground hover:text-primary transition-colors"
                   >
                     <ExternalLink className="h-4 w-4" />
                   </a>
@@ -203,23 +218,35 @@ function TransactionList({
             </Card>
           );
         })}
+
+        {isLoadingMore && (
+          <div className="pt-2 space-y-2">
+            <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent" />
+            <TransactionSkeleton />
+            <TransactionSkeleton />
+          </div>
+        )}
       </div>
 
-      {hasMore && (
+      {hasMore && transactions.length > 0 && (
         <div className="flex justify-center pt-4">
           <Button
             onClick={onLoadMore}
             variant="outline"
             size="sm"
             disabled={isLoadingMore}
+            className="relative min-w-[120px] h-9 transition-all duration-200 ease-in-out"
           >
             {isLoadingMore ? (
-              <>
-                <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+              <div className="flex items-center gap-2">
+                <RefreshCw className="h-4 w-4 animate-spin" />
                 Loading...
-              </>
+              </div>
             ) : (
-              "Load More"
+              <div className="flex items-center gap-2">
+                <RefreshCw className="h-4 w-4" />
+                Load More
+              </div>
             )}
           </Button>
         </div>
@@ -446,31 +473,21 @@ function WalletContent() {
     refreshBalance,
   } = useWallet();
 
-  // Keep track of all loaded transactions
-  const [allTransactions, setAllTransactions] = useState<Transaction[]>([]);
-  const [lastSignature, setLastSignature] = useState<string>();
-
-  // Use transaction history hook directly
   const {
     data: historyData,
     isLoading: isLoadingHistory,
-    isRefetching: isRefetching,
+    isRefetching,
+    fetchNextPage,
+    hasNextPage,
     refetch: refreshHistory,
     error: historyError,
-  } = useTransactionHistory(walletAddress, { before: lastSignature });
+    isFetchingNextPage,
+  } = useTransactionHistory(walletAddress);
 
-  // Update allTransactions when new data comes in
-  useEffect(() => {
-    if (historyData?.transactions) {
-      if (lastSignature) {
-        // Append new transactions
-        setAllTransactions((prev) => [...prev, ...historyData.transactions]);
-      } else {
-        // Reset transactions on fresh load
-        setAllTransactions(historyData.transactions);
-      }
-    }
-  }, [historyData?.transactions, lastSignature]);
+  // Flatten all transactions from all pages
+  const allTransactions = useMemo(() => {
+    return historyData?.pages.flatMap((page) => page.transactions) || [];
+  }, [historyData?.pages]);
 
   const [copied, setCopied] = useState(false);
   const { openWalletModal } = useWalletModal();
@@ -482,19 +499,11 @@ function WalletContent() {
       account.chainType === "solana"
   );
 
-  const hasMore = Boolean(historyData?.transactions?.length);
-
-  const handleLoadMore = async () => {
-    if (!historyData?.transactions?.length) return;
-    const lastTx =
-      historyData.transactions[historyData.transactions.length - 1];
-    if (lastTx) {
-      setLastSignature(lastTx.signature);
-    }
+  const handleLoadMore = () => {
+    fetchNextPage();
   };
 
   const handleRefresh = async () => {
-    setLastSignature(undefined);
     await refreshHistory();
   };
 
@@ -672,8 +681,8 @@ function WalletContent() {
               isLoading={isLoadingHistory}
               walletAddress={walletAddress}
               onLoadMore={handleLoadMore}
-              hasMore={hasMore}
-              isLoadingMore={isRefetching}
+              hasMore={!!hasNextPage}
+              isLoadingMore={isFetchingNextPage}
               error={historyError instanceof Error ? historyError : null}
             />
           </ScrollArea>

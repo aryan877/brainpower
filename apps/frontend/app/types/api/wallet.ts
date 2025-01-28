@@ -140,12 +140,6 @@ export interface Transaction {
   };
 }
 
-export interface TransactionPagination {
-  hasMore: boolean;
-  beforeCursor?: string;
-  afterCursor?: string;
-}
-
 export interface GetTransactionHistoryResponse {
   transactions: Transaction[];
   lastSignature?: string;

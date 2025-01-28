@@ -1,4 +1,4 @@
-import { XCircle, Loader2 } from "lucide-react";
+import { XCircle, Loader2, MessageSquarePlus } from "lucide-react";
 import { useState } from "react";
 import { ThreadPreview } from "../types";
 import { WalletInfo } from "./WalletInfo";
@@ -157,10 +157,15 @@ export default function Sidebar({
             <Button
               onClick={handleNewChatClick}
               disabled={isLoading}
-              className="flex-1"
+              className="flex-1 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
               variant="default"
               size="default"
             >
+              {isLoading ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <MessageSquarePlus className="mr-2 h-4 w-4" />
+              )}
               {isLoading ? "Creating..." : "New Chat"}
             </Button>
             <ThemeToggle />

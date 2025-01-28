@@ -39,7 +39,6 @@ export function preprocessToolResult<T extends keyof ToolResultTypes>(
   result: unknown
 ): ToolResultType<T> {
   const preprocessor = toolRegistry[toolName]?.preprocess;
-
   if (!preprocessor) {
     if (isToolResult(result)) {
       return result as ToolResultType<T>;
@@ -52,7 +51,8 @@ export function preprocessToolResult<T extends keyof ToolResultTypes>(
   }
 
   try {
-    return preprocessor(result);
+    const processedResult = preprocessor(result);
+    return processedResult;
   } catch (error) {
     return {
       status: "error",

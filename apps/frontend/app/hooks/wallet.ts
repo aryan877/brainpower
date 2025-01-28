@@ -1,8 +1,8 @@
 import { useSolanaWallets } from "@privy-io/react-auth/solana";
 import { useClusterStore } from "../store/clusterStore";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import { walletClient } from "../clients/wallet";
-import { ChainType, GetTransactionHistoryResponse } from "../types/api/wallet";
+import { ChainType } from "../types/api/wallet";
 import {
   LAMPORTS_PER_SOL,
   Transaction,
@@ -192,24 +192,24 @@ export function useWalletBalance(
  * Hook to fetch transaction history for a wallet
  *
  * Uses hooks:
- * - useQuery
+ * - useInfiniteQuery
  *
  * This hook fetches and caches the transaction history for a wallet address.
  * It automatically handles loading states and errors.
  */
-export function useTransactionHistory(
-  walletAddress: string | undefined,
-  options?: {
-    before?: string;
-  }
-) {
-  const { before } = options || {};
-
-  return useQuery<GetTransactionHistoryResponse>({
-    queryKey: [...walletKeys.history(walletAddress || ""), { before }],
-    queryFn: async () => {
+export function useTransactionHistory(walletAddress: string | undefined) {
+  return useInfiniteQuery({
+    queryKey: [...walletKeys.history(walletAddress || "")],
+    queryFn: async ({ pageParam }) => {
       if (!walletAddress) throw new Error("No wallet address");
-      return walletClient.getTransactionHistory(walletAddress, { before });
+      return walletClient.getTransactionHistory(walletAddress, {
+        before: pageParam,
+      });
+    },
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (lastPage) => {
+      if (!lastPage.transactions.length || !lastPage.hasMore) return undefined;
+      return lastPage.transactions[lastPage.transactions.length - 1].signature;
     },
     enabled: !!walletAddress,
     staleTime: 30 * 1000,

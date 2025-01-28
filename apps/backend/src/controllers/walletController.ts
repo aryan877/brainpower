@@ -214,7 +214,7 @@ export const getTransactionHistory = async (
   req: AuthenticatedRequest,
   res: Response
 ) => {
-  const { address, before, limit = 5 } = req.query;
+  const { address, before, limit = 20 } = req.query;
   const cluster = req.user.cluster;
 
   if (!address || typeof address !== "string") {

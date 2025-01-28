@@ -22,6 +22,19 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
   const [isWaitingForResponse, setIsWaitingForResponse] = useState(false);
   const [hasActiveToolCall, setHasActiveToolCall] = useState(false);
 
+  const loadingMessages = [
+    "Maximizing brain gains...",
+    "Flexing neural networks...",
+    "Channeling galaxy brain...",
+    "Loading big brain energy...",
+    "Powering up the genius...",
+    "Brain.exe is processing...",
+    "Charging mental capacity...",
+    "IQ levels rising...",
+  ];
+
+  const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
+
   const {
     messages,
     input,
@@ -53,8 +66,8 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
 
   // Check for active tool calls in any message
   useEffect(() => {
-    const hasActiveTool = messages.some(
-      (message) => message?.toolInvocations?.some((t) => t.state === "call")
+    const hasActiveTool = messages.some((message) =>
+      message?.toolInvocations?.some((t) => t.state === "call")
     );
     setHasActiveToolCall(hasActiveTool);
   }, [messages]);
@@ -70,6 +83,16 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // Rotate through loading messages
+  useEffect(() => {
+    if (isWaitingForResponse) {
+      const interval = setInterval(() => {
+        setLoadingMessageIndex((prev) => (prev + 1) % loadingMessages.length);
+      }, 2000);
+      return () => clearInterval(interval);
+    }
+  }, [isWaitingForResponse]);
 
   // Wrap handleSubmit to set waiting state
   const wrappedHandleSubmit = (e: FormEvent<HTMLFormElement>) => {
@@ -109,20 +132,34 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
     <div className="flex flex-col h-full">
       {/* Messages container */}
       <div className="flex-1 overflow-y-auto brainpower-scrollbar">
-        {messages.map((message) => (
-          <ChatMessage
-             key={message.id}
-            message={message}
-            isLoading={
-              isLoading &&
-              messages.length > 0 &&
-              message.id === messages[messages.length - 1].id &&
-              message.role === "assistant"
-            }
-            isWaitingForResponse={isWaitingForResponse}
-            addToolResult={addToolResult}
-          />
-        ))}
+        {messages.length === 0 ? (
+          <div className="h-full flex items-center justify-center p-4">
+            <div className="text-center max-w-md mx-auto space-y-2">
+              <h3 className="text-lg font-semibold text-foreground">
+                Start a New Conversation
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                Ask me anything about blockchain research, Solana transactions,
+                or how I can help you analyze and interact with the ecosystem!
+              </p>
+            </div>
+          </div>
+        ) : (
+          messages.map((message) => (
+            <ChatMessage
+              key={message.id}
+              message={message}
+              isLoading={
+                isLoading &&
+                messages.length > 0 &&
+                message.id === messages[messages.length - 1].id &&
+                message.role === "assistant"
+              }
+              isWaitingForResponse={isWaitingForResponse}
+              addToolResult={addToolResult}
+            />
+          ))
+        )}
         <div ref={messagesEndRef} />
       </div>
 
@@ -152,8 +189,8 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
         <div className="mx-auto w-full max-w-3xl px-4">
           <div className="flex items-center gap-2 text-primary my-2">
             <div className="animate-spin rounded-full h-4 w-4 md:h-5 md:w-5 border-2 border-primary border-t-transparent" />
-            <span className="text-sm md:text-base font-medium">
-              BrainPower is braining...
+            <span className="text-sm md:text-base font-medium animate-pulse">
+              {loadingMessages[loadingMessageIndex]}
             </span>
           </div>
         </div>
