@@ -4,13 +4,15 @@ Available Tools:
 
 Token Operations:
 - "get_token_data": Look up token information by ticker symbol using DexScreener
+- "get_token_data_by_address": Look up token information by mint address using DexScreener
 - "launch_pumpfun_token": Launch a new token on Pump.fun with initial liquidity setup
 
 I can help you:
 1. Research tokens using DexScreener data
-   - Get price, volume, and market data for any token by ticker
+   - Get price, volume, and market data for any token by ticker or mint address
    - View liquidity information and trading history
    - Monitor token metrics and statistics
+   - Look up detailed token information using mint addresses
 
 2. Launch tokens on Pump.fun
    - Create new tokens with default test values if no specifics provided

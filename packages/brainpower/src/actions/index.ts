@@ -29,6 +29,7 @@
 // import createOrcaSingleSidedWhirlpoolAction from "./orca/createOrcaSingleSidedWhirlpool";
 import launchPumpfunTokenAction from "./pumpfun/launchPumpfunToken.js";
 import tokenDataByTickerAction from "./dexscreener/tokenDataByTicker.js";
+import { tokenDataByAddress as tokenDataByAddressAction } from "./dexscreener/tokenDataByAddress.js";
 // import getWalletAddressAction from "./agent/getWalletAddress";
 // import flashOpenTradeAction from "./flash/flashOpenTrade";
 // import flashCloseTradeAction from "./flash/flashCloseTrade";
@@ -64,6 +65,7 @@ import tokenDataByTickerAction from "./dexscreener/tokenDataByTicker.js";
 export const ACTION_NAMES = {
   LAUNCH_PUMPFUN_TOKEN: "LAUNCH_PUMPFUN_TOKEN_ACTION",
   GET_TOKEN_DATA_BY_TICKER: "GET_TOKEN_DATA_BY_TICKER_ACTION",
+  GET_TOKEN_DATA_BY_ADDRESS: "GET_TOKEN_DATA_BY_ADDRESS_ACTION",
 } as const;
 
 export const ACTIONS = {
@@ -100,6 +102,7 @@ export const ACTIONS = {
   //   createOrcaSingleSidedWhirlpoolAction,
   [ACTION_NAMES.LAUNCH_PUMPFUN_TOKEN]: launchPumpfunTokenAction,
   [ACTION_NAMES.GET_TOKEN_DATA_BY_TICKER]: tokenDataByTickerAction,
+  [ACTION_NAMES.GET_TOKEN_DATA_BY_ADDRESS]: tokenDataByAddressAction,
   // FLASH_OPEN_TRADE_ACTION: flashOpenTradeAction,
   // FLASH_CLOSE_TRADE_ACTION: flashCloseTradeAction,
   // CREATE_MULTISIG_ACTION: createMultisigAction,

@@ -11,11 +11,14 @@ import {
   getToolComponent,
   preprocessToolResult,
   ValidToolName,
-  VALID_TOOL_NAMES,
 } from "./tools/registry";
 import { isToolResult } from "../types/tools";
 import Image from "next/image";
-import { SuccessResults } from "./tools/SuccessResults";
+import {
+  SuccessResults,
+  hasSuccessComponent,
+  SuccessResultsMap,
+} from "./tools/SuccessResults";
 
 interface ChatMessageProps {
   message: Message;
@@ -24,25 +27,31 @@ interface ChatMessageProps {
   addToolResult: (result: { toolCallId: string; result: unknown }) => void;
 }
 
-// Type guard to check if a tool name is valid
-function isValidToolName(name: string): name is ValidToolName {
-  return VALID_TOOL_NAMES.includes(name as ValidToolName);
-}
-
 export default function ChatMessage({
   message,
   isLoading,
   addToolResult,
 }: ChatMessageProps) {
-  // Determine if we have any tool results we always want to show (cancelled or errors)
-  const hasToolResults = message.toolInvocations?.some(
-    (t) => t.state === "result" && isToolResult(t.result)
-  );
+  // Tools have 3 states:
+  // 1. "result" - Tool has completed execution
+  // 2. "call" - Tool is waiting for input
+  // 3. No state - Tool hasn't started
+  const hasToolResults = message.toolInvocations?.some((t) => {
+    if (t.state === "result" && isToolResult(t.result)) {
+      // Only show success results for tools that have success components
+      if (t.result.status === "success") {
+        return hasSuccessComponent(t.toolName);
+      }
+      // Always show errors and cancelled states
+      return t.result.status === "error" || t.result.status === "cancelled";
+    }
+    return false;
+  });
 
-  // Show if:
-  // 1. Has any content, OR
-  // 2. Has any tool waiting for input, OR
-  // 3. Has any tool results
+  // Only render message if it has:
+  // 1. Content text, OR
+  // 2. Pending tool calls, OR
+  // 3. Completed tool results
   if (
     !message.content?.trim() &&
     !message.toolInvocations?.some((t) => t.state === "call") &&
@@ -54,20 +63,27 @@ export default function ChatMessage({
   const renderToolInvocation = (toolInvocation: ToolInvocation) => {
     if (!toolInvocation) return null;
 
-    // Show results for all states
+    // Show results for defined tools only
     if (
       toolInvocation.state === "result" &&
       isToolResult(toolInvocation.result) &&
       toolInvocation.result.status === "success"
     ) {
-      return (
-        <div key={toolInvocation.toolCallId} className="mt-4">
-          <SuccessResults
-            toolName={toolInvocation.toolName}
-            data={toolInvocation.result.data}
-          />
-        </div>
-      );
+      // Only render success results for tools that have success components
+      if (hasSuccessComponent(toolInvocation.toolName)) {
+        return (
+          <div key={toolInvocation.toolCallId} className="mt-4">
+            <SuccessResults
+              toolName={toolInvocation.toolName as keyof SuccessResultsMap}
+              data={
+                toolInvocation.result
+                  .data as SuccessResultsMap[keyof SuccessResultsMap]
+              }
+            />
+          </div>
+        );
+      }
+      return null;
     }
 
     // Show cancelled or error states if the tool invocation has such results
@@ -115,19 +131,13 @@ export default function ChatMessage({
 
     try {
       if (toolInvocation.state === "call" && ToolComponent) {
-        if (!isValidToolName(toolInvocation.toolName)) {
-          throw new Error(`Invalid tool name: ${toolInvocation.toolName}`);
-        }
-
-        const validToolName = toolInvocation.toolName as ValidToolName;
-
         return (
           <ToolComponent
             key={toolInvocation.toolCallId}
             args={toolInvocation.args}
             onSubmit={(result) => {
               const processedResult = preprocessToolResult(
-                validToolName,
+                toolInvocation.toolName as ValidToolName,
                 result
               );
               addToolResult({

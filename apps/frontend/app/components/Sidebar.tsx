@@ -1,4 +1,10 @@
-import { XCircle, Loader2, MessageSquarePlus } from "lucide-react";
+import {
+  XCircle,
+  Loader2,
+  MessageSquarePlus,
+  PanelLeftClose,
+  PanelLeftOpen,
+} from "lucide-react";
 import { useState } from "react";
 import { ThreadPreview } from "../types";
 import { WalletInfo } from "./WalletInfo";
@@ -23,6 +29,8 @@ export interface SidebarProps {
   isLoading: boolean;
   onDeleteClick: (thread: ThreadPreview) => void;
   onLogoutClick: () => void;
+  isCollapsed?: boolean;
+  onToggleCollapse?: () => void;
 }
 
 export default function Sidebar({
@@ -33,6 +41,8 @@ export default function Sidebar({
   isLoading,
   onDeleteClick,
   onLogoutClick,
+  isCollapsed = false,
+  onToggleCollapse,
 }: SidebarProps) {
   const { createWallet } = useSolanaWallets();
   const { user } = usePrivy();
@@ -151,64 +161,107 @@ export default function Sidebar({
         </DialogContent>
       </Dialog>
 
-      <aside className="flex flex-col h-full bg-background border-r">
-        <div className="p-4">
-          <div className="flex items-center gap-2 mb-4">
+      <aside className="flex flex-col h-full bg-background border-r relative">
+        <div className={`p-4 ${isCollapsed ? "px-2" : ""}`}>
+          <div
+            className={`flex items-center gap-2 mb-4 ${
+              isCollapsed ? "flex-col" : ""
+            }`}
+          >
+            {onToggleCollapse && isCollapsed && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="w-full h-8"
+                onClick={onToggleCollapse}
+                title="Expand sidebar"
+              >
+                <PanelLeftOpen className="h-4 w-4" />
+              </Button>
+            )}
             <Button
               onClick={handleNewChatClick}
               disabled={isLoading}
-              className="flex-1 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
+              className={`flex-1 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 ${
+                isCollapsed ? "w-full p-2" : ""
+              }`}
               variant="default"
-              size="default"
+              size={isCollapsed ? "icon" : "default"}
             >
               {isLoading ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
-                <MessageSquarePlus className="mr-2 h-4 w-4" />
+                <MessageSquarePlus
+                  className={`h-4 w-4 ${!isCollapsed && "mr-2"}`}
+                />
               )}
-              {isLoading ? "Creating..." : "New Chat"}
+              {!isCollapsed && (isLoading ? "Creating..." : "New Chat")}
             </Button>
-            <ThemeToggle />
+            <div
+              className={`flex items-center ${isCollapsed ? "flex-col" : ""} gap-2`}
+            >
+              <ThemeToggle />
+              {onToggleCollapse && !isCollapsed && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="hidden md:flex h-8 w-8"
+                  onClick={onToggleCollapse}
+                  title="Collapse sidebar"
+                >
+                  <PanelLeftClose className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
           </div>
         </div>
 
         {/* Chat threads list */}
         <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent pb-4">
           {threads.length === 0 ? (
-            <div className="p-4 text-center text-muted-foreground">
-              <p className="text-sm md:text-base">No chats yet</p>
-              <p className="text-xs md:text-sm mt-2">
-                {user?.wallet
-                  ? "Click 'New Chat' to start a conversation"
-                  : "Create a Solana wallet to start chatting"}
-              </p>
-            </div>
+            !isCollapsed && (
+              <div className="p-4 text-center text-muted-foreground">
+                <p className="text-sm md:text-base">No chats yet</p>
+                <p className="text-xs md:text-sm mt-2">
+                  {user?.wallet
+                    ? "Click 'New Chat' to start a conversation"
+                    : "Create a Solana wallet to start chatting"}
+                </p>
+              </div>
+            )
           ) : (
-            <ul className="space-y-1 px-4">
+            <ul className={`space-y-1 ${isCollapsed ? "px-2" : "px-4"}`}>
               {threads.map((thread) => (
                 <li
                   key={thread.threadId}
                   onClick={() => onSelectThread(thread.threadId)}
-                  className={`flex justify-between items-center p-2 cursor-pointer rounded-lg hover:bg-muted transition-all duration-200 ${
+                  className={`flex items-center p-2 cursor-pointer rounded-lg hover:bg-muted transition-all duration-200 ${
                     selectedThread === thread.threadId ? "bg-muted border" : ""
-                  }`}
+                  } ${isCollapsed ? "justify-center" : "justify-between"}`}
+                  title={isCollapsed ? formatThreadName(thread) : undefined}
                 >
-                  <span className="truncate text-foreground font-medium text-sm md:text-base">
-                    {formatThreadName(thread)}
-                  </span>
-                  <Button
-                    onClick={(e) => handleDeleteClick(thread, e)}
-                    variant="ghost"
-                    size="icon"
-                    disabled={deletingThreadId === thread.threadId}
-                    className="text-destructive hover:text-destructive/90 hover:bg-muted flex-shrink-0"
-                  >
-                    {deletingThreadId === thread.threadId ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <XCircle className="h-4 w-4 transition-transform hover:scale-110" />
-                    )}
-                  </Button>
+                  {isCollapsed ? (
+                    <MessageSquarePlus className="h-4 w-4 text-muted-foreground" />
+                  ) : (
+                    <>
+                      <span className="truncate text-foreground font-medium text-sm md:text-base flex-1 mr-2">
+                        {formatThreadName(thread)}
+                      </span>
+                      <Button
+                        onClick={(e) => handleDeleteClick(thread, e)}
+                        variant="ghost"
+                        size="icon"
+                        disabled={deletingThreadId === thread.threadId}
+                        className="text-destructive hover:text-destructive/90 hover:bg-muted flex-shrink-0"
+                      >
+                        {deletingThreadId === thread.threadId ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <XCircle className="h-4 w-4 transition-transform hover:scale-110" />
+                        )}
+                      </Button>
+                    </>
+                  )}
                 </li>
               ))}
             </ul>
@@ -217,7 +270,7 @@ export default function Sidebar({
 
         {/* Wallet info at the bottom */}
         <div className="mt-auto border-t">
-          <WalletInfo onLogoutClick={onLogoutClick} />
+          <WalletInfo onLogoutClick={onLogoutClick} isCollapsed={isCollapsed} />
         </div>
       </aside>
     </>

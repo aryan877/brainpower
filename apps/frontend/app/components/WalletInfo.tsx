@@ -26,9 +26,13 @@ import { useWalletModal } from "../providers/WalletProvider";
 
 interface WalletInfoProps {
   onLogoutClick: () => void;
+  isCollapsed?: boolean;
 }
 
-export function WalletInfo({ onLogoutClick }: WalletInfoProps) {
+export function WalletInfo({
+  onLogoutClick,
+  isCollapsed = false,
+}: WalletInfoProps) {
   const { user, ready } = usePrivy();
   const { createWallet } = useSolanaWallets();
   const { selectedCluster, setSelectedCluster } = useClusterStore();
@@ -69,6 +73,26 @@ export function WalletInfo({ onLogoutClick }: WalletInfoProps) {
       setIsCreating(false);
     }
   };
+
+  if (isCollapsed) {
+    return (
+      <div className="p-2 flex flex-col items-center gap-2">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              onClick={onLogoutClick}
+              variant="ghost"
+              size="icon"
+              className="text-destructive hover:text-destructive/90 hover:bg-destructive/10"
+            >
+              <LogOut className="h-4 w-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Logout</TooltipContent>
+        </Tooltip>
+      </div>
+    );
+  }
 
   return (
     <div className="p-4">
@@ -141,10 +165,14 @@ export function WalletInfo({ onLogoutClick }: WalletInfoProps) {
           </div>
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span>Status:</span>
-            <Card className="px-2 py-1 flex items-center gap-1">
-              <span className="h-1.5 w-1.5 rounded-full bg-green-500"></span>
-              Connected
-            </Card>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex items-center justify-center w-6 h-6">
+                  <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>Connected</TooltipContent>
+            </Tooltip>
           </div>
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span>Balance:</span>

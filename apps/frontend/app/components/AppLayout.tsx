@@ -30,6 +30,7 @@ export function AppLayout({
 }: AppLayoutProps) {
   const router = useRouter();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const { data: threads = [], isLoading } = useThreads();
   const { mutateAsync: createThreadMutation } = useCreateThread();
   const { mutateAsync: deleteThreadMutation } = useDeleteThread();
@@ -46,13 +47,24 @@ export function AppLayout({
     setIsSidebarOpen(!isSidebarOpen);
   };
 
+  // Toggle sidebar collapse for desktop
+  const toggleSidebarCollapse = () => {
+    setIsSidebarCollapsed(!isSidebarCollapsed);
+  };
+
   // Set initial sidebar state based on screen size
   useEffect(() => {
-    setIsSidebarOpen(window.innerWidth >= 768);
-
     const handleResize = () => {
-      setIsSidebarOpen(window.innerWidth >= 768);
+      const isMobile = window.innerWidth < 768;
+      setIsSidebarOpen(!isMobile);
+      // Reset collapsed state on mobile
+      if (isMobile) {
+        setIsSidebarCollapsed(false);
+      }
     };
+
+    // Initial setup
+    handleResize();
 
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
@@ -174,9 +186,13 @@ export function AppLayout({
 
         {/* Sidebar container */}
         <div
-          className={`fixed md:static w-[260px] h-full z-[70] transition-transform duration-300 ease-in-out ${
+          className={`fixed md:static h-full z-[70] transition-all duration-300 ease-in-out ${
             isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-          } md:translate-x-0 md:z-0`}
+          } md:translate-x-0 md:z-0 ${
+            isSidebarCollapsed && window.innerWidth >= 768
+              ? "w-[60px]"
+              : "w-[260px]"
+          }`}
         >
           <Sidebar
             threads={threads}
@@ -186,6 +202,8 @@ export function AppLayout({
             onDeleteClick={handleDeleteClick}
             isLoading={isLoading}
             onLogoutClick={handleLogoutClick}
+            isCollapsed={isSidebarCollapsed && window.innerWidth >= 768}
+            onToggleCollapse={toggleSidebarCollapse}
           />
         </div>
 

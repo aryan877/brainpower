@@ -57,7 +57,7 @@ export const sendMessage = async (req: AuthenticatedRequest, res: Response) => {
 
     // Update title if first user message and no title exists
     if (!chatThread.title && messages.length > 0) {
-      const firstUserMessage = messages.find(msg => msg.role === "user");
+      const firstUserMessage = messages.find((msg) => msg.role === "user");
       if (firstUserMessage) {
         chatThread.title = firstUserMessage.content.slice(0, 100);
         await chatThread.save();
