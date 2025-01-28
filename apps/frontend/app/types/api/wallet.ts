@@ -210,14 +210,6 @@ export interface PriorityFeeResponse {
   high: number;
   veryHigh: number;
   unsafeMax: number;
-  priorityFeeLevels: {
-    min: number;
-    low: number;
-    medium: number;
-    high: number;
-    veryHigh: number;
-    unsafeMax: number;
-  };
 }
 
 export interface WalletApi {

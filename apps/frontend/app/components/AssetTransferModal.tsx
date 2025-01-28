@@ -213,20 +213,49 @@ export function AssetTransferModal({
         mintAddress
       );
 
-      // Serialize the message for fee estimation using base58
-      const serialized = bs58.encode(transaction.compileMessage().serialize());
-      setSerializedTx(serialized);
+      // Get latest blockhash and set it
+      const { blockhash } = await walletClient.getLatestBlockhash();
+      transaction.recentBlockhash = blockhash;
+      transaction.feePayer = new PublicKey(wallet.address);
+
+      // Partially sign the transaction with the available keys
+      if (wallet.signTransaction) {
+        try {
+          // Sign the transaction
+          const signedTx = await wallet.signTransaction(transaction);
+          // Serialize the signed transaction
+          const serialized = bs58.encode(signedTx.serialize());
+          setSerializedTx(serialized);
+        } catch (signError) {
+          // If signing fails, fallback to serializing without signature
+          // This might give less accurate fee estimates but won't block the UI
+          console.warn(
+            "Failed to sign transaction for fee estimation:",
+            signError
+          );
+          const serialized = bs58.encode(
+            transaction.serialize({ requireAllSignatures: false })
+          );
+          setSerializedTx(serialized);
+        }
+      } else {
+        // If no signing capability, serialize without requiring signatures
+        const serialized = bs58.encode(
+          transaction.serialize({ requireAllSignatures: false })
+        );
+        setSerializedTx(serialized);
+      }
     } catch (error) {
       console.error("Error updating transaction for fees:", error);
       setSerializedTx(undefined);
     }
   }, [
-    wallet?.address,
     recipientAddress,
     amount,
     asset.token_info,
     asset.id,
     createBaseTransaction,
+    wallet,
   ]);
 
   // Update transaction when inputs change
@@ -314,10 +343,9 @@ export function AssetTransferModal({
         mintAddress
       );
 
-      // Add priority fee instruction using medium priority from Helius
-      if (priorityFees) {
-        // Use medium priority fee, but ensure it's at least 10,000 microLamports
-        const priorityFee = Math.max(priorityFees.high || 0, 10000);
+      // Add priority fee instruction using the high fee level
+      if (priorityFees?.high) {
+        const priorityFee = Math.max(priorityFees.high, 10000); // Ensure minimum 10,000 microLamports
         const priorityFeeInstruction = ComputeBudgetProgram.setComputeUnitPrice(
           {
             microLamports: priorityFee,

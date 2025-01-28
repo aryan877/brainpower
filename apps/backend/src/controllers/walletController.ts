@@ -110,17 +110,24 @@ export const sendTransaction = async (
       options?.commitment || "processed"
     );
 
+    // Decode the base58 or base64 serialized transaction
+    let decodedTx: Buffer;
+    try {
+      // Try base58 first (most common for Solana transactions)
+      const bs58 = await import("bs58");
+      decodedTx = Buffer.from(bs58.decode(serializedTransaction));
+    } catch {
+      // Fallback to base64 if base58 fails
+      decodedTx = Buffer.from(serializedTransaction, "base64");
+    }
+
     // Always try to deserialize as VersionedTransaction first
     let tx: VersionedTransaction;
     try {
-      tx = VersionedTransaction.deserialize(
-        Buffer.from(serializedTransaction, "base64")
-      );
+      tx = VersionedTransaction.deserialize(decodedTx);
     } catch {
       // If that fails, try legacy Transaction and convert to VersionedTransaction
-      const legacyTx = Transaction.from(
-        Buffer.from(serializedTransaction, "base64")
-      );
+      const legacyTx = Transaction.from(decodedTx);
       tx = new VersionedTransaction(legacyTx.compileMessage());
     }
 
@@ -435,7 +442,7 @@ export const getPriorityFees = async (
   res: Response
 ) => {
   const cluster = req.user.cluster;
-  const { serializedTransaction } = req.query;
+  const { serializedTransaction, transactionEncoding = "base58" } = req.body;
 
   try {
     const apiUrl =
@@ -443,7 +450,6 @@ export const getPriorityFees = async (
         ? "https://mainnet.helius-rpc.com"
         : "https://devnet.helius-rpc.com";
 
-    // Build the request body based on whether we have a transaction
     const requestBody = {
       jsonrpc: "2.0",
       id: "helius-priority-fee",
@@ -451,13 +457,13 @@ export const getPriorityFees = async (
       params: [
         {
           ...(serializedTransaction
-            ? { transaction: serializedTransaction }
+            ? {
+                transaction: serializedTransaction,
+                transactionEncoding,
+              }
             : {}),
           options: {
             includeAllPriorityFeeLevels: true,
-            lookbackSlots: 150,
-            includeVote: false,
-            transactionEncoding: "base58",
           },
         },
       ],
@@ -485,74 +491,16 @@ export const getPriorityFees = async (
       throw new Error(data.error.message || "Failed to fetch priority fees");
     }
 
-    // Set minimum baseline fees for each level
-    const MIN_BASE_FEE = 10000;
-    const priorityFees = {
-      min: Math.max(data.result?.priorityFeeLevels?.min || 0, MIN_BASE_FEE),
-      low: Math.max(
-        data.result?.priorityFeeLevels?.low || 0,
-        MIN_BASE_FEE * 1.5
-      ),
-      medium: Math.max(
-        data.result?.priorityFeeLevels?.medium || 0,
-        MIN_BASE_FEE * 2
-      ),
-      high: Math.max(
-        data.result?.priorityFeeLevels?.high || 0,
-        MIN_BASE_FEE * 3
-      ),
-      veryHigh: Math.max(
-        data.result?.priorityFeeLevels?.veryHigh || 0,
-        MIN_BASE_FEE * 5
-      ),
-      unsafeMax: Math.max(
-        data.result?.priorityFeeLevels?.unsafeMax || 0,
-        MIN_BASE_FEE * 10
-      ),
-      recommended: Math.max(
-        data.result?.priorityFeeEstimate || 0,
-        MIN_BASE_FEE * 2
-      ),
-      priorityFeeLevels: {
-        min: Math.max(data.result?.priorityFeeLevels?.min || 0, MIN_BASE_FEE),
-        low: Math.max(
-          data.result?.priorityFeeLevels?.low || 0,
-          MIN_BASE_FEE * 1.5
-        ),
-        medium: Math.max(
-          data.result?.priorityFeeLevels?.medium || 0,
-          MIN_BASE_FEE * 2
-        ),
-        high: Math.max(
-          data.result?.priorityFeeLevels?.high || 0,
-          MIN_BASE_FEE * 3
-        ),
-        veryHigh: Math.max(
-          data.result?.priorityFeeLevels?.veryHigh || 0,
-          MIN_BASE_FEE * 5
-        ),
-        unsafeMax: Math.max(
-          data.result?.priorityFeeLevels?.unsafeMax || 0,
-          MIN_BASE_FEE * 10
-        ),
-      },
-    };
+    // Return both the priority fee levels and a recommended value
+    // Calculate recommended as the medium level or 10000, whichever is higher
+    const priorityFeeLevels = data.result.priorityFeeLevels;
+    const recommended = Math.max(priorityFeeLevels?.medium || 0, 10000);
 
-    // Return early if headers have been sent
-    if (res.headersSent) {
-      console.warn("Headers already sent, skipping response");
-      return;
-    }
-
-    // Send the response
-    return res.status(200).json(priorityFees);
+    res.json({
+      ...priorityFeeLevels,
+      recommended,
+    });
   } catch (error) {
-    // Return early if headers have been sent
-    if (res.headersSent) {
-      console.warn("Headers already sent in error handler, skipping response");
-      return;
-    }
-
     console.error("Error fetching priority fees:", error);
     throw new BadRequestError("Failed to fetch priority fees");
   }
