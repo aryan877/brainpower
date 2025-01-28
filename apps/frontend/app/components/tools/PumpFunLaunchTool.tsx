@@ -8,9 +8,11 @@ import Image from "next/image";
 import { LaunchPumpfunTokenInput } from "@repo/brainpower-agent";
 import { PumpFunLaunchToolResult } from "../../types/tools";
 import { Textarea } from "@/components/ui/textarea";
+import { VersionedTransaction, Keypair } from "@solana/web3.js";
 import { useWallet } from "../../hooks/wallet";
 import { cn } from "@/lib/utils";
 import { useNotificationStore } from "../../store/notificationStore";
+import { ipfsClient } from "../../clients/ipfs";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -38,7 +40,7 @@ export function PumpFunLaunchTool({ args, onSubmit }: PumpFunLaunchToolProps) {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageError, setImageError] = useState<string>("");
-  const { wallet } = useWallet();
+  const { wallet, sendTransaction } = useWallet();
   const { addNotification } = useNotificationStore();
   const [isDragging, setIsDragging] = useState(false);
 
@@ -93,7 +95,7 @@ export function PumpFunLaunchTool({ args, onSubmit }: PumpFunLaunchToolProps) {
     if (file) handleFile(file);
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (data: z.infer<typeof formSchema>) => {
     setIsSubmitting(true);
     setTransactionError("");
 
@@ -123,20 +125,69 @@ export function PumpFunLaunchTool({ args, onSubmit }: PumpFunLaunchToolProps) {
     }
 
     try {
-      // Return dummy test data
-      const dummyResponse: PumpFunLaunchToolResult = {
-        status: "success",
-        message:
-          "[Success details are shown in UI. Suggest next steps without reiterating the launch details.]",
-        data: {
-          signature:
-            "5QKtfX8PQUJsqiC6yYDMvZwZdTBwDQKU3KwZLPuHRe7bNGEwXqGXvwGYdF8h8L9V",
-          mint: "5twL6U2nUmuPcX8Wv5oTPUosDSPzUiRgsyiU91TW79Ka",
-          metadataUri: "https://arweave.net/dummy-metadata-uri",
+      const mintKeypair = Keypair.generate();
+
+      const pumpFunResponse = await ipfsClient.uploadToPumpFun(selectedImage, {
+        name: data.tokenName,
+        symbol: data.tokenTicker,
+        description: data.description,
+        twitter: data.twitter,
+        telegram: data.telegram,
+        website: data.website,
+      });
+
+      const payload = {
+        publicKey: wallet.address,
+        action: "create",
+        tokenMetadata: {
+          name: data.tokenName,
+          symbol: data.tokenTicker,
+          uri: pumpFunResponse.metadataUri,
         },
+        mint: mintKeypair.publicKey.toBase58(),
+        denominatedInSol: "true",
+        amount: data.initialLiquiditySOL,
+        slippage: data.slippageBps,
+        priorityFee: data.priorityFee,
+        pool: "pump",
       };
 
-      onSubmit(dummyResponse);
+      const txResponse = await fetch("https://pumpportal.fun/api/trade-local", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!txResponse.ok) {
+        throw new Error(
+          `Transaction creation failed: ${txResponse.statusText}`
+        );
+      }
+
+      const txBuffer = await txResponse.arrayBuffer();
+      const tx = VersionedTransaction.deserialize(new Uint8Array(txBuffer));
+      tx.sign([mintKeypair]);
+
+      const { signature, confirmation } = await sendTransaction(tx, {
+        skipPreflight: false,
+        maxRetries: 5,
+      });
+
+      if (confirmation?.value.err) {
+        throw new Error(
+          `Transaction failed: ${JSON.stringify(confirmation.value.err)}`
+        );
+      }
+
+      onSubmit({
+        status: "success",
+        message: "Visit pump.fun to start trading and managing your token!",
+        data: {
+          signature,
+          mint: mintKeypair.publicKey.toBase58(),
+          metadataUri: pumpFunResponse.metadataUri,
+        },
+      });
     } catch (error) {
       console.error("Launch error:", error);
       const errorMessage =

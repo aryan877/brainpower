@@ -92,7 +92,7 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
       }, 2000);
       return () => clearInterval(interval);
     }
-  }, [isWaitingForResponse]);
+  }, [isWaitingForResponse, loadingMessages.length]);
 
   // Wrap handleSubmit to set waiting state
   const wrappedHandleSubmit = (e: FormEvent<HTMLFormElement>) => {
