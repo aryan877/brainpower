@@ -27,57 +27,67 @@ interface ChatMessageProps {
   addToolResult: (result: { toolCallId: string; result: unknown }) => void;
 }
 
+const isMessageReadyToRender = (message: Message): boolean => {
+  const hasContent = Boolean(message.content?.trim());
+  const toolInvocations = message.toolInvocations ?? [];
+
+  if (!hasContent && !toolInvocations.length) {
+    return false;
+  }
+
+  const hasValidTools = toolInvocations.some((tool) => {
+    // Check for pending tool calls
+    if (tool.state === "call") {
+      return Boolean(getToolComponent(tool));
+    }
+
+    // Check for completed tool results
+    if (tool.state === "result") {
+      const toolResult = (tool as { result?: unknown }).result;
+      if (!isToolResult(toolResult)) return false;
+
+      const { status } = toolResult;
+      return (
+        status === "error" ||
+        status === "cancelled" ||
+        (status === "success" && hasSuccessComponent(tool.toolName))
+      );
+    }
+
+    return false;
+  });
+
+  return hasContent || hasValidTools;
+};
+
 export default function ChatMessage({
   message,
   isLoading,
   addToolResult,
 }: ChatMessageProps) {
-  // Tools have 3 states:
-  // 1. "result" - Tool has completed execution
-  // 2. "call" - Tool is waiting for input
-  // 3. No state - Tool hasn't started
-  const hasToolResults = message.toolInvocations?.some((t) => {
-    if (t.state === "result" && isToolResult(t.result)) {
-      // Only show success results for tools that have success components
-      if (t.result.status === "success") {
-        return hasSuccessComponent(t.toolName);
-      }
-      // Always show errors and cancelled states
-      return t.result.status === "error" || t.result.status === "cancelled";
-    }
-    return false;
-  });
-
-  // Only render message if it has:
-  // 1. Content text, OR
-  // 2. Pending tool calls, OR
-  // 3. Completed tool results
-  if (
-    !message.content?.trim() &&
-    !message.toolInvocations?.some((t) => t.state === "call") &&
-    !hasToolResults
-  ) {
+  if (!isMessageReadyToRender(message)) {
     return null;
   }
 
   const renderToolInvocation = (toolInvocation: ToolInvocation) => {
     if (!toolInvocation) return null;
 
-    // Show results for defined tools only
+    const { state, toolCallId, toolName } = toolInvocation;
+    const toolResult = (toolInvocation as { result?: unknown }).result;
+
+    // Handle successful tool execution
     if (
-      toolInvocation.state === "result" &&
-      isToolResult(toolInvocation.result) &&
-      toolInvocation.result.status === "success"
+      state === "result" &&
+      isToolResult(toolResult) &&
+      toolResult.status === "success"
     ) {
-      // Only render success results for tools that have success components
-      if (hasSuccessComponent(toolInvocation.toolName)) {
+      if (hasSuccessComponent(toolName)) {
         return (
-          <div key={toolInvocation.toolCallId} className="mt-4">
+          <div key={toolCallId} className="mt-4">
             <SuccessResults
-              toolName={toolInvocation.toolName as keyof SuccessResultsMap}
+              toolName={toolName as keyof SuccessResultsMap}
               data={
-                toolInvocation.result
-                  .data as SuccessResultsMap[keyof SuccessResultsMap]
+                toolResult.data as SuccessResultsMap[keyof SuccessResultsMap]
               }
             />
           </div>
@@ -86,21 +96,17 @@ export default function ChatMessage({
       return null;
     }
 
-    // Show cancelled or error states if the tool invocation has such results
+    // Handle error or cancelled states
     if (
-      toolInvocation.state === "result" &&
-      isToolResult(toolInvocation.result) &&
-      (toolInvocation.result.status === "cancelled" ||
-        toolInvocation.result.status === "error")
+      state === "result" &&
+      isToolResult(toolResult) &&
+      (toolResult.status === "error" || toolResult.status === "cancelled")
     ) {
-      const isError = toolInvocation.result.status === "error";
-      const error = toolInvocation.result.error;
+      const isError = toolResult.status === "error";
+      const errorMessage = toolResult.error?.message;
 
       return (
-        <div
-          key={toolInvocation.toolCallId}
-          className="flex items-center gap-3 py-2"
-        >
+        <div key={toolCallId} className="flex items-center gap-3 py-2">
           <XCircle
             className={cn(
               "w-4 h-4 flex-shrink-0",
@@ -114,12 +120,12 @@ export default function ChatMessage({
                 isError ? "text-[#ff4444]" : "text-[#ff4444]/90"
               )}
             >
-              {toolInvocation.result.message ||
+              {toolResult.message ||
                 (isError ? "Operation failed" : "Operation cancelled")}
             </p>
-            {isError && error?.message && (
+            {isError && errorMessage && (
               <p className="text-[0.875rem] mt-1 text-[#ff4444]/80">
-                {error.message}
+                {errorMessage}
               </p>
             )}
           </div>
@@ -127,39 +133,43 @@ export default function ChatMessage({
       );
     }
 
-    const ToolComponent = getToolComponent(toolInvocation);
+    // Handle pending tool calls
+    if (state === "call") {
+      const ToolComponent = getToolComponent(toolInvocation);
+      if (!ToolComponent) return null;
 
-    try {
-      if (toolInvocation.state === "call" && ToolComponent) {
+      try {
         return (
           <ToolComponent
-            key={toolInvocation.toolCallId}
+            key={toolCallId}
             args={toolInvocation.args}
-            onSubmit={(result) => {
+            onSubmit={(toolResult) => {
               const processedResult = preprocessToolResult(
-                toolInvocation.toolName as ValidToolName,
-                result
+                toolName as ValidToolName,
+                toolResult
               );
               addToolResult({
-                toolCallId: toolInvocation.toolCallId,
+                toolCallId,
                 result: processedResult,
               });
             }}
           />
         );
+      } catch (error) {
+        console.error("Error rendering tool invocation:", error);
+        return (
+          <div
+            key={toolCallId}
+            className="text-destructive text-sm p-2 bg-destructive/10 rounded"
+          >
+            Failed to render tool invocation:{" "}
+            {error instanceof Error ? error.message : "Unknown error"}
+          </div>
+        );
       }
-    } catch (error) {
-      console.error("Error rendering tool invocation:", error);
-      return (
-        <div
-          key={toolInvocation.toolCallId}
-          className="text-destructive text-sm p-2 bg-destructive/10 rounded"
-        >
-          Failed to render tool invocation:{" "}
-          {error instanceof Error ? error.message : "Unknown error"}
-        </div>
-      );
     }
+
+    return null;
   };
 
   return (
