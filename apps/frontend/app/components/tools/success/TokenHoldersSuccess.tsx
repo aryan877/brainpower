@@ -16,6 +16,12 @@ interface TokenHoldersSuccessProps {
   };
 }
 
+// Helper function to format numbers with commas
+const formatNumber = (numStr: string) => {
+  const [whole, decimal] = numStr.split(".");
+  return `${Number(whole).toLocaleString()}${decimal ? `.${decimal}` : ""}`;
+};
+
 export function TokenHoldersSuccess({ data }: TokenHoldersSuccessProps) {
   return (
     <Card>
@@ -68,7 +74,7 @@ export function TokenHoldersSuccess({ data }: TokenHoldersSuccessProps) {
                     )}
                   </TableCell>
                   <TableCell className="text-right font-mono">
-                    {holder.uiAmountString}
+                    {formatNumber(holder.uiAmountString)}
                   </TableCell>
                   <TableCell className="text-right font-mono">
                     {holder.percentage?.toFixed(2)}%
