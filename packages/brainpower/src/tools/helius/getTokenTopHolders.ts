@@ -1,37 +1,6 @@
 import { PublicKey } from "@solana/web3.js";
-import { TokenHolder } from "src/types/index.js";
-import { struct, u32, u8 } from "@solana/buffer-layout";
-import { publicKey, u64 } from "@solana/buffer-layout-utils";
-
-// Define the interface for decoded token account data
-interface TokenAccountData {
-  mint: PublicKey;
-  owner: PublicKey;
-  amount: bigint;
-  delegateOption: number;
-  delegate: PublicKey;
-  state: number;
-  isNativeOption: number;
-  isNative: bigint;
-  delegatedAmount: bigint;
-  closeAuthorityOption: number;
-  closeAuthority: PublicKey;
-}
-
-// Token Account Layout from @solana/spl-token
-const TokenAccountLayout = struct<TokenAccountData>([
-  publicKey("mint"),
-  publicKey("owner"),
-  u64("amount"),
-  u32("delegateOption"),
-  publicKey("delegate"),
-  u8("state"),
-  u32("isNativeOption"),
-  u64("isNative"),
-  u64("delegatedAmount"),
-  u32("closeAuthorityOption"),
-  publicKey("closeAuthority"),
-]);
+import { TokenHolder } from "../../types/index.js";
+import { AccountLayout } from "@solana/spl-token";
 
 export async function getTokenTopHolders(
   mint: PublicKey,
@@ -111,8 +80,8 @@ export async function getTokenTopHolders(
             "base64",
           );
 
-          // Deserialize the account data
-          const decodedData = TokenAccountLayout.decode(buffer);
+          // Deserialize the account data using SPL Token's AccountLayout
+          const decodedData = AccountLayout.decode(buffer);
 
           // Calculate percentage
           const percentage =
