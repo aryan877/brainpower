@@ -49,6 +49,11 @@ export async function getTokenTopHolders(
     // Get owner info for each token account using SPL getAccount
     const accountInfos = await Promise.all(
       data.result.value.slice(0, limit).map(async (holder: any) => {
+        // Calculate percentage regardless of owner info success/failure
+        const percentage = parseFloat(
+          ((holder.uiAmount / totalSupply) * 100).toFixed(2),
+        );
+
         try {
           const tokenAccount = await getAccount(
             connection,
@@ -58,16 +63,19 @@ export async function getTokenTopHolders(
           return {
             ...holder,
             owner: tokenAccount.owner.toString(),
-            percentage: parseFloat(
-              ((holder.uiAmount / totalSupply) * 100).toFixed(2),
-            ),
+            percentage,
           };
         } catch (err) {
           console.warn(
             `Failed to get account info for ${holder.address}:`,
             err,
           );
-          return holder;
+          // Return holder with percentage even if owner lookup fails
+          return {
+            ...holder,
+            owner: null, // Indicate owner lookup failed
+            percentage,
+          };
         }
       }),
     );
