@@ -1,5 +1,6 @@
 import { PublicKey } from "@solana/web3.js";
 import { JupiterTokenData } from "../../types/index.js";
+import { NATIVE_MINT } from "@solana/spl-token";
 
 export async function getTokenDataByAddress(
   mint: PublicKey,
@@ -27,27 +28,44 @@ export async function getTokenAddressFromTicker(
   ticker: string,
 ): Promise<string | null> {
   try {
-    const response = await fetch(
-      `https://api.dexscreener.com/latest/dex/search?q=${ticker}`,
-    );
-    const data = await response.json();
-
-    if (!data.pairs || data.pairs.length === 0) {
+    if (!ticker || typeof ticker !== "string") {
+      console.error("Invalid ticker provided");
       return null;
     }
 
-    // Filter for Solana pairs only and sort by FDV
-    let solanaPairs = data.pairs
-      .filter((pair: any) => pair.chainId === "solana")
-      .sort((a: any, b: any) => (b.fdv || 0) - (a.fdv || 0));
+    // Special handling for SOL ticker
+    if (ticker.toUpperCase() === "SOL") {
+      return NATIVE_MINT.toBase58();
+    }
 
-    solanaPairs = solanaPairs.filter(
-      (pair: any) =>
-        pair.baseToken.symbol.toLowerCase() === ticker.toLowerCase(),
+    const response = await fetch(
+      `https://api.dexscreener.com/latest/dex/search?q=${encodeURIComponent(ticker)}`,
     );
 
-    // Return the address of the highest FDV Solana pair
-    return solanaPairs[0].baseToken.address;
+    if (!response.ok) {
+      console.error(
+        `DexScreener API error: ${response.status} ${response.statusText}`,
+      );
+      return null;
+    }
+
+    const data = await response.json();
+
+    if (!data || !Array.isArray(data.pairs) || data.pairs.length === 0) {
+      console.error(
+        "Invalid response format from DexScreener or no pairs found",
+      );
+      return null;
+    }
+
+    // Just take the first pair
+    const firstPair = data.pairs[0];
+
+    if (!firstPair?.baseToken?.address) {
+      return null;
+    }
+
+    return firstPair.baseToken.address;
   } catch (error) {
     console.error("Error fetching token address from DexScreener:", error);
     return null;

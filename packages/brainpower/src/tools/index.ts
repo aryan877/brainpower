@@ -2,7 +2,7 @@
 export * from "./dexscreener/index.js";
 // export * from "./alldomains";
 // export * from "./gibwork";
-// export * from "./jupiter";
+export * from "./jupiter/index.js";
 // export * from "./lulo";
 // export * from "./manifest";
 // export * from "./solana";

@@ -12,12 +12,34 @@ import { nanoid } from "nanoid";
 
 export const getThreads = async (req: AuthenticatedRequest, res: Response) => {
   const userId = getUserId(req);
-  const threads = await ChatThread.find(
-    { userId, isActive: true },
-    { threadId: 1, createdAt: 1, updatedAt: 1, title: 1 }
-  ).sort({ updatedAt: -1 });
+  const limit = parseInt(req.query.limit as string) || 10;
+  const cursor = req.query.cursor as string | undefined;
 
-  res.json({ threads });
+  const query: any = { userId, isActive: true };
+  if (cursor) {
+    query.createdAt = { $lt: new Date(cursor) };
+  }
+
+  const threads = await ChatThread.find(query, {
+    threadId: 1,
+    createdAt: 1,
+    updatedAt: 1,
+    title: 1,
+  })
+    .sort({ createdAt: -1 })
+    .limit(limit + 1);
+
+  const hasMore = threads.length > limit;
+  const items = hasMore ? threads.slice(0, -1) : threads;
+  const nextCursor = hasMore
+    ? threads[limit].createdAt.toISOString()
+    : undefined;
+
+  res.json({
+    threads: items,
+    nextCursor,
+    hasMore,
+  });
 };
 
 export const createNewThread = async (

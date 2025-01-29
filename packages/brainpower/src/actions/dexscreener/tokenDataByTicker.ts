@@ -2,6 +2,7 @@ import { Action } from "../../types/action.js";
 import { BrainPowerAgent } from "../../agent/index.js";
 import { z } from "zod";
 import { getTokenDataByTicker } from "../../tools/dexscreener/index.js";
+import { ACTION_NAMES } from "../actionNames.js";
 
 export type TokenDataByTickerInput = z.infer<typeof tokenDataByTickerSchema>;
 
@@ -10,7 +11,7 @@ const tokenDataByTickerSchema = z.object({
 });
 
 const tokenDataByTickerAction: Action = {
-  name: "GET_TOKEN_DATA_BY_TICKER",
+  name: ACTION_NAMES.GET_TOKEN_DATA_BY_TICKER,
   similes: [
     "token data by ticker",
     "fetch token info by ticker",
@@ -48,7 +49,7 @@ const tokenDataByTickerAction: Action = {
 
       return {
         status: "success",
-        tokenData: tokenData,
+        data: tokenData,
         message: `Successfully fetched token data for ticker: ${ticker}`,
       };
     } catch (error: any) {

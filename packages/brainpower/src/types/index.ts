@@ -3,6 +3,8 @@ import { BrainPowerAgent } from "../agent/index.js";
 import { z } from "zod";
 export * from "./input.js";
 export * from "./cluster.js";
+export * from "./tools.js";
+export * from "./action.js";
 
 export interface Config {
   OPENAI_API_KEY?: string;
@@ -10,6 +12,7 @@ export interface Config {
   JUPITER_FEE_BPS?: number;
   FLASH_PRIVILEGE?: string;
   HELIUS_API_KEY?: string;
+  PRIORITY_LEVEL?: "low" | "medium" | "high";
 }
 
 export interface Creator {
@@ -66,6 +69,10 @@ export interface PumpfunLaunchResponse {
 //   };
 // }
 
+/**
+ * Response format for Jupiter token data lookup
+ * Contains token metadata and market information from Jupiter
+ */
 export interface JupiterTokenData {
   address: string;
   name: string;
@@ -262,3 +269,11 @@ export interface Action {
 //     options: { priorityLevel: string };
 //   }>;
 // }
+
+export interface JupiterFetchPriceResponse {
+  price: string;
+}
+
+export interface JupiterTradeResponse {
+  signature: string;
+}

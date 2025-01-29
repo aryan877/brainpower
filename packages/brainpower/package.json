@@ -16,10 +16,12 @@
   "license": "MIT",
   "dependencies": {
     "@ai-sdk/openai": "^1.0.11",
+    "@jup-ag/api": "^6.0.38",
     "@langchain/core": "^0.3.26",
     "@langchain/groq": "^0.1.2",
     "@langchain/langgraph": "^0.2.36",
     "@langchain/openai": "^0.3.16",
+    "@privy-io/server-auth": "^1.18.0",
     "@solana/spl-token": "^0.4.9",
     "@solana/web3.js": "^1.98.0",
     "ai": "^4.0.22",
@@ -32,8 +34,7 @@
     "langchain": "^0.3.8",
     "openai": "^4.77.0",
     "typedoc": "^0.27.6",
-    "zod": "^3.24.1",
-    "@privy-io/server-auth": "^1.18.0"
+    "zod": "^3.24.1"
   },
   "devDependencies": {
     "@types/bn.js": "^5.1.6",

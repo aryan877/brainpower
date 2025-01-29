@@ -49,5 +49,13 @@ export const validateDeleteThread = validateRequest({
   }),
 });
 
+// Schema for getting threads with pagination
+export const validateGetThreads = validateRequest({
+  query: z.object({
+    limit: z.string().optional(),
+    cursor: z.string().optional(),
+  }),
+});
+
 export type Message = z.infer<typeof messageSchema>;
 export type ToolInvocation = z.infer<typeof toolInvocationSchema>;

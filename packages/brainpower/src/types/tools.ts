@@ -3,12 +3,8 @@
  * Tools are external integrations or actions that can be invoked, and this
  * provides a standardized way to handle their responses.
  */
-
-import {
-  PumpfunLaunchResponse,
-  ACTION_NAMES,
-  JupiterTradeResponse,
-} from "@repo/brainpower-agent";
+import { JupiterTradeResponse, PumpfunLaunchResponse } from "./index.js";
+import { ACTION_NAMES } from "../actions/index.js";
 
 /**
  * Possible status values for a tool execution result

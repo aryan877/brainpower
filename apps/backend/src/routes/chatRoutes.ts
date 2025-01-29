@@ -15,6 +15,7 @@ import {
   validateThreadHistory,
   validateDeleteThread,
   validateSaveAllMessages,
+  validateGetThreads,
 } from "../validators/chatValidators.js";
 import { asyncHandler } from "../middleware/errors/asyncHandler.js";
 
@@ -22,7 +23,7 @@ export function setupChatRoutes(router: Router): Router {
   router.use(authenticateUser);
   router.use(validateCluster);
 
-  router.get("/threads", asyncHandler(getThreads));
+  router.get("/threads", validateGetThreads, asyncHandler(getThreads));
 
   router.post(
     "/thread",

@@ -1,6 +1,7 @@
 import { Action } from "../../types/action.js";
 // import { BrainPowerAgent } from "../../agent";
 import { z } from "zod";
+import { ACTION_NAMES } from "../actionNames.js";
 // import { launchPumpFunToken } from "../../tools";
 
 export type LaunchPumpfunTokenInput = z.infer<typeof launchPumpfunTokenSchema>;
@@ -66,7 +67,7 @@ const launchPumpfunTokenSchema = z.object({
 });
 
 const launchPumpfunTokenAction: Action = {
-  name: "LAUNCH_PUMPFUN_TOKEN",
+  name: ACTION_NAMES.LAUNCH_PUMPFUN_TOKEN,
   similes: [
     "create pumpfun token",
     "launch token on pumpfun",

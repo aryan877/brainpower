@@ -101,13 +101,13 @@ async function createTokenTransaction(
 }
 
 async function signAndSendTransaction(
-  kit: BrainPowerAgent,
+  agent: BrainPowerAgent,
   tx: VersionedTransaction,
   mintKeypair: Keypair,
 ) {
   try {
     // Get the latest blockhash
-    const { blockhash } = await kit.connection.getLatestBlockhash();
+    const { blockhash } = await agent.connection.getLatestBlockhash();
 
     // Update transaction with latest blockhash
     tx.message.recentBlockhash = blockhash;
@@ -116,10 +116,10 @@ async function signAndSendTransaction(
     tx.sign([mintKeypair]);
 
     // Send transaction using agent's signAndSendTransaction
-    const txId = await kit.signAndSendTransaction(tx);
+    const txId = await agent.signAndSendTransaction(tx);
 
     // Wait for transaction confirmation
-    const { status, hash } = await kit.waitForTransaction(txId);
+    const { status, hash } = await agent.waitForTransaction(txId);
 
     if (status !== "confirmed") {
       throw new Error(`Transaction failed with status: ${status}`);

@@ -1,4 +1,4 @@
-import { Action } from "../types/action.js";
+import { Action, HandlerResponse } from "../types/action.js";
 import { BrainPowerAgent } from "../agent/index.js";
 import { ACTIONS } from "../actions/index.js";
 
@@ -8,10 +8,10 @@ import { ACTIONS } from "../actions/index.js";
 export function findAction(query: string): Action | undefined {
   const normalizedQuery = query.toLowerCase().trim();
   return Object.values(ACTIONS).find(
-    (action) =>
+    (action): action is Action =>
       action.name.toLowerCase() === normalizedQuery ||
       action.similes.some(
-        (simile: any) => simile.toLowerCase() === normalizedQuery,
+        (simile: string) => simile.toLowerCase() === normalizedQuery,
       ),
   );
 }
@@ -23,7 +23,7 @@ export async function executeAction(
   action: Action,
   agent: BrainPowerAgent,
   input: Record<string, any>,
-): Promise<Record<string, any>> {
+): Promise<HandlerResponse> {
   try {
     // Validate input using Zod schema
     const validatedInput = action.schema.parse(input);
@@ -32,25 +32,28 @@ export async function executeAction(
     // We know handler exists because we only call this for backend tools
     const result = await action.handler!(agent, validatedInput);
 
-    return {
-      status: "success",
-      ...result,
-    };
+    return result;
   } catch (error: any) {
     // Handle Zod validation errors specially
     if (error.errors) {
       return {
         status: "error",
         message: "Validation error",
-        details: error.errors,
-        code: "VALIDATION_ERROR",
+        error: {
+          code: "VALIDATION_ERROR",
+          message: "Input validation failed",
+          details: error.errors,
+        },
       };
     }
 
     return {
       status: "error",
       message: error.message,
-      code: error.code || "EXECUTION_ERROR",
+      error: {
+        code: error.code || "EXECUTION_ERROR",
+        message: error.message,
+      },
     };
   }
 }

@@ -11,12 +11,39 @@ export interface ActionExample {
 }
 
 /**
+ * Possible status values for a handler execution result
+ */
+export type HandlerResultStatus = "success" | "error" | "cancelled";
+
+/**
+ * Standard response type for all handlers
+ * @template T The type of the successful result data
+ */
+export interface HandlerResponse<T = unknown> {
+  /** The execution status of the handler */
+  status: HandlerResultStatus;
+  /** A human-readable message describing the result */
+  message: string;
+  /** The actual result data, present only on successful execution */
+  data?: T;
+  /** Error information, present only when status is "error" */
+  error?: {
+    /** Machine-readable error code */
+    code: string;
+    /** Human-readable error message */
+    message: string;
+    /** Additional error context/stack trace */
+    details?: unknown;
+  };
+}
+
+/**
  * Handler function type for executing the action
  */
 export type Handler = (
   agent: BrainPowerAgent,
   input: Record<string, any>,
-) => Promise<Record<string, any>>;
+) => Promise<HandlerResponse>;
 
 /**
  * Main Action interface inspired by ELIZA

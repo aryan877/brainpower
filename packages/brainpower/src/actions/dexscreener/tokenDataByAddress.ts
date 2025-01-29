@@ -3,6 +3,7 @@ import { Action } from "../../types/index.js";
 import { getTokenDataByAddress } from "../../tools/dexscreener/get_token_data.js";
 import { BrainPowerAgent } from "../../agent/index.js";
 import { PublicKey } from "@solana/web3.js";
+import { ACTION_NAMES } from "../actionNames.js";
 
 export type TokenDataByAddressInput = z.infer<typeof schema>;
 
@@ -11,7 +12,7 @@ const schema = z.object({
 });
 
 export const tokenDataByAddress: Action = {
-  name: "tokenDataByAddress",
+  name: ACTION_NAMES.GET_TOKEN_DATA_BY_ADDRESS,
   similes: [
     "get token data by address",
     "fetch token info using address",
@@ -60,7 +61,7 @@ export const tokenDataByAddress: Action = {
 
       return {
         status: "success",
-        tokenData: tokenData,
+        data: tokenData,
         message: `Successfully fetched token data for address: ${address}`,
       };
     } catch (error: any) {

@@ -31,6 +31,9 @@ export interface SidebarProps {
   onLogoutClick: () => void;
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
+  hasMore: boolean;
+  isLoadingMore: boolean;
+  onLoadMore: () => void;
 }
 
 export default function Sidebar({
@@ -43,6 +46,9 @@ export default function Sidebar({
   onLogoutClick,
   isCollapsed = false,
   onToggleCollapse,
+  hasMore,
+  isLoadingMore,
+  onLoadMore,
 }: SidebarProps) {
   const { createWallet } = useSolanaWallets();
   const { user } = usePrivy();
@@ -230,41 +236,64 @@ export default function Sidebar({
               </div>
             )
           ) : (
-            <ul className={`space-y-1 ${isCollapsed ? "px-2" : "px-4"}`}>
-              {threads.map((thread) => (
-                <li
-                  key={thread.threadId}
-                  onClick={() => onSelectThread(thread.threadId)}
-                  className={`flex items-center p-2 cursor-pointer rounded-lg hover:bg-muted transition-all duration-200 ${
-                    selectedThread === thread.threadId ? "bg-muted border" : ""
-                  } ${isCollapsed ? "justify-center" : "justify-between"}`}
-                  title={isCollapsed ? formatThreadName(thread) : undefined}
-                >
-                  {isCollapsed ? (
-                    <MessageSquarePlus className="h-4 w-4 text-muted-foreground" />
-                  ) : (
-                    <>
-                      <span className="truncate text-foreground font-medium text-sm md:text-base flex-1 mr-2">
-                        {formatThreadName(thread)}
-                      </span>
-                      <Button
-                        onClick={(e) => handleDeleteClick(thread, e)}
-                        variant="ghost"
-                        size="icon"
-                        disabled={deletingThreadId === thread.threadId}
-                        className="text-destructive hover:text-destructive/90 hover:bg-muted flex-shrink-0"
-                      >
-                        {deletingThreadId === thread.threadId ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <XCircle className="h-4 w-4 transition-transform hover:scale-110" />
-                        )}
-                      </Button>
-                    </>
-                  )}
-                </li>
-              ))}
-            </ul>
+            <>
+              <ul className={`space-y-1 ${isCollapsed ? "px-2" : "px-4"}`}>
+                {threads.map((thread) => (
+                  <li
+                    key={thread.threadId}
+                    onClick={() => onSelectThread(thread.threadId)}
+                    className={`flex items-center p-2 cursor-pointer rounded-lg hover:bg-muted transition-all duration-200 ${
+                      selectedThread === thread.threadId
+                        ? "bg-muted border"
+                        : ""
+                    } ${isCollapsed ? "justify-center" : "justify-between"}`}
+                    title={isCollapsed ? formatThreadName(thread) : undefined}
+                  >
+                    {isCollapsed ? (
+                      <MessageSquarePlus className="h-4 w-4 text-muted-foreground" />
+                    ) : (
+                      <>
+                        <span className="truncate text-foreground font-medium text-sm md:text-base flex-1 mr-2">
+                          {formatThreadName(thread)}
+                        </span>
+                        <Button
+                          onClick={(e) => handleDeleteClick(thread, e)}
+                          variant="ghost"
+                          size="icon"
+                          disabled={deletingThreadId === thread.threadId}
+                          className="text-destructive hover:text-destructive/90 hover:bg-muted flex-shrink-0"
+                        >
+                          {deletingThreadId === thread.threadId ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <XCircle className="h-4 w-4 transition-transform hover:scale-110" />
+                          )}
+                        </Button>
+                      </>
+                    )}
+                  </li>
+                ))}
+              </ul>
+              {hasMore && !isCollapsed && (
+                <div className="px-4 mt-4">
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={onLoadMore}
+                    disabled={isLoadingMore}
+                  >
+                    {isLoadingMore ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        Loading...
+                      </>
+                    ) : (
+                      "Load More"
+                    )}
+                  </Button>
+                </div>
+              )}
+            </>
           )}
         </div>
 

@@ -178,9 +178,13 @@ export const simulateTransactionFee = async (
         Buffer.from(serializedTransaction, "base64")
       );
     }
-
-    const simulationResponse =
-      await connection.simulateTransaction(transaction);
+    const simulationResponse = await connection.simulateTransaction(
+      transaction,
+      {
+        sigVerify: false,
+        replaceRecentBlockhash: true,
+      }
+    );
 
     res.json({
       simulation: {

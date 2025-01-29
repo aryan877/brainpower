@@ -196,24 +196,46 @@ export class BrainPowerAgent {
     tx: Transaction | VersionedTransaction,
     caip2?: SolanaCaip2ChainId,
   ): Promise<string> {
-    const response =
-      await this.privyConfig.privyClient.walletApi.solana.signAndSendTransaction(
-        {
-          walletId: this.privyConfig.walletId,
-          transaction: tx,
-          caip2: caip2 || this.privyConfig.caip2,
-        },
-      );
+    console.log("Signing and sending transaction...", {
+      walletId: this.privyConfig.walletId,
+      caip2: caip2 || this.privyConfig.caip2,
+    });
 
-    if ("code" in response && response.code) {
-      throw new Error(`Transaction failed: ${response.message}`);
+    try {
+      const response =
+        await this.privyConfig.privyClient.walletApi.solana.signAndSendTransaction(
+          {
+            walletId: this.privyConfig.walletId,
+            transaction: tx,
+            caip2: caip2 || this.privyConfig.caip2,
+          },
+        );
+
+      if ("code" in response && response.code) {
+        console.error("Transaction failed", {
+          code: response.code,
+          message: response.message,
+        });
+        throw new Error(`Transaction failed: ${response.message}`);
+      }
+
+      if (!response.hash) {
+        console.error("Transaction hash missing from response", { response });
+        throw new Error("Transaction hash not found in response");
+      }
+
+      console.log("Transaction sent successfully", {
+        hash: response.hash,
+      });
+
+      return response.hash;
+    } catch (error: any) {
+      console.error("Error signing and sending transaction", {
+        error: error.message,
+        stack: error.stack,
+      });
+      throw error;
     }
-
-    if (!response.hash) {
-      throw new Error("Transaction hash not found in response");
-    }
-
-    return response.hash;
   }
 
   // Helper method to check transaction status

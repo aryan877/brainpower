@@ -3,8 +3,9 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Sidebar from "./Sidebar";
-import { useThreads, useCreateThread, useDeleteThread } from "../hooks/chat";
+import { useCreateThread, useDeleteThread } from "../hooks/chat";
 import { ThreadPreview } from "../types";
+import { GetThreadsResponse } from "../types/api/chat";
 import Navbar from "./Navbar";
 import { usePrivy } from "@privy-io/react-auth";
 import {
@@ -16,6 +17,8 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { WalletProvider } from "../providers/WalletProvider";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { chatClient } from "../clients/chat";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -31,7 +34,6 @@ export function AppLayout({
   const router = useRouter();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const { data: threads = [], isLoading } = useThreads();
   const { mutateAsync: createThreadMutation } = useCreateThread();
   const { mutateAsync: deleteThreadMutation } = useDeleteThread();
   const { user, logout } = usePrivy();
@@ -41,6 +43,30 @@ export function AppLayout({
     content: React.ReactNode;
     onConfirm: () => Promise<void>;
   } | null>(null);
+
+  // Fetch threads with infinite query
+  const {
+    data,
+    isLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    refetch,
+  } = useInfiniteQuery({
+    queryKey: ["threads"],
+    queryFn: async ({ pageParam }) => {
+      return chatClient.getThreads({
+        limit: 10,
+        cursor: pageParam as string | undefined,
+      });
+    },
+    getNextPageParam: (lastPage: GetThreadsResponse) => lastPage.nextCursor,
+    initialPageParam: undefined as string | undefined,
+  });
+
+  // Flatten all threads from all pages
+  const threads =
+    data?.pages.flatMap((page: GetThreadsResponse) => page.threads) || [];
 
   // Toggle sidebar for mobile
   const toggleSidebar = () => {
@@ -97,6 +123,8 @@ export function AppLayout({
       if (selectedThread === thread.threadId) {
         router.push("/");
       }
+      // Refresh the threads list after deletion
+      refetch();
     } catch (error) {
       console.error("Error deleting thread:", error);
     }
@@ -104,6 +132,10 @@ export function AppLayout({
 
   const handleSelectThread = (threadId: string) => {
     router.push(`/?chatId=${threadId}`);
+  };
+
+  const handleLoadMore = () => {
+    fetchNextPage();
   };
 
   const showConfirmDialog = (config: {
@@ -204,6 +236,9 @@ export function AppLayout({
             onLogoutClick={handleLogoutClick}
             isCollapsed={isSidebarCollapsed && window.innerWidth >= 768}
             onToggleCollapse={toggleSidebarCollapse}
+            hasMore={!!hasNextPage}
+            isLoadingMore={isFetchingNextPage}
+            onLoadMore={handleLoadMore}
           />
         </div>
 

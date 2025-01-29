@@ -14,6 +14,8 @@ export interface GetThreadHistoryResponse {
 
 export interface GetThreadsResponse {
   threads: ThreadPreview[];
+  nextCursor?: string;
+  hasMore: boolean;
 }
 
 export interface DeleteThreadResponse {

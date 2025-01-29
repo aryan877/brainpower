@@ -4,7 +4,7 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
 
   images: {
-    domains: ["cdn.helius-rpc.com", "ipfs.io"],
+    domains: ["cdn.helius-rpc.com", "ipfs.io", "raw.githubusercontent.com"],
   },
 
   async headers() {

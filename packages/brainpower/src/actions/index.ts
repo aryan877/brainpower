@@ -30,6 +30,8 @@
 import launchPumpfunTokenAction from "./pumpfun/launchPumpfunToken.js";
 import tokenDataByTickerAction from "./dexscreener/tokenDataByTicker.js";
 import { tokenDataByAddress as tokenDataByAddressAction } from "./dexscreener/tokenDataByAddress.js";
+import tradeAction from "./jupiter/trade.js";
+import { ACTION_NAMES } from "./actionNames.js";
 // import getWalletAddressAction from "./agent/getWalletAddress";
 // import flashOpenTradeAction from "./flash/flashOpenTrade";
 // import flashCloseTradeAction from "./flash/flashCloseTrade";
@@ -62,11 +64,7 @@ import { tokenDataByAddress as tokenDataByAddressAction } from "./dexscreener/to
 // import deriveDriftVaultAddressAction from "./drift/deriveVaultAddress";
 // import updateDriftVaultDelegateAction from "./drift/updateDriftVaultDelegate";
 
-export const ACTION_NAMES = {
-  LAUNCH_PUMPFUN_TOKEN: "LAUNCH_PUMPFUN_TOKEN_ACTION",
-  GET_TOKEN_DATA_BY_TICKER: "GET_TOKEN_DATA_BY_TICKER_ACTION",
-  GET_TOKEN_DATA_BY_ADDRESS: "GET_TOKEN_DATA_BY_ADDRESS_ACTION",
-} as const;
+export { ACTION_NAMES };
 
 export const ACTIONS = {
   // WALLET_ADDRESS_ACTION: getWalletAddressAction,
@@ -103,6 +101,7 @@ export const ACTIONS = {
   [ACTION_NAMES.LAUNCH_PUMPFUN_TOKEN]: launchPumpfunTokenAction,
   [ACTION_NAMES.GET_TOKEN_DATA_BY_TICKER]: tokenDataByTickerAction,
   [ACTION_NAMES.GET_TOKEN_DATA_BY_ADDRESS]: tokenDataByAddressAction,
+  [ACTION_NAMES.JUPITER_SWAP]: tradeAction,
   // FLASH_OPEN_TRADE_ACTION: flashOpenTradeAction,
   // FLASH_CLOSE_TRADE_ACTION: flashCloseTradeAction,
   // CREATE_MULTISIG_ACTION: createMultisigAction,

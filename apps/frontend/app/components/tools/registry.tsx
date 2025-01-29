@@ -1,9 +1,9 @@
 import { PumpFunLaunchTool } from "./PumpFunLaunchTool";
 import { ToolInvocation } from "ai";
 import {
+  isToolResult,
   ToolResultType,
   ToolResultTypes,
-  isToolResult,
 } from "../../types/tools";
 import { ACTION_NAMES } from "@repo/brainpower-agent";
 
@@ -23,6 +23,9 @@ export const toolRegistry: ToolRegistry = {
   [ACTION_NAMES.LAUNCH_PUMPFUN_TOKEN]: {
     component: PumpFunLaunchTool,
   },
+  // [ACTION_NAMES.JUPITER_SWAP]: {
+  //   component: SwapTool,
+  // },
 };
 
 export type ValidToolName = keyof typeof toolRegistry;

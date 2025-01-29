@@ -6,7 +6,7 @@ import {
   DeleteThreadResponse,
   SaveAllMessagesResponse,
 } from "../types/api/chat";
-import { Message, ThreadPreview } from "../types/models/chat";
+import { Message } from "../types/models/chat";
 
 export const chatClient = {
   saveAllMessages: async (
@@ -23,9 +23,14 @@ export const chatClient = {
     return data;
   },
 
-  getThreads: async (): Promise<ThreadPreview[]> => {
-    const { data } = await api.get<GetThreadsResponse>("/api/chat/threads");
-    return data.threads;
+  getThreads: async (params?: {
+    limit?: number;
+    cursor?: string;
+  }): Promise<GetThreadsResponse> => {
+    const { data } = await api.get<GetThreadsResponse>("/api/chat/threads", {
+      params,
+    });
+    return data;
   },
 
   getHistory: async (threadId: string): Promise<Message[]> => {
