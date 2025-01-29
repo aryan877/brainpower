@@ -1,11 +1,18 @@
 import { PublicKey } from "@solana/web3.js";
-import { Action } from "../../types/action.js";
+import { Action, HandlerResponse } from "../../types/action.js";
 import { BrainPowerAgent } from "../../agent/index.js";
 import { z } from "zod";
 import { trade } from "../../tools/jupiter/trade.js";
 import { ACTION_NAMES } from "../actionNames.js";
 
 export type TradeInput = z.infer<typeof tradeSchema>;
+
+interface TradeData {
+  transaction: string;
+  inputAmount: number;
+  inputToken: string;
+  outputToken: string;
+}
 
 const tradeSchema = z.object({
   outputMint: z.string().min(32, "Invalid output mint address"),
@@ -65,7 +72,10 @@ const tradeAction: Action = {
     ],
   ],
   schema: tradeSchema,
-  handler: async (agent: BrainPowerAgent, input: Record<string, any>) => {
+  handler: async (
+    agent: BrainPowerAgent,
+    input: Record<string, any>,
+  ): Promise<HandlerResponse<TradeData>> => {
     try {
       const { signature } = await trade(
         agent,
@@ -80,10 +90,12 @@ const tradeAction: Action = {
       return {
         status: "success",
         message: "Trade executed successfully",
-        transaction: signature,
-        inputAmount: input.inputAmount,
-        inputToken: input.inputMint || "SOL",
-        outputToken: input.outputMint,
+        data: {
+          transaction: signature,
+          inputAmount: input.inputAmount,
+          inputToken: input.inputMint || "SOL",
+          outputToken: input.outputMint,
+        },
       };
     } catch (error: any) {
       return {

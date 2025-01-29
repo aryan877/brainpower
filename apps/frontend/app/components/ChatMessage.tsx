@@ -94,7 +94,6 @@ export default function ChatMessage({
       toolResult.status === "success"
     ) {
       if (hasSuccessComponent(toolName)) {
-        console.log(toolResult.data);
         return (
           <div key={toolCallId} className="mt-4">
             <SuccessResults

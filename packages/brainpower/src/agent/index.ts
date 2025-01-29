@@ -196,11 +196,6 @@ export class BrainPowerAgent {
     tx: Transaction | VersionedTransaction,
     caip2?: SolanaCaip2ChainId,
   ): Promise<string> {
-    console.log("Signing and sending transaction...", {
-      walletId: this.privyConfig.walletId,
-      caip2: caip2 || this.privyConfig.caip2,
-    });
-
     try {
       const response =
         await this.privyConfig.privyClient.walletApi.solana.signAndSendTransaction(
@@ -223,10 +218,6 @@ export class BrainPowerAgent {
         console.error("Transaction hash missing from response", { response });
         throw new Error("Transaction hash not found in response");
       }
-
-      console.log("Transaction sent successfully", {
-        hash: response.hash,
-      });
 
       return response.hash;
     } catch (error: any) {

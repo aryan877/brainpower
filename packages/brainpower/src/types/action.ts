@@ -19,7 +19,7 @@ export type HandlerResultStatus = "success" | "error" | "cancelled";
  * Standard response type for all handlers
  * @template T The type of the successful result data
  */
-export interface HandlerResponse<T = unknown> {
+export type HandlerResponse<T = unknown> = Readonly<{
   /** The execution status of the handler */
   status: HandlerResultStatus;
   /** A human-readable message describing the result */
@@ -35,7 +35,7 @@ export interface HandlerResponse<T = unknown> {
     /** Additional error context/stack trace */
     details?: unknown;
   };
-}
+}>;
 
 /**
  * Handler function type for executing the action

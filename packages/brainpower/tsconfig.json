@@ -8,7 +8,7 @@
     "esModuleInterop": true,
     "allowJs": true,
     "resolveJsonModule": true,
-    "strict": false,
+    "strict": true,
     "noImplicitAny": false,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
@@ -17,6 +17,6 @@
       "src/*": ["./src/*"]
     }
   },
-  "include": ["src/**/*.ts", "src/**/*.js"],
+  "include": ["src/**/*.ts", "src/**/*.js", ".eslintrc"],
   "exclude": ["node_modules", "dist"]
 }

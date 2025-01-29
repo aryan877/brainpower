@@ -86,15 +86,6 @@ export async function trade(
 
     return { signature };
   } catch (error: any) {
-    console.error("Jupiter Trade Error:", {
-      error: error.message,
-      inputMint: inputMint.toString(),
-      outputMint: outputMint.toString(),
-      inputAmount,
-      slippageBps,
-      walletAddress: agent.wallet_address.toString(),
-      stack: error.stack,
-    });
     throw new Error(`Swap failed: ${error.message}`);
   }
 }
