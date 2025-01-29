@@ -55,6 +55,7 @@ export const tokenTopHolders: Action = {
       const holders = await getTokenTopHolders(
         new PublicKey(address),
         Math.min(limit, 20),
+        agent.connection.rpcEndpoint,
       );
 
       if (!holders || holders.length === 0) {

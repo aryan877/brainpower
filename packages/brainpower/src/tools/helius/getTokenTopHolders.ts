@@ -1,13 +1,14 @@
-import { PublicKey } from "@solana/web3.js";
+import { PublicKey, Connection } from "@solana/web3.js";
 import { TokenHolder } from "../../types/index.js";
-import { AccountLayout } from "@solana/spl-token";
+import { getAccount } from "@solana/spl-token";
 
 export async function getTokenTopHolders(
   mint: PublicKey,
   limit: number = 20,
+  rpcUrl: string,
 ): Promise<TokenHolder[]> {
   try {
-    // First get largest token accounts
+    // First get largest token accounts using Helius RPC
     const response = await fetch(
       `https://mainnet.helius-rpc.com/?api-key=${process.env.HELIUS_API_KEY}`,
       {
@@ -36,64 +37,36 @@ export async function getTokenTopHolders(
       throw new Error("Invalid response format from Helius API");
     }
 
-    // Calculate total supply from all accounts
-    const totalSupply = data.result.value.reduce((acc: number, holder: any) => {
-      return acc + parseFloat(holder.uiAmountString);
-    }, 0);
+    const connection = new Connection(rpcUrl);
 
-    // Get owner info for each token account using getAccountInfo
+    // Get total supply from mint info
+    const mintInfo = await connection.getTokenSupply(mint);
+    const totalSupply = Number(
+      BigInt(mintInfo.value.amount) /
+        BigInt(Math.pow(10, mintInfo.value.decimals)),
+    );
+
+    // Get owner info for each token account using SPL getAccount
     const accountInfos = await Promise.all(
       data.result.value.slice(0, limit).map(async (holder: any) => {
         try {
-          const accountResponse = await fetch(
-            `https://mainnet.helius-rpc.com/?api-key=${process.env.HELIUS_API_KEY}`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                jsonrpc: "2.0",
-                id: 1,
-                method: "getAccountInfo",
-                params: [
-                  holder.address,
-                  {
-                    encoding: "base64",
-                    commitment: "confirmed",
-                  },
-                ],
-              }),
-            },
+          const tokenAccount = await getAccount(
+            connection,
+            new PublicKey(holder.address),
           );
-
-          const accountData = await accountResponse.json();
-
-          if (!accountData?.result?.value?.data) {
-            console.warn(`No data found for account ${holder.address}`);
-            return holder;
-          }
-
-          // Decode base64 data
-          const buffer = Buffer.from(
-            accountData.result.value.data[0],
-            "base64",
-          );
-
-          // Deserialize the account data using SPL Token's AccountLayout
-          const decodedData = AccountLayout.decode(buffer);
-
-          // Calculate percentage
-          const percentage =
-            (parseFloat(holder.uiAmountString) / totalSupply) * 100;
 
           return {
             ...holder,
-            owner: decodedData.owner.toString(),
-            percentage: parseFloat(percentage.toFixed(2)),
+            owner: tokenAccount.owner.toString(),
+            percentage: parseFloat(
+              ((holder.uiAmount / totalSupply) * 100).toFixed(2),
+            ),
           };
         } catch (err) {
-          console.warn(`Failed to get owner for ${holder.address}:`, err);
+          console.warn(
+            `Failed to get account info for ${holder.address}:`,
+            err,
+          );
           return holder;
         }
       }),
