@@ -7,7 +7,7 @@
 import {
   PumpfunLaunchResponse,
   ACTION_NAMES,
-  JupiterTradeResponse,
+  JupiterSwapResponse,
 } from "@repo/brainpower-agent";
 
 /**
@@ -53,7 +53,7 @@ export interface ToolResultBase<T = unknown> {
  */
 export type PumpFunLaunchToolResult = ToolResultBase<PumpfunLaunchResponse>;
 
-export type JupiterSwapToolResult = ToolResultBase<JupiterTradeResponse>;
+export type JupiterSwapToolResult = ToolResultBase<JupiterSwapResponse>;
 
 /**
  * Registry that maps tool names to their corresponding result types

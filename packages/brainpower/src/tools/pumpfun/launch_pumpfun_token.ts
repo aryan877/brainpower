@@ -116,16 +116,11 @@ async function signAndSendTransaction(
     tx.sign([mintKeypair]);
 
     // Send transaction using agent's signAndSendTransaction
-    const txId = await agent.signAndSendTransaction(tx);
+    const signature = await agent.signAndSendTransaction(tx, {
+      commitment: "processed",
+    });
 
-    // Wait for transaction confirmation
-    const { status, hash } = await agent.waitForTransaction(txId);
-
-    if (status !== "confirmed") {
-      throw new Error(`Transaction failed with status: ${status}`);
-    }
-
-    return hash || txId;
+    return signature;
   } catch (error) {
     console.error("Transaction send error:", error);
     if (error instanceof Error && "logs" in error) {

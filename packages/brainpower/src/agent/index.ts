@@ -4,6 +4,12 @@ import {
   PublicKey,
   Transaction,
   VersionedTransaction,
+  LAMPORTS_PER_SOL,
+  SystemProgram,
+  TransactionInstruction,
+  ComputeBudgetProgram,
+  TransactionMessage,
+  AddressLookupTableAccount,
 } from "@solana/web3.js";
 // import { BN } from "@coral-xyz/anchor";
 // import bs58 from "bs58";
@@ -14,98 +20,97 @@ import {
 //   StoreInitOptions,
 // } from "@3land/listings-sdk/dist/types/implementation/implementationTypes";
 // import { DEFAULT_OPTIONS } from "../constants";
-import {
-  // deploy_collection,
-  // deploy_token,
-  // get_balance,
-  // get_balance_other,
-  // getTPS,
-  // resolveSolDomain,
-  // getPrimaryDomain,
-  // launchPumpFunToken,
-  // lendAsset,
-  // mintCollectionNFT,
-  // openbookCreateMarket,
-  // manifestCreateMarket,
-  // raydiumCreateAmmV4,
-  // raydiumCreateClmm,
-  // raydiumCreateCpmm,
-  // registerDomain,
-  // request_faucet_funds,
-  // trade,
-  // limitOrder,
-  // batchOrder,
-  // cancelAllOrders,
-  // withdrawAll,
-  // transfer,
-  getTokenDataByAddress,
-  getTokenDataByTicker,
-  // stakeWithJup,
-  // stakeWithSolayer,
-  // sendCompressedAirdrop,
-  // orcaCreateSingleSidedLiquidityPool,
-  // orcaCreateCLMM,
-  // orcaOpenCenteredPositionWithLiquidity,
-  // orcaOpenSingleSidedPosition,
-  // FEE_TIERS,
-  // fetchPrice,
-  // getAllDomainsTLDs,
-  // getAllRegisteredAllDomains,
-  // getOwnedDomainsForTLD,
-  // getMainAllDomainsDomain,
-  // getOwnedAllDomains,
-  // resolveAllDomains,
-  // create_gibwork_task,
-  // orcaClosePosition,
-  // orcaFetchPositions,
-  // rock_paper_scissor,
-  // create_TipLink,
-  // listNFTForSale,
-  // cancelListing,
-  // closeEmptyTokenAccounts,
-  // fetchTokenReportSummary,
-  // fetchTokenDetailedReport,
-  // fetchPythPrice,
-  // fetchPythPriceFeedID,
-  // createCollection,
-  // createSingle,
-  // multisig_transfer_from_treasury,
-  // create_squads_multisig,
-  // multisig_create_proposal,
-  // multisig_deposit_to_treasury,
-  // multisig_reject_proposal,
-  // multisig_approve_proposal,
-  // multisig_execute_proposal,
-  // parseTransaction,
-  // sendTransactionWithPriorityFee,
-  // getAssetsByOwner,
-  // getHeliusWebhook,
-  // create_HeliusWebhook,
-  // deleteHeliusWebhook,
-  // createDriftUserAccount,
-  // createVault,
-  // depositIntoVault,
-  // depositToDriftUserAccount,
-  // getVaultAddress,
-  // doesUserHaveDriftAccount,
-  // driftUserAccountInfo,
-  // requestWithdrawalFromVault,
-  // tradeDriftVault,
-  // driftPerpTrade,
-  // updateVault,
-  // getVaultInfo,
-  // withdrawFromDriftUserAccount,
-  // withdrawFromDriftVault,
-  // updateVaultDelegate,
-  // get_token_balance,
-} from "../tools/index.js";
+import {} from // deploy_collection,
+// deploy_token,
+// get_balance,
+// get_balance_other,
+// getTPS,
+// resolveSolDomain,
+// getPrimaryDomain,
+// launchPumpFunToken,
+// lendAsset,
+// mintCollectionNFT,
+// openbookCreateMarket,
+// manifestCreateMarket,
+// raydiumCreateAmmV4,
+// raydiumCreateClmm,
+// raydiumCreateCpmm,
+// registerDomain,
+// request_faucet_funds,
+// trade,
+// limitOrder,
+// batchOrder,
+// cancelAllOrders,
+// withdrawAll,
+// transfer,
+// getTokenDataByAddress,
+// getTokenDataByTicker,
+// stakeWithJup,
+// stakeWithSolayer,
+// sendCompressedAirdrop,
+// orcaCreateSingleSidedLiquidityPool,
+// orcaCreateCLMM,
+// orcaOpenCenteredPositionWithLiquidity,
+// orcaOpenSingleSidedPosition,
+// FEE_TIERS,
+// fetchPrice,
+// getAllDomainsTLDs,
+// getAllRegisteredAllDomains,
+// getOwnedDomainsForTLD,
+// getMainAllDomainsDomain,
+// getOwnedAllDomains,
+// resolveAllDomains,
+// create_gibwork_task,
+// orcaClosePosition,
+// orcaFetchPositions,
+// rock_paper_scissor,
+// create_TipLink,
+// listNFTForSale,
+// cancelListing,
+// closeEmptyTokenAccounts,
+// fetchTokenReportSummary,
+// fetchTokenDetailedReport,
+// fetchPythPrice,
+// fetchPythPriceFeedID,
+// createCollection,
+// createSingle,
+// multisig_transfer_from_treasury,
+// create_squads_multisig,
+// multisig_create_proposal,
+// multisig_deposit_to_treasury,
+// multisig_reject_proposal,
+// multisig_approve_proposal,
+// multisig_execute_proposal,
+// parseTransaction,
+// sendTransactionWithPriorityFee,
+// getAssetsByOwner,
+// getHeliusWebhook,
+// create_HeliusWebhook,
+// deleteHeliusWebhook,
+// createDriftUserAccount,
+// createVault,
+// depositIntoVault,
+// depositToDriftUserAccount,
+// getVaultAddress,
+// doesUserHaveDriftAccount,
+// driftUserAccountInfo,
+// requestWithdrawalFromVault,
+// tradeDriftVault,
+// driftPerpTrade,
+// updateVault,
+// getVaultInfo,
+// withdrawFromDriftUserAccount,
+// withdrawFromDriftVault,
+// updateVaultDelegate,
+// get_token_balance,
+"../tools/index.js";
 import {
   Config,
   // TokenCheck,
   // CollectionDeployment,
   // CollectionOptions,
   // GibworkCreateTaskReponse,
-  JupiterTokenData,
+  // JupiterTokenData,
   // MintCollectionNFTResponse,
   // PumpfunLaunchResponse,
   // PumpFunTokenOptions,
@@ -119,10 +124,20 @@ import { SolanaCaip2ChainId } from "@privy-io/server-auth";
 
 interface PrivyConfig {
   privyClient: PrivyClient;
-  walletId: string;
+  address: string;
   caip2: SolanaCaip2ChainId;
   appId: string;
   appSecret: string;
+}
+
+export const MEMO_PROGRAM_ID = new PublicKey(
+  "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr",
+);
+
+export interface TransferWithMemoParams {
+  to: string;
+  amount: number;
+  memo: string;
 }
 
 export class BrainPowerAgent {
@@ -135,16 +150,16 @@ export class BrainPowerAgent {
     rpc_url: string,
     configOrKey: Config | string | null,
     privyClient: PrivyClient,
-    walletId: string,
+    address: string,
     caip2: string,
     appId: string,
     appSecret: string,
   ) {
     this.connection = new Connection(
       rpc_url || "https://api.mainnet-beta.solana.com",
+      "confirmed",
     );
 
-    // Handle both old and new patterns
     if (configOrKey === null) {
       throw new Error("Config is required");
     }
@@ -158,160 +173,165 @@ export class BrainPowerAgent {
       this.config = configOrKey;
     }
 
-    // Store Privy client and wallet details
     this.privyConfig = {
       privyClient,
-      walletId,
+      address,
       caip2: caip2 as SolanaCaip2ChainId,
       appId,
       appSecret,
     };
 
-    // Get wallet address from Privy client
-    this.wallet_address = new PublicKey(walletId);
+    this.wallet_address = new PublicKey(address);
   }
 
-  // Helper method to sign transaction
   async signTransaction(
     tx: Transaction | VersionedTransaction,
   ): Promise<Transaction | VersionedTransaction> {
-    const response =
-      await this.privyConfig.privyClient.walletApi.solana.signTransaction({
-        walletId: this.privyConfig.walletId,
-        transaction: tx,
+    try {
+      const { data } = await this.privyConfig.privyClient.walletApi.rpc({
+        address: this.privyConfig.address,
+        chainType: "solana",
+        method: "signTransaction",
+        params: {
+          transaction: tx,
+        },
       });
-
-    return response.signedTransaction;
+      return data.signedTransaction;
+    } catch (error) {
+      throw new Error(
+        `Failed to sign transaction: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
+    }
   }
 
-  // Helper method to sign multiple transactions
   async signAllTransactions(
     txs: (Transaction | VersionedTransaction)[],
   ): Promise<(Transaction | VersionedTransaction)[]> {
-    return Promise.all(txs.map((tx) => this.signTransaction(tx)));
+    try {
+      return Promise.all(txs.map((tx) => this.signTransaction(tx)));
+    } catch (error) {
+      throw new Error(
+        `Failed to sign transactions: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
+    }
   }
 
-  // Helper method to sign and send transaction
+  async waitForTransactionConfirmation(
+    signature: string,
+    commitment: "processed" | "confirmed" | "finalized" = "confirmed",
+  ): Promise<void> {
+    try {
+      // Get latest blockhash for confirmation
+      const { blockhash, lastValidBlockHeight } =
+        await this.connection.getLatestBlockhash();
+
+      // Wait for confirmation
+      const confirmation = await this.connection.confirmTransaction(
+        {
+          signature,
+          blockhash,
+          lastValidBlockHeight,
+        },
+        commitment,
+      );
+
+      if (confirmation.value.err) {
+        throw new Error(`Transaction failed: ${confirmation.value.err}`);
+      }
+    } catch (error: any) {
+      throw new Error(`Transaction confirmation failed: ${error.message}`);
+    }
+  }
+
   async signAndSendTransaction(
     tx: Transaction | VersionedTransaction,
-    caip2?: SolanaCaip2ChainId,
+    options: {
+      skipPreflight?: boolean;
+      maxRetries?: number;
+      commitment?: "processed" | "confirmed" | "finalized";
+    } = {},
   ): Promise<string> {
     try {
-      const response =
-        await this.privyConfig.privyClient.walletApi.solana.signAndSendTransaction(
-          {
-            walletId: this.privyConfig.walletId,
-            transaction: tx,
-            caip2: caip2 || this.privyConfig.caip2,
-          },
-        );
+      const signedTx = await this.signTransaction(tx);
+      const signature = await this.connection.sendRawTransaction(
+        signedTx.serialize(),
+        {
+          skipPreflight: options.skipPreflight || false,
+          maxRetries: options.maxRetries || 3,
+          preflightCommitment: options.commitment || "confirmed",
+        },
+      );
 
-      if ("code" in response && response.code) {
-        console.error("Transaction failed", {
-          code: response.code,
-          message: response.message,
-        });
-        throw new Error(`Transaction failed: ${response.message}`);
-      }
+      // Wait for confirmation using the new method
+      await this.waitForTransactionConfirmation(signature, options.commitment);
 
-      if (!response.hash) {
-        console.error("Transaction hash missing from response", { response });
-        throw new Error("Transaction hash not found in response");
-      }
-
-      return response.hash;
-    } catch (error: any) {
+      return signature;
+    } catch (error) {
       console.error("Error signing and sending transaction", {
-        error: error.message,
-        stack: error.stack,
+        error: error instanceof Error ? error.message : error,
+        stack: error instanceof Error ? error.stack : undefined,
       });
       throw error;
     }
   }
 
-  // Helper method to check transaction status
-  async checkTransactionStatus(transactionId: string): Promise<{
-    transaction_id: string;
-    status: "submitted" | "included" | "confirmed" | "error";
-    hash?: string;
-    error?: { code: string; message: string } | null;
-  }> {
-    const response = await fetch(
-      `https://api.privy.io/v1/transactions/id/${transactionId}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "privy-app-id": this.privyConfig.appId,
-          Authorization: `Basic ${Buffer.from(`${this.privyConfig.privyClient}:${this.privyConfig.appSecret}`).toString("base64")}`,
-        },
-        body: JSON.stringify({ transaction_id: transactionId }),
-      },
-    );
+  async sendTransferWithMemo(params: TransferWithMemoParams): Promise<string> {
+    const { to, amount, memo } = params;
+    const fromPubkey = this.wallet_address;
+    const toPubkey = new PublicKey(to);
 
-    if (!response.ok) {
+    // Check balance
+    const balance = await this.connection.getBalance(fromPubkey);
+    const requiredAmount = amount * LAMPORTS_PER_SOL;
+    if (balance < requiredAmount) {
       throw new Error(
-        `Failed to fetch transaction status: ${response.statusText}`,
+        `Insufficient balance. You have ${balance / LAMPORTS_PER_SOL} SOL but need ${amount} SOL`,
       );
     }
 
-    return await response.json();
-  }
+    try {
+      const transaction = new Transaction();
+      transaction.feePayer = fromPubkey;
 
-  // Helper method to wait for transaction confirmation
-  async waitForTransaction(
-    transactionId: string,
-    timeout: number = 60000, // Default 60 seconds timeout
-    checkInterval: number = 1000, // Check every second
-  ): Promise<{ status: string; hash: string | undefined }> {
-    const startTime = Date.now();
+      // Add transfer instruction
+      const transferInstruction = SystemProgram.transfer({
+        fromPubkey,
+        toPubkey,
+        lamports: requiredAmount,
+      });
 
-    while (Date.now() - startTime < timeout) {
-      const status = await this.checkTransactionStatus(transactionId);
+      // Add memo instruction
+      const memoInstruction = new TransactionInstruction({
+        keys: [{ pubkey: fromPubkey, isSigner: true, isWritable: true }],
+        programId: MEMO_PROGRAM_ID,
+        data: Buffer.from(memo, "utf-8"),
+      });
 
-      if (status.status === "confirmed") {
-        return { status: "confirmed", hash: status.hash };
+      transaction.add(transferInstruction, memoInstruction);
+
+      // Get latest blockhash
+      const { blockhash } =
+        await this.connection.getLatestBlockhash("confirmed");
+      transaction.recentBlockhash = blockhash;
+
+      // Sign and send transaction
+      return await this.signAndSendTransaction(transaction, {
+        skipPreflight: false,
+        maxRetries: 5,
+      });
+    } catch (error) {
+      console.error("Transaction error:", error);
+      if (error instanceof Error) {
+        if (error.toString().includes("insufficient lamports")) {
+          throw new Error(
+            "Insufficient balance. Please make sure you have enough SOL to cover the transaction.",
+          );
+        }
+        if (error.toString().includes("Transaction simulation failed")) {
+          throw new Error("Transaction failed. Please try again.");
+        }
       }
-
-      if (status.status === "error") {
-        throw new Error(
-          `Transaction failed: ${status.error?.message || "Unknown error"}`,
-        );
-      }
-
-      // Wait for the check interval before checking again
-      await new Promise((resolve) => setTimeout(resolve, checkInterval));
+      throw error;
     }
-
-    throw new Error("Transaction confirmation timeout");
   }
-
-  async getTokenDataByAddress(
-    mint: string,
-  ): Promise<JupiterTokenData | undefined> {
-    return getTokenDataByAddress(new PublicKey(mint));
-  }
-
-  async getTokenDataByTicker(
-    ticker: string,
-  ): Promise<JupiterTokenData | undefined> {
-    return getTokenDataByTicker(ticker);
-  }
-
-  // async launchPumpFunToken(
-  //   tokenName: string,
-  //   tokenTicker: string,
-  //   description: string,
-  //   imageUrl: string,
-  //   options?: PumpFunTokenOptions,
-  // ): Promise<PumpfunLaunchResponse> {
-  //   return launchPumpFunToken(
-  //     this,
-  //     tokenName,
-  //     tokenTicker,
-  //     description,
-  //     imageUrl,
-  //     options,
-  //   );
-  // }
 }

@@ -44,12 +44,12 @@ if (
 }
 
 interface GenerateBrainpowerAgentParams {
-  walletId: string;
+  address: string;
   cluster: Cluster;
 }
 
 export function generateBrainpowerAgent({
-  walletId,
+  address,
   cluster,
 }: GenerateBrainpowerAgentParams): BrainPowerAgent {
   const rpcUrl =
@@ -59,9 +59,9 @@ export function generateBrainpowerAgent({
 
   return new BrainPowerAgent(
     rpcUrl,
-    { OPENAI_API_KEY },
+    { OPENAI_API_KEY, PRIORITY_LEVEL: "high" },
     privyClient,
-    walletId,
+    address,
     caip2,
     PRIVY_APP_ID,
     PRIVY_APP_SECRET

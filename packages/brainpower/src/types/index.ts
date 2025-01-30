@@ -70,8 +70,20 @@ export interface JupiterFetchPriceResponse {
   price: string;
 }
 
-export interface JupiterTradeResponse {
-  signature: string;
+/**
+ * Response format for Jupiter swap success UI
+ */
+export interface JupiterSwapResponse {
+  transaction: string;
+  inputAmount: number;
+  inputToken: string;
+  outputToken: string;
+  status?: "success" | "error";
+  message?: string;
+  error?: {
+    code?: string;
+    message?: string;
+  };
 }
 
 // export interface CollectionOptions {

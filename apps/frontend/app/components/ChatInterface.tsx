@@ -47,7 +47,6 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
     handleSubmit,
     isLoading,
     error,
-    reload,
     stop,
     addToolResult,
   } = useChat({
@@ -107,6 +106,27 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
 
   // Add handler for stopping
   const handleStop = () => {
+    // Find any pending tool invocations in the last message
+    const lastMessage = messages[messages.length - 1];
+    const pendingTools = lastMessage?.toolInvocations?.filter(
+      (tool) => tool.state === "call"
+    );
+
+    // Add error result for each pending tool
+    pendingTools?.forEach((tool) => {
+      addToolResult({
+        toolCallId: tool.toolCallId,
+        result: {
+          status: "error",
+          message: "Operation stopped by user",
+          error: {
+            code: "OPERATION_STOPPED",
+            message: "Operation was manually stopped by the user",
+          },
+        },
+      });
+    });
+
     setIsWaitingForResponse(false);
     stop();
   };
@@ -183,7 +203,28 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
               {error.message}
             </p>
             <Button
-              onClick={() => reload()}
+              onClick={() => {
+                // Find any pending tool invocations in the last message
+                const lastMessage = messages[messages.length - 1];
+                const pendingTools = lastMessage?.toolInvocations?.filter(
+                  (tool) => tool.state === "call"
+                );
+
+                // Add error result for each pending tool
+                pendingTools?.forEach((tool) => {
+                  addToolResult({
+                    toolCallId: tool.toolCallId,
+                    result: {
+                      status: "error",
+                      message: "Operation failed",
+                      error: {
+                        code: "OPERATION_FAILED",
+                        message: error.message || "Unknown error occurred",
+                      },
+                    },
+                  });
+                });
+              }}
               variant="outline"
               size="sm"
               className="flex-shrink-0 text-destructive hover:bg-destructive/20 border-destructive/20"
@@ -223,7 +264,7 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
               }}
               placeholder={
                 hasActiveToolCall
-                  ? "Please complete/cancel action first..."
+                  ? "Please complete/cancel action or wait for response..."
                   : "Type your message..."
               }
               rows={1}
@@ -241,7 +282,7 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
               >
                 <ArrowUpCircle className="h-4 w-4 md:h-5 md:w-5" />
               </Button>
-              {isLoading && !hasActiveToolCall && (
+              {isLoading && (
                 <Button
                   type="button"
                   size="icon"

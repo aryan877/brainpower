@@ -87,7 +87,7 @@ export const sendMessage = async (req: AuthenticatedRequest, res: Response) => {
     }
 
     const agent = generateBrainpowerAgent({
-      walletId: req.user?.walletAddress || "",
+      address: req.user?.walletAddress || "",
       cluster: cluster,
     });
 

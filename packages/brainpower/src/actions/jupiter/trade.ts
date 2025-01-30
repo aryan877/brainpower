@@ -77,27 +77,34 @@ const tradeAction: Action = {
     input: Record<string, any>,
   ): Promise<HandlerResponse<TradeData>> => {
     try {
-      const { signature } = await trade(
+      // Validate and create PublicKeys first
+      const outputMint = new PublicKey(input.outputMint);
+      const inputMint = input.inputMint
+        ? new PublicKey(input.inputMint)
+        : new PublicKey("So11111111111111111111111111111111111111112");
+
+      // Now pass the validated PublicKeys to trade function
+      const { transaction } = await trade(
         agent,
-        new PublicKey(input.outputMint),
+        outputMint,
         input.inputAmount,
-        input.inputMint
-          ? new PublicKey(input.inputMint)
-          : new PublicKey("So11111111111111111111111111111111111111112"),
+        inputMint,
         input.slippageBps,
       );
 
       return {
         status: "success",
-        message: "Trade executed successfully",
+        message:
+          "I can see the swap details in the UI. Would you like to perform another swap or check your updated balances?",
         data: {
-          transaction: signature,
+          transaction,
           inputAmount: input.inputAmount,
           inputToken: input.inputMint || "SOL",
           outputToken: input.outputMint,
         },
       };
     } catch (error: any) {
+      console.error("Trade error:", error);
       return {
         status: "error",
         message: `Failed to execute trade: ${error.message}`,

@@ -1,12 +1,8 @@
 import { VersionedTransaction, PublicKey } from "@solana/web3.js";
-import {
-  TOKENS,
-  DEFAULT_OPTIONS,
-  JUP_REFERRAL_ADDRESS,
-} from "../../constants/index.js";
+import { TOKENS, DEFAULT_OPTIONS } from "../../constants/index.js";
 import { getMint } from "@solana/spl-token";
 import { BrainPowerAgent } from "../../agent/index.js";
-import { JupiterTradeResponse } from "../../types/index.js";
+import { JupiterSwapResponse } from "../../types/index.js";
 import { createJupiterApiClient } from "@jup-ag/api";
 
 /**
@@ -16,16 +12,15 @@ import { createJupiterApiClient } from "@jup-ag/api";
  * @param inputAmount Amount to swap (in token decimals)
  * @param inputMint Source token mint address (defaults to USDC)
  * @param slippageBps Slippage tolerance in basis points (default: 300 = 3%)
- * @returns Transaction signature
+ * @returns Transaction signature and swap details
  */
 export async function trade(
   agent: BrainPowerAgent,
   outputMint: PublicKey,
   inputAmount: number,
   inputMint: PublicKey = TOKENS.USDC,
-  // @deprecated use dynamicSlippage instead
   slippageBps: number = DEFAULT_OPTIONS.SLIPPAGE_BPS,
-): Promise<JupiterTradeResponse> {
+): Promise<JupiterSwapResponse> {
   try {
     const jupiterQuoteApi = createJupiterApiClient();
     const isNativeSol = inputMint.equals(TOKENS.SOL);
@@ -46,21 +41,7 @@ export async function trade(
       slippageBps: slippageBps,
       onlyDirectRoutes: false,
       maxAccounts: 64,
-      platformFeeBps: agent.config.JUPITER_FEE_BPS,
     });
-
-    // Setup referral fee account if configured
-    let feeAccount;
-    if (agent.config.JUPITER_REFERRAL_ACCOUNT) {
-      [feeAccount] = PublicKey.findProgramAddressSync(
-        [
-          Buffer.from("referral_ata"),
-          new PublicKey(agent.config.JUPITER_REFERRAL_ACCOUNT).toBuffer(),
-          TOKENS.SOL.toBuffer(),
-        ],
-        new PublicKey(JUP_REFERRAL_ADDRESS),
-      );
-    }
 
     // Get swap transaction using Jupiter API client
     const { swapTransaction } = await jupiterQuoteApi.swapPost({
@@ -68,24 +49,44 @@ export async function trade(
         quoteResponse,
         userPublicKey: agent.wallet_address.toString(),
         wrapAndUnwrapSol: true,
-        computeUnitPriceMicroLamports:
-          agent.config.PRIORITY_LEVEL === "high" ? 1000 : undefined,
-        feeAccount: feeAccount?.toString(),
+        prioritizationFeeLamports:
+          agent.config.PRIORITY_LEVEL === "high" ? 1000000 : 100000,
+        dynamicComputeUnitLimit: true,
       },
     });
 
     const swapTransactionBuf = Buffer.from(swapTransaction, "base64");
     const transaction = VersionedTransaction.deserialize(swapTransactionBuf);
 
-    const signature = await agent.signAndSendTransaction(transaction);
-    const { status } = await agent.waitForTransaction(signature);
+    // Sign and send transaction with confirmation
+    const signature = await agent.signAndSendTransaction(transaction, {
+      commitment: "processed",
+    });
 
-    if (status !== "confirmed") {
-      throw new Error(`Transaction failed with status: ${status}`);
-    }
+    // Determine token symbols
+    const inputTokenSymbol = isNativeSol ? "SOL" : inputMint.toString();
+    const outputTokenSymbol = outputMint.toString();
 
-    return { signature };
+    return {
+      status: "success",
+      transaction: signature,
+      inputAmount: inputAmount,
+      inputToken: inputTokenSymbol,
+      outputToken: outputTokenSymbol,
+      message: "Swap executed successfully",
+    };
   } catch (error: any) {
-    throw new Error(`Swap failed: ${error.message}`);
+    return {
+      status: "error",
+      transaction: "",
+      inputAmount: inputAmount,
+      inputToken: inputMint.toString(),
+      outputToken: outputMint.toString(),
+      message: `Swap failed: ${error.message}`,
+      error: {
+        code: error.code || "SWAP_FAILED",
+        message: error.message,
+      },
+    };
   }
 }

@@ -8,9 +8,7 @@ import {
 import { useState } from "react";
 import { ThreadPreview } from "../types";
 import { WalletInfo } from "./WalletInfo";
-import { useSolanaWallets } from "@privy-io/react-auth/solana";
 import { usePrivy } from "@privy-io/react-auth";
-import { useStoreWallet } from "../hooks/wallet";
 import { ThemeToggle } from "./ThemeToggle";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,6 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { WalletSetupButton } from "./WalletSetupButton";
 
 export interface SidebarProps {
   threads: ThreadPreview[];
@@ -50,36 +49,15 @@ export default function Sidebar({
   isLoadingMore,
   onLoadMore,
 }: SidebarProps) {
-  const { createWallet } = useSolanaWallets();
   const { user } = usePrivy();
-  const { mutateAsync: storeWallet } = useStoreWallet();
-  const [isCreatingWallet, setIsCreatingWallet] = useState(false);
-  const [showWalletDialog, setShowWalletDialog] = useState(false);
-  const [deletingThreadId, setDeletingThreadId] = useState<string | null>(null);
   const [threadToDelete, setThreadToDelete] = useState<ThreadPreview | null>(
     null
   );
 
-  const handleCreateSolanaWallet = async () => {
-    try {
-      setIsCreatingWallet(true);
-      const wallet = await createWallet();
-      await storeWallet({
-        address: wallet.address,
-        chainType: wallet.chainType,
-      });
-    } catch (error) {
-      console.error("Error creating Solana wallet:", error);
-    } finally {
-      setIsCreatingWallet(false);
-      setShowWalletDialog(false);
-    }
-  };
+  const [deletingThreadId, setDeletingThreadId] = useState<string | null>(null);
 
   const handleNewChatClick = () => {
-    if (!user?.wallet) {
-      setShowWalletDialog(true);
-    } else {
+    if (user?.wallet?.delegated) {
       onCreateThread();
     }
   };
@@ -112,34 +90,11 @@ export default function Sidebar({
     return `Chat ${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
   };
 
+  const canCreateNewChat = user?.wallet?.delegated;
+  const needsWalletSetup = !user?.wallet || !user.wallet.delegated;
+
   return (
     <>
-      <Dialog open={showWalletDialog} onOpenChange={setShowWalletDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Create a Solana Wallet</DialogTitle>
-            <DialogDescription className="pt-2">
-              You need a Solana wallet to use BrainPower. Create one now to get
-              started.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex justify-end gap-3">
-            <Button
-              variant="outline"
-              onClick={() => setShowWalletDialog(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleCreateSolanaWallet}
-              disabled={isCreatingWallet}
-            >
-              {isCreatingWallet ? "Creating..." : "Create Wallet"}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
       <Dialog
         open={threadToDelete !== null}
         onOpenChange={(open) => !open && setThreadToDelete(null)}
@@ -185,24 +140,33 @@ export default function Sidebar({
                 <PanelLeftOpen className="h-4 w-4" />
               </Button>
             )}
-            <Button
-              onClick={handleNewChatClick}
-              disabled={isLoading}
-              className={`flex-1 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 ${
-                isCollapsed ? "w-full p-2" : ""
-              }`}
-              variant="default"
-              size={isCollapsed ? "icon" : "default"}
-            >
-              {isLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <MessageSquarePlus
-                  className={`h-4 w-4 ${!isCollapsed && "mr-2"}`}
-                />
-              )}
-              {!isCollapsed && (isLoading ? "Creating..." : "New Chat")}
-            </Button>
+            {canCreateNewChat ? (
+              <Button
+                onClick={handleNewChatClick}
+                disabled={isLoading}
+                className={`flex-1 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 ${
+                  isCollapsed ? "w-full p-2" : ""
+                }`}
+                variant="default"
+                size={isCollapsed ? "icon" : "default"}
+              >
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <MessageSquarePlus
+                    className={`h-4 w-4 ${!isCollapsed && "mr-2"}`}
+                  />
+                )}
+                {!isCollapsed && (isLoading ? "Creating..." : "New Chat")}
+              </Button>
+            ) : (
+              <WalletSetupButton
+                className={`flex-1 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 ${
+                  isCollapsed ? "w-full p-2" : ""
+                }`}
+                variant="default"
+              />
+            )}
             <div
               className={`flex items-center ${isCollapsed ? "flex-col" : ""} gap-2`}
             >
@@ -229,9 +193,11 @@ export default function Sidebar({
               <div className="p-4 text-center text-muted-foreground">
                 <p className="text-sm md:text-base">No chats yet</p>
                 <p className="text-xs md:text-sm mt-2">
-                  {user?.wallet
+                  {canCreateNewChat
                     ? "Click 'New Chat' to start a conversation"
-                    : "Create a Solana wallet to start chatting"}
+                    : needsWalletSetup && user?.wallet
+                      ? "Activate your wallet to start chatting"
+                      : "Create a Solana wallet to start chatting"}
                 </p>
               </div>
             )

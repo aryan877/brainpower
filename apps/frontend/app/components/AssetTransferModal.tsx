@@ -233,7 +233,8 @@ export function AssetTransferModal({
       const { simulation } =
         await walletClient.simulateTransactionFee(serialized);
       const estimatedUnits = Math.ceil(
-        (simulation.unitsConsumed || 200000) * 2.4
+        // Add 40% buffer to estimated compute units, defaulting to 200k if simulation doesn't provide value
+        (simulation.unitsConsumed || 200000) * 1.4
       );
       setComputeUnits(Math.min(estimatedUnits, 1400000)); // Cap at 1.4M CU
     } catch (error) {
