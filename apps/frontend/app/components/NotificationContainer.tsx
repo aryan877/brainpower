@@ -7,9 +7,9 @@ export const NotificationContainer = () => {
   const { notifications, removeNotification } = useNotificationStore();
 
   return (
-    <div className="fixed top-4 right-4 z-50 flex flex-col gap-2 min-w-[320px] max-w-[420px] pointer-events-none dark:text-white">
+    <div className="fixed top-4 right-4 z-50 flex flex-col gap-2 w-[320px] sm:w-[380px] max-w-[95vw] pointer-events-none dark:text-white">
       {notifications.map((notification) => (
-        <div key={notification.id} className="pointer-events-auto">
+        <div key={notification.id} className="pointer-events-auto w-full">
           <Notification
             type={notification.type}
             message={notification.message}

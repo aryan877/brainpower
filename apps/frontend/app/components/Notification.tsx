@@ -107,12 +107,12 @@ export const Notification = ({
         )}
       >
         <div className="flex-shrink-0 mt-1">{icons[type]}</div>
-        <div className="flex-1 mr-2">
-          <p className={cn("text-sm font-medium", textStyles[type])}>
+        <div className="flex-1 mr-2 min-w-0">
+          <p className={cn("text-sm font-medium truncate", textStyles[type])}>
             {message}
           </p>
           {formattedDetails && (
-            <pre className="mt-2 text-xs text-muted-foreground whitespace-pre-wrap font-mono bg-background/50 p-2 rounded">
+            <pre className="mt-2 text-xs text-muted-foreground break-words whitespace-pre-wrap font-mono bg-background/50 p-2 rounded max-h-[200px] overflow-y-auto">
               {formattedDetails}
             </pre>
           )}
@@ -121,7 +121,7 @@ export const Notification = ({
           onClick={onClose}
           variant="ghost"
           size="icon"
-          className="h-8 w-8 text-muted-foreground hover:text-foreground"
+          className="flex-shrink-0 h-8 w-8 text-muted-foreground hover:text-foreground"
         >
           <X className="h-4 w-4" />
         </Button>

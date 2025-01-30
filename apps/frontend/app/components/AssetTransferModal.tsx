@@ -28,7 +28,6 @@ import {
 } from "@solana/spl-token";
 import { useNotificationStore } from "../store/notificationStore";
 import { usePriorityFees } from "../hooks/wallet";
-import bs58 from "bs58";
 
 interface AssetTransferModalProps {
   isOpen: boolean;
@@ -113,18 +112,19 @@ export function AssetTransferModal({
   const { addNotification } = useNotificationStore();
   const [serializedTx, setSerializedTx] = useState<string>();
   const { data: priorityFees } = usePriorityFees(serializedTx);
+  const [computeUnits, setComputeUnits] = useState<number>();
 
   const [recipientAddress, setRecipientAddress] = useState("");
   const [amount, setAmount] = useState("");
   const [isTransferring, setIsTransferring] = useState(false);
   const [transferError, setTransferError] = useState("");
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     setTransferError("");
     setAmount("");
     setRecipientAddress("");
     onClose();
-  };
+  }, [onClose]);
 
   const handleSetMaxAmount = () => {
     if (asset.token_info?.balance) {
@@ -213,61 +213,51 @@ export function AssetTransferModal({
         mintAddress
       );
 
-      // Get latest blockhash and set it
+      // Get fresh blockhash and set fee payer
       const { blockhash } = await walletClient.getLatestBlockhash();
       transaction.recentBlockhash = blockhash;
       transaction.feePayer = new PublicKey(wallet.address);
 
-      // Partially sign the transaction with the available keys
-      if (wallet.signTransaction) {
-        try {
-          // Sign the transaction
-          const signedTx = await wallet.signTransaction(transaction);
-          // Serialize the signed transaction
-          const serialized = bs58.encode(signedTx.serialize());
-          setSerializedTx(serialized);
-        } catch (signError) {
-          // If signing fails, fallback to serializing without signature
-          // This might give less accurate fee estimates but won't block the UI
-          console.warn(
-            "Failed to sign transaction for fee estimation:",
-            signError
-          );
-          const serialized = bs58.encode(
-            transaction.serialize({ requireAllSignatures: false })
-          );
-          setSerializedTx(serialized);
-        }
-      } else {
-        // If no signing capability, serialize without requiring signatures
-        const serialized = bs58.encode(
-          transaction.serialize({ requireAllSignatures: false })
-        );
-        setSerializedTx(serialized);
-      }
+      // Convert to VersionedTransaction for simulation
+      const versionedTx = new VersionedTransaction(
+        transaction.compileMessage()
+      );
+
+      // Serialize using base64 for simulation
+      const serialized = Buffer.from(versionedTx.serialize()).toString(
+        "base64"
+      );
+      setSerializedTx(serialized);
+
+      // Get simulation results
+      const { simulation } =
+        await walletClient.simulateTransactionFee(serialized);
+      const estimatedUnits = Math.ceil(
+        (simulation.unitsConsumed || 200000) * 2.4
+      );
+      setComputeUnits(Math.min(estimatedUnits, 1400000)); // Cap at 1.4M CU
     } catch (error) {
       console.error("Error updating transaction for fees:", error);
       setSerializedTx(undefined);
+      setComputeUnits(undefined);
     }
   }, [
+    wallet,
     recipientAddress,
     amount,
     asset.token_info,
     asset.id,
     createBaseTransaction,
-    wallet,
   ]);
 
-  // Update transaction when inputs change
+  // Debounce the update to prevent too many requests
   useEffect(() => {
-    updateTransactionForFees();
-  }, [
-    wallet?.address,
-    recipientAddress,
-    amount,
-    asset.id,
-    updateTransactionForFees,
-  ]);
+    const timer = setTimeout(() => {
+      updateTransactionForFees();
+    }, 500); // 500ms debounce
+
+    return () => clearTimeout(timer);
+  }, [updateTransactionForFees]);
 
   const handleTransfer = async () => {
     if (!wallet?.address) {
@@ -295,34 +285,10 @@ export function AssetTransferModal({
         );
       }
 
-      // Get the mint address from the asset id (which is the mint address)
-      const mintAddress = new PublicKey(asset.id);
-
-      // Get the sender's associated token account
-      const senderATA = await getAssociatedTokenAddress(
-        mintAddress,
-        new PublicKey(wallet.address),
-        false,
-        TOKEN_PROGRAM_ID,
-        ASSOCIATED_TOKEN_PROGRAM_ID
-      );
-
-      // Find the recipient's associated token account
-      const recipientATA = await getAssociatedTokenAddress(
-        mintAddress,
-        recipientWallet,
-        false,
-        TOKEN_PROGRAM_ID,
-        ASSOCIATED_TOKEN_PROGRAM_ID
-      );
-
-      // Validate amount with better error messages
+      // Validate amount
       const transferAmount = parseFloat(amount);
-      if (isNaN(transferAmount)) {
-        throw new Error("Please enter a valid number");
-      }
-      if (transferAmount <= 0) {
-        throw new Error("Amount must be greater than 0");
+      if (isNaN(transferAmount) || transferAmount <= 0) {
+        throw new Error("Please enter a valid amount greater than 0");
       }
 
       const tokenAmount = Math.floor(
@@ -334,6 +300,23 @@ export function AssetTransferModal({
         );
       }
 
+      // Get accounts
+      const mintAddress = new PublicKey(asset.id);
+      const senderATA = await getAssociatedTokenAddress(
+        mintAddress,
+        new PublicKey(wallet.address),
+        false,
+        TOKEN_PROGRAM_ID,
+        ASSOCIATED_TOKEN_PROGRAM_ID
+      );
+      const recipientATA = await getAssociatedTokenAddress(
+        mintAddress,
+        recipientWallet,
+        false,
+        TOKEN_PROGRAM_ID,
+        ASSOCIATED_TOKEN_PROGRAM_ID
+      );
+
       // Create the transaction
       const transaction = await createBaseTransaction(
         recipientWallet,
@@ -343,59 +326,108 @@ export function AssetTransferModal({
         mintAddress
       );
 
-      // Add priority fee instruction using the high fee level
-      if (priorityFees?.high) {
-        const priorityFee = Math.max(priorityFees.high, 10000); // Ensure minimum 10,000 microLamports
-        const priorityFeeInstruction = ComputeBudgetProgram.setComputeUnitPrice(
-          {
-            microLamports: priorityFee,
-          }
+      // Add compute budget instructions at the start
+      const computeBudgetIxs = [];
+
+      if (computeUnits) {
+        computeBudgetIxs.push(
+          ComputeBudgetProgram.setComputeUnitLimit({
+            units: computeUnits,
+          })
         );
-        transaction.instructions = [
-          priorityFeeInstruction,
-          ...transaction.instructions,
-        ];
       }
+
+      if (priorityFees?.high) {
+        computeBudgetIxs.push(
+          ComputeBudgetProgram.setComputeUnitPrice({
+            microLamports: Math.max(priorityFees.high, 10000),
+          })
+        );
+      }
+
+      // Set final transaction instructions
+      transaction.instructions = [
+        ...computeBudgetIxs,
+        ...transaction.instructions,
+      ];
 
       // Convert to versioned transaction
       const versionedTransaction = new VersionedTransaction(
         transaction.compileMessage()
       );
 
-      // Send transaction
-      const { confirmation } = await sendTransaction(versionedTransaction, {
-        commitment: "processed",
-      });
-
-      if (confirmation?.value.err) {
-        throw new Error("Transaction failed to confirm");
+      // Sign and serialize using base64
+      if (!wallet.signTransaction) {
+        throw new Error("Wallet must support transaction signing");
       }
 
-      addNotification(
-        "success",
-        `Successfully sent ${amount} ${asset.token_info.symbol || "tokens"}`,
-        {
+      const signedTx = await wallet.signTransaction(transaction);
+      const serializedForSim = Buffer.from(signedTx.serialize()).toString(
+        "base64"
+      );
+
+      // Simulate the transaction first
+      try {
+        const { simulation } =
+          await walletClient.simulateTransactionFee(serializedForSim);
+
+        if (simulation.error || !simulation.logs) {
+          throw new Error(
+            `Simulation failed: ${JSON.stringify(simulation.error || "Unknown error")}`
+          );
+        }
+
+        // If simulation succeeds, proceed with sending
+        const { signature, confirmation } = await sendTransaction(
+          versionedTransaction,
+          {
+            commitment: "processed",
+            maxRetries: 3,
+          }
+        );
+
+        if (confirmation?.value.err) {
+          throw new Error(
+            `Transaction failed: ${JSON.stringify(confirmation.value.err)}`
+          );
+        }
+
+        // Success notification with signature and explorer link
+        addNotification("success", "Transfer successful", {
+          message: `Sent ${amount} ${asset.token_info.symbol || "tokens"}`,
+          signature,
           recipient: recipientAddress,
           amount,
           symbol: asset.token_info.symbol,
-        }
-      );
+          explorerUrl: `https://explorer.solana.com/tx/${signature}`,
+        });
 
-      handleClose();
-      onSuccess?.();
-    } catch (error) {
-      console.error("Transfer error:", error);
-      const { message, details } = getErrorMessage(error);
-      setTransferError(message);
-      addNotification(
-        "error",
-        message,
-        details || {
-          symbol: asset.token_info?.symbol,
+        handleClose();
+        onSuccess?.();
+      } catch (error) {
+        console.error("Simulation or transfer error:", error);
+        const { message, details } = getErrorMessage(error);
+        const errorDetails = {
+          details,
+          symbol: asset.token_info.symbol,
           amount,
           recipient: recipientAddress,
+        };
+
+        if (error instanceof Error && error.cause) {
+          Object.assign(errorDetails, { cause: error.cause });
         }
-      );
+
+        addNotification("error", message, errorDetails);
+        setTransferError(message);
+      }
+    } catch (error) {
+      console.error("Transaction setup error:", error);
+      const { message } = getErrorMessage(error);
+      setTransferError(message);
+      addNotification("error", "Failed to setup transaction", {
+        details: message,
+      });
     } finally {
       setIsTransferring(false);
     }

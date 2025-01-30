@@ -47,6 +47,9 @@ export interface SimulateTransactionFeeResponse {
     logs: string[];
     error: TransactionError | null;
     unitsConsumed: number;
+    fee?: number;
+    accounts?: unknown[];
+    returnData?: unknown;
   };
 }
 
@@ -204,30 +207,4 @@ export interface PriorityFeeResponse {
   high: number;
   veryHigh: number;
   unsafeMax: number;
-}
-
-export interface WalletApi {
-  storeWallet: (
-    address: string,
-    chainType: ChainType
-  ) => Promise<StoreWalletResponse>;
-  getUserWallets: () => Promise<GetUserWalletsResponse>;
-  getBalance: (address: string) => Promise<GetBalanceResponse>;
-  getLatestBlockhash: () => Promise<GetLatestBlockhashResponse>;
-  sendTransaction: (
-    serializedTransaction: string,
-    options?: SendTransactionOptions
-  ) => Promise<SendTransactionResponse>;
-  simulateTransactionFee: (
-    serializedTransaction: string
-  ) => Promise<SimulateTransactionFeeResponse>;
-  getTransactionHistory: (
-    address: string,
-    before?: string
-  ) => Promise<GetTransactionHistoryResponse>;
-  getAssets: (
-    ownerAddress: string,
-    options?: GetAssetsOptions
-  ) => Promise<GetAssetsResponse>;
-  getPriorityFees: () => Promise<PriorityFeeResponse>;
 }

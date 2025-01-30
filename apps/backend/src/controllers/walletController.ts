@@ -3,12 +3,7 @@ import { AuthenticatedRequest } from "../middleware/auth/index.js";
 import { BadRequestError } from "../middleware/errors/types.js";
 import { User } from "../models/User.js";
 import { getUserId } from "../utils/userIdentification.js";
-import {
-  Connection,
-  PublicKey,
-  Transaction,
-  VersionedTransaction,
-} from "@solana/web3.js";
+import { Connection, PublicKey, VersionedTransaction } from "@solana/web3.js";
 import { getRpcUrl } from "../utils/getRpcUrl.js";
 
 export const storeWallet = async (req: AuthenticatedRequest, res: Response) => {
@@ -110,42 +105,43 @@ export const sendTransaction = async (
       options?.commitment || "processed"
     );
 
-    // Decode the base58 or base64 serialized transaction
-    let decodedTx: Buffer;
-    try {
-      // Try base58 first (most common for Solana transactions)
-      const bs58 = await import("bs58");
-      decodedTx = Buffer.from(bs58.decode(serializedTransaction));
-    } catch {
-      // Fallback to base64 if base58 fails
-      decodedTx = Buffer.from(serializedTransaction, "base64");
-    }
+    // Decode the base64 serialized transaction
+    const decodedTx = Buffer.from(serializedTransaction, "base64");
 
     // Always try to deserialize as VersionedTransaction first
-    let tx: VersionedTransaction;
+    let transaction: VersionedTransaction;
     try {
-      tx = VersionedTransaction.deserialize(decodedTx);
-    } catch {
-      // If that fails, try legacy Transaction and convert to VersionedTransaction
-      const legacyTx = Transaction.from(decodedTx);
-      tx = new VersionedTransaction(legacyTx.compileMessage());
+      transaction = VersionedTransaction.deserialize(decodedTx);
+    } catch (error) {
+      console.error("Failed to deserialize as VersionedTransaction:", error);
+      throw new BadRequestError("Invalid transaction format");
     }
 
-    const signature = await connection.sendRawTransaction(tx.serialize(), {
-      preflightCommitment: "processed",
-      skipPreflight: options?.skipPreflight || false,
-      maxRetries: options?.maxRetries || 3,
-    });
+    const signature = await connection.sendRawTransaction(
+      transaction.serialize(),
+      {
+        preflightCommitment: "processed",
+        skipPreflight: options?.skipPreflight || false,
+        maxRetries: options?.maxRetries || 3,
+      }
+    );
 
     const confirmation = await connection.confirmTransaction({
       signature,
-      blockhash: tx.message.recentBlockhash || "",
+      blockhash: transaction.message.recentBlockhash || "",
       lastValidBlockHeight: (
         await connection.getLatestBlockhash({ commitment: "processed" })
       ).lastValidBlockHeight,
     });
 
-    res.json({ signature, confirmation });
+    res.json({
+      signature,
+      confirmation,
+      transaction: {
+        message: transaction.message,
+        signatures: transaction.signatures,
+      },
+    });
   } catch (error) {
     console.error("Error sending transaction:", error);
     throw new BadRequestError("Failed to send transaction", error);
@@ -159,38 +155,57 @@ export const simulateTransactionFee = async (
   const { serializedTransaction } = req.body;
   const cluster = req.user.cluster;
 
+  // Handle case where serializedTransaction is not provided
   if (!serializedTransaction) {
-    throw new BadRequestError("Serialized transaction is required");
+    // Return default simulation values
+    return res.json({
+      simulation: {
+        logs: [],
+        error: null,
+        unitsConsumed: 200000, // Default compute units
+        accounts: [],
+        returnData: null,
+      },
+    });
   }
 
   try {
     const rpcUrl = getRpcUrl(cluster);
     const connection = new Connection(rpcUrl, "processed");
 
-    // Deserialize and simulate transaction
-    let transaction;
+    // Decode the base64 serialized transaction
+    const decodedTx = Buffer.from(serializedTransaction, "base64");
+
+    // Always try to deserialize as VersionedTransaction first
+    let transaction: VersionedTransaction;
     try {
-      transaction = VersionedTransaction.deserialize(
-        Buffer.from(serializedTransaction, "base64")
-      );
-    } catch {
-      transaction = Transaction.from(
-        Buffer.from(serializedTransaction, "base64")
-      );
+      transaction = VersionedTransaction.deserialize(decodedTx);
+    } catch (error) {
+      console.error("Failed to deserialize as VersionedTransaction:", error);
+      throw new BadRequestError("Invalid transaction format");
     }
+
+    // Simulate the transaction
     const simulationResponse = await connection.simulateTransaction(
       transaction,
       {
         sigVerify: false,
         replaceRecentBlockhash: true,
+        commitment: "processed",
       }
     );
+
+    if (!simulationResponse.value) {
+      throw new Error("Invalid simulation response");
+    }
 
     res.json({
       simulation: {
         logs: simulationResponse.value.logs || [],
         error: simulationResponse.value.err,
         unitsConsumed: simulationResponse.value.unitsConsumed,
+        accounts: simulationResponse.value.accounts,
+        returnData: simulationResponse.value.returnData,
       },
     });
   } catch (error) {

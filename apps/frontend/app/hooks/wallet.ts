@@ -311,7 +311,7 @@ export function usePriorityFees(serializedTransaction?: string) {
   return useQuery({
     queryKey: [...walletKeys.priorityFees(), serializedTransaction],
     queryFn: () => walletClient.getPriorityFees(serializedTransaction),
-    refetchInterval: 60000, // Refresh every 60 seconds
-    staleTime: 30000, // Consider data stale after 30 seconds
+    refetchInterval: 3600000, // Refresh every 60 minutes
+    staleTime: 1800000, // Consider data stale after 30 minutes
   });
 }
