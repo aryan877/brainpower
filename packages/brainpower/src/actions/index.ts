@@ -33,6 +33,7 @@ import { tokenTopHolders as tokenTopHoldersAction } from "./helius/tokenTopHolde
 import { tokenDataByAddress as tokenDataByAddressAction } from "./dexscreener/tokenDataByAddress.js";
 import tradeAction from "./jupiter/trade.js";
 import { ACTION_NAMES } from "./actionNames.js";
+import getTokenChartAddressAction from "./dexscreener/getTokenChartAddress.js";
 // import getWalletAddressAction from "./agent/getWalletAddress";
 // import flashOpenTradeAction from "./flash/flashOpenTrade";
 // import flashCloseTradeAction from "./flash/flashCloseTrade";
@@ -104,6 +105,7 @@ export const ACTIONS = {
   [ACTION_NAMES.GET_TOKEN_DATA_BY_ADDRESS]: tokenDataByAddressAction,
   [ACTION_NAMES.JUPITER_SWAP]: tradeAction,
   [ACTION_NAMES.GET_TOKEN_TOP_HOLDERS]: tokenTopHoldersAction,
+  [ACTION_NAMES.GET_TOKEN_CHART_ADDRESS]: getTokenChartAddressAction,
   // FLASH_OPEN_TRADE_ACTION: flashOpenTradeAction,
   // FLASH_CLOSE_TRADE_ACTION: flashCloseTradeAction,
   // CREATE_MULTISIG_ACTION: createMultisigAction,

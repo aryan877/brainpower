@@ -1,6 +1,13 @@
 import { cn } from "@/lib/utils";
 import { ACTION_NAMES } from "@repo/brainpower-agent";
-import { Sparkles, ArrowRightLeft, Search, Wallet, Users } from "lucide-react";
+import {
+  Sparkles,
+  ArrowRightLeft,
+  Search,
+  Wallet,
+  Users,
+  LineChart,
+} from "lucide-react";
 import React from "react";
 
 interface ToolNamesProps {
@@ -31,6 +38,10 @@ const TOOL_DISPLAY_CONFIG: Record<
   [ACTION_NAMES.GET_TOKEN_TOP_HOLDERS]: {
     icon: <Users className="w-3 h-3" />,
     label: "Top Holders",
+  },
+  [ACTION_NAMES.GET_TOKEN_CHART_ADDRESS]: {
+    icon: <LineChart className="w-3 h-3" />,
+    label: "Chart",
   },
 };
 

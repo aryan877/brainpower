@@ -237,3 +237,7 @@ export interface JupiterTradeResponse {
 //     options: { priorityLevel: string };
 //   }>;
 // }
+
+export interface ChartAddressResponse {
+  address: string;
+}

@@ -325,6 +325,17 @@ export default function ChatMessage({
                         {message.content}
                       </ReactMarkdown>
                     )}
+
+                    {/* Testing Birdeye Trading View */}
+                    {/* <div className="mt-4 w-full">
+                      <iframe
+                        width="100%"
+                        height="600"
+                        src="https://birdeye.so/tv-widget/JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN?chain=solana&viewMode=pair&chartInterval=15&chartType=Candle&chartTimezone=Asia%2FCalcutta&chartLeftToolbar=show&theme=dark&cssCustomProperties=--tv-color-platform-background%3A%23ff0000&cssCustomProperties=--tv-color-pane-background%3A%23000000&chartOverrides=paneProperties.backgroundGradientStartColor%3Argba%280%2C+0%2C+0%2C+1%29&chartOverrides=paneProperties.backgroundGradientEndColor%3Argba%280%2C+0%2C+0%2C+1%29"
+                        frameBorder="0"
+                        allowFullScreen
+                      />
+                    </div> */}
                   </div>
                 </div>
               </div>
