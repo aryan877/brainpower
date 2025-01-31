@@ -8,6 +8,8 @@ import { useClusterStore } from "../store/clusterStore";
 import { ErrorResponse } from "../types";
 import { getAccessToken } from "@privy-io/react-auth";
 
+type ErrorDetails = Record<string, unknown> | undefined;
+
 const api = axios.create({
   baseURL: "/",
   headers: {
@@ -46,11 +48,11 @@ api.interceptors.response.use(
     }
 
     let errorMessage = "An unexpected error occurred";
-    let details = undefined;
+    let details: ErrorDetails = undefined;
 
     if (errorData?.error) {
       errorMessage = errorData.error.message;
-      details = errorData.error.details;
+      details = errorData.error.details as ErrorDetails;
     } else if (axiosError.message) {
       errorMessage = axiosError.message;
     }

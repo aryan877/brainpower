@@ -58,14 +58,41 @@ export async function getTokenAddressFromTicker(
       return null;
     }
 
-    // Just take the first pair
-    const firstPair = data.pairs[0];
+    // Score and sort pairs based on multiple metrics
+    const scoredPairs = data.pairs.map((pair) => {
+      let score = 0;
 
-    if (!firstPair?.baseToken?.address) {
+      // Liquidity score (0-40 points)
+      score += Math.min(40, (pair.liquidity?.usd || 0) / 25000);
+
+      // Volume score (0-30 points)
+      score += Math.min(30, (pair.volume?.h24 || 0) / 100000);
+
+      // Transaction count score (0-20 points)
+      const txCount =
+        (pair.txns?.h24?.buys || 0) + (pair.txns?.h24?.sells || 0);
+      score += Math.min(20, txCount / 100);
+
+      // Price stability score (0-10 points)
+      const priceChange = Math.abs(pair.priceChange?.h24 || 0);
+      score += Math.max(0, 10 - priceChange / 2);
+
+      return {
+        pair,
+        score,
+      };
+    });
+
+    // Sort by score descending
+    scoredPairs.sort((a, b) => b.score - a.score);
+
+    // Return the address of the highest scoring pair
+    const bestPair = scoredPairs[0]?.pair;
+    if (!bestPair?.baseToken?.address) {
       return null;
     }
 
-    return firstPair.baseToken.address;
+    return bestPair.baseToken.address;
   } catch (error) {
     console.error("Error fetching token address from DexScreener:", error);
     return null;

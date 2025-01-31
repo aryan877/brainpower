@@ -4,6 +4,7 @@ import {
   Transaction,
   VersionedTransaction,
   ComputeBudgetProgram,
+  TransactionInstruction,
 } from "@solana/web3.js";
 import { useWallet } from "../hooks/wallet";
 import { Button } from "@/components/ui/button";
@@ -328,7 +329,7 @@ export function AssetTransferModal({
       );
 
       // Add compute budget instructions at the start
-      const computeBudgetIxs = [];
+      const computeBudgetIxs: Array<TransactionInstruction> = [];
 
       if (computeUnits) {
         computeBudgetIxs.push(
