@@ -86,8 +86,7 @@ export default function Sidebar({
     if (thread.title) {
       return thread.title;
     }
-    const date = new Date(thread.createdAt);
-    return `Chat ${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
+    return "New Chat";
   };
 
   const canCreateNewChat = user?.wallet?.delegated;
