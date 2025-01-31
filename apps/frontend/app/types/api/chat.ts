@@ -3,6 +3,9 @@ import { Message, ThreadPreview } from "../models/chat";
 export interface CreateThreadResponse {
   threadId: string;
   createdAt: string;
+  updatedAt: string;
+  title?: string;
+  messages: Message[];
 }
 
 export interface GetThreadHistoryResponse {

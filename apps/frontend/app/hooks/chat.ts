@@ -1,6 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { chatClient } from "../clients/chat";
 import { Message } from "../types/models/chat";
+import { GetThreadsResponse, CreateThreadResponse } from "../types/api/chat";
+import { ThreadPreview } from "../types/models/chat";
 
 export const chatKeys = {
   all: ["chats"] as const,
@@ -50,8 +52,44 @@ export function useCreateThread() {
 
   return useMutation({
     mutationFn: chatClient.createThread,
-    onSuccess: () => {
-      // Invalidate threads list to trigger refetch
+    onSuccess: (newThread: CreateThreadResponse) => {
+      // Immediately update the threads list in the cache
+      queryClient.setQueryData<
+        { pages: GetThreadsResponse[]; pageParams: unknown[] } | undefined
+      >(chatKeys.threads(), (oldData) => {
+        const threadPreview: ThreadPreview = {
+          threadId: newThread.threadId,
+          createdAt: newThread.createdAt,
+          updatedAt: newThread.updatedAt,
+          title: newThread.title,
+        };
+
+        if (!oldData || !oldData.pages || oldData.pages.length === 0) {
+          return {
+            pages: [
+              {
+                threads: [threadPreview],
+                hasMore: false,
+                nextCursor: undefined,
+              },
+            ],
+            pageParams: [undefined],
+          };
+        }
+
+        // Add the new thread to the first page
+        const updatedPages = [...oldData.pages];
+        updatedPages[0] = {
+          ...updatedPages[0],
+          threads: [threadPreview, ...updatedPages[0].threads],
+        };
+
+        return {
+          ...oldData,
+          pages: updatedPages,
+        };
+      });
+      // Also invalidate to ensure we have the latest data
       queryClient.invalidateQueries({ queryKey: chatKeys.threads() });
     },
   });

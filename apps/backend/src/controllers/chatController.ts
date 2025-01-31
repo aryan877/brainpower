@@ -58,6 +58,9 @@ export const createNewThread = async (
   res.json({
     threadId: chatThread.threadId,
     createdAt: chatThread.createdAt,
+    updatedAt: chatThread.updatedAt,
+    title: chatThread.title || undefined,
+    messages: [],
   });
 };
 

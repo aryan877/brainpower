@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Sidebar from "./Sidebar";
-import { useCreateThread, useDeleteThread } from "../hooks/chat";
+import { useCreateThread, useDeleteThread, chatKeys } from "../hooks/chat";
 import { ThreadPreview } from "../types";
 import { GetThreadsResponse } from "../types/api/chat";
 import Navbar from "./Navbar";
@@ -53,7 +53,7 @@ export function AppLayout({
     isFetchingNextPage,
     refetch,
   } = useInfiniteQuery({
-    queryKey: ["threads"],
+    queryKey: chatKeys.threads(),
     queryFn: async ({ pageParam }) => {
       return chatClient.getThreads({
         limit: 10,
