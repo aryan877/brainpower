@@ -10,6 +10,7 @@ import {
   ExternalLink,
   Coins,
   FileIcon,
+  Check,
 } from "lucide-react";
 import { useState, useMemo, useCallback } from "react";
 import { useClusterStore } from "../store/clusterStore";
@@ -264,6 +265,13 @@ function AssetCard({ asset }: { asset: Asset }) {
   const imageUrl = content?.files?.[0]?.cdn_uri || content?.files?.[0]?.uri;
   const [showTransferModal, setShowTransferModal] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const copyAssetId = async () => {
+    await navigator.clipboard.writeText(asset.id);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1000);
+  };
 
   return (
     <>
@@ -291,7 +299,20 @@ function AssetCard({ asset }: { asset: Asset }) {
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between gap-2">
-              <h3 className="font-medium truncate">{name}</h3>
+              <div className="flex items-center gap-2">
+                <h3 className="font-medium truncate">{name}</h3>
+                <button
+                  onClick={copyAssetId}
+                  className="p-1 hover:bg-primary/10 rounded-md transition-colors"
+                  title="Copy asset address"
+                >
+                  {copied ? (
+                    <Check className="w-3.5 h-3.5 text-green-500" />
+                  ) : (
+                    <Copy className="w-3.5 h-3.5 text-muted-foreground hover:text-primary" />
+                  )}
+                </button>
+              </div>
               {balance && (
                 <p className="text-sm font-medium">
                   {(Number(balance) / Math.pow(10, decimals)).toLocaleString()}
