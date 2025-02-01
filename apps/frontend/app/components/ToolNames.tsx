@@ -7,6 +7,7 @@ import {
   Wallet,
   Users,
   LineChart,
+  ShieldAlert,
 } from "lucide-react";
 import React from "react";
 
@@ -42,6 +43,10 @@ const TOOL_DISPLAY_CONFIG: Record<
   [ACTION_NAMES.GET_TOKEN_CHART_ADDRESS]: {
     icon: <LineChart className="w-3 h-3" />,
     label: "Chart",
+  },
+  [ACTION_NAMES.RUGCHECK_BY_ADDRESS]: {
+    icon: <ShieldAlert className="w-3 h-3" />,
+    label: "Rugcheck",
   },
 };
 
