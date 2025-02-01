@@ -1,8 +1,9 @@
-import { Action } from "../../types/action.js";
+import { Action, HandlerResponse } from "../../types/index.js";
 import { BrainPowerAgent } from "../../agent/index.js";
 import { z } from "zod";
-import { getTokenDataByTicker } from "../../tools/dexscreener/index.js";
 import { ACTION_NAMES } from "../actionNames.js";
+import { getTokenDataByTicker } from "../../tools/index.js";
+import { JupiterTokenData } from "../../types/index.js";
 
 export type TokenDataByTickerInput = z.infer<typeof tokenDataByTickerSchema>;
 
@@ -40,7 +41,10 @@ const tokenDataByTickerAction: Action = {
     ],
   ],
   schema: tokenDataByTickerSchema,
-  handler: async (agent: BrainPowerAgent, input: Record<string, any>) => {
+  handler: async (
+    agent: BrainPowerAgent,
+    input: Record<string, any>,
+  ): Promise<HandlerResponse<JupiterTokenData>> => {
     try {
       const ticker = input.ticker as string;
 
@@ -56,7 +60,11 @@ const tokenDataByTickerAction: Action = {
       return {
         status: "error",
         message: `Failed to fetch token data for ticker: ${input.ticker || ""}. ${error.message}`,
-        code: error.code || "UNKNOWN_ERROR",
+        error: {
+          code: error.code || "UNKNOWN_ERROR",
+          message: error.message,
+          details: error,
+        },
       };
     }
   },

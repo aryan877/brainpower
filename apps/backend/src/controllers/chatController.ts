@@ -31,9 +31,10 @@ export const getThreads = async (req: AuthenticatedRequest, res: Response) => {
 
   const hasMore = threads.length > limit;
   const items = hasMore ? threads.slice(0, -1) : threads;
-  const nextCursor = hasMore
-    ? threads[limit].createdAt.toISOString()
-    : undefined;
+  const nextCursor =
+    hasMore && threads[limit]
+      ? threads[limit].createdAt.toISOString()
+      : undefined;
 
   res.json({
     threads: items,
@@ -82,7 +83,9 @@ export const sendMessage = async (req: AuthenticatedRequest, res: Response) => {
 
     // Update title if first user message and no title exists
     if (!chatThread.title && messages.length > 0) {
-      const firstUserMessage = messages.find((msg) => msg.role === "user");
+      const firstUserMessage = messages.find(
+        (msg: { role: string; content: string }) => msg.role === "user"
+      );
       if (firstUserMessage) {
         chatThread.title = firstUserMessage.content.slice(0, 100);
         await chatThread.save();

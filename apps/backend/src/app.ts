@@ -1,4 +1,4 @@
-import express from "express";
+import express, { Express } from "express";
 import { createServer } from "http";
 import mongoose from "mongoose";
 import cors from "cors";
@@ -12,7 +12,7 @@ import { notFoundHandler } from "./middleware/errors/notFoundHandler.js";
 import { ErrorCode, ErrorResponse } from "./middleware/errors/types.js";
 import cookieParser from "cookie-parser";
 
-const app = express();
+const app: Express = express();
 const httpServer = createServer(app);
 
 // Security middleware
@@ -101,6 +101,10 @@ export const connectDB = async () => {
       ? process.env.MONGODB_PROD_URI
       : process.env.MONGODB_TEST_URI ||
         "mongodb://localhost:27017/solana-ai-chat";
+
+  if (!MONGODB_URI) {
+    throw new Error("MongoDB URI is not defined");
+  }
 
   try {
     await mongoose.connect(MONGODB_URI);

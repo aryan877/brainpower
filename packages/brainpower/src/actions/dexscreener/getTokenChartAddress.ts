@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { Action } from "../../types/index.js";
-import { getTokenAddressFromTicker } from "../../tools/dexscreener/get_token_data.js";
+import { Action, HandlerResponse } from "../../types/index.js";
+import { getTokenAddressFromTicker } from "../../tools/index.js";
 import { ACTION_NAMES } from "../actionNames.js";
 import { BrainPowerAgent } from "../../agent/index.js";
 import { ChartAddressResponse } from "../../types/index.js";
@@ -41,7 +41,10 @@ const getTokenChartAddressAction: Action = {
     ],
   ],
   schema,
-  handler: async (agent: BrainPowerAgent, input: Record<string, any>) => {
+  handler: async (
+    agent: BrainPowerAgent,
+    input: Record<string, any>,
+  ): Promise<HandlerResponse<ChartAddressResponse>> => {
     try {
       const ticker = input.ticker as string;
       const address = await getTokenAddressFromTicker(ticker);
@@ -50,7 +53,10 @@ const getTokenChartAddressAction: Action = {
         return {
           status: "error",
           message: `No chart address found for ticker: ${ticker}`,
-          code: "ADDRESS_NOT_FOUND",
+          error: {
+            code: "ADDRESS_NOT_FOUND",
+            message: `No chart address found for ticker: ${ticker}`,
+          },
         };
       }
 
@@ -58,14 +64,18 @@ const getTokenChartAddressAction: Action = {
         status: "success",
         data: {
           address,
-        } as ChartAddressResponse,
+        },
         message: `Successfully retrieved chart address for ${ticker}`,
       };
     } catch (error: any) {
       return {
         status: "error",
         message: `Failed to get chart address: ${error.message}`,
-        code: error.code || "UNKNOWN_ERROR",
+        error: {
+          code: error.code || "UNKNOWN_ERROR",
+          message: error.message,
+          details: error,
+        },
       };
     }
   },

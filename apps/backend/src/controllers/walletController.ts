@@ -48,10 +48,14 @@ export const getUserWallets = async (
 
 export const getBalance = async (req: AuthenticatedRequest, res: Response) => {
   const { address } = req.query;
-  const cluster = req.user.cluster;
+  const cluster = req.user?.cluster;
 
   if (!address || typeof address !== "string") {
     throw new BadRequestError("Address is required");
+  }
+
+  if (!cluster) {
+    throw new BadRequestError("Cluster is required");
   }
 
   try {
@@ -71,8 +75,12 @@ export const getLatestBlockhash = async (
   req: AuthenticatedRequest,
   res: Response
 ) => {
-  const cluster = req.user.cluster;
+  const cluster = req.user?.cluster;
   const commitment = req.query.commitment || "processed";
+
+  if (!cluster) {
+    throw new BadRequestError("Cluster is required");
+  }
 
   try {
     const rpcUrl = getRpcUrl(cluster);
@@ -92,10 +100,14 @@ export const sendTransaction = async (
   res: Response
 ) => {
   const { serializedTransaction, options } = req.body;
-  const cluster = req.user.cluster;
+  const cluster = req.user?.cluster;
 
   if (!serializedTransaction) {
     throw new BadRequestError("Serialized transaction is required");
+  }
+
+  if (!cluster) {
+    throw new BadRequestError("Cluster is required");
   }
 
   try {
@@ -153,7 +165,11 @@ export const simulateTransactionFee = async (
   res: Response
 ) => {
   const { serializedTransaction } = req.body;
-  const cluster = req.user.cluster;
+  const cluster = req.user?.cluster;
+
+  if (!cluster) {
+    throw new BadRequestError("Cluster is required");
+  }
 
   // Handle case where serializedTransaction is not provided
   if (!serializedTransaction) {
@@ -234,10 +250,14 @@ export const getTransactionHistory = async (
   res: Response
 ) => {
   const { address, before, limit = 20 } = req.query;
-  const cluster = req.user.cluster;
+  const cluster = req.user?.cluster;
 
   if (!address || typeof address !== "string") {
     throw new BadRequestError("Address is required");
+  }
+
+  if (!cluster) {
+    throw new BadRequestError("Cluster is required");
   }
 
   try {
@@ -252,6 +272,9 @@ export const getTransactionHistory = async (
 
     // Try to fetch with retries
     const heliusResponse = await fetchWithRetry(url);
+    if (!heliusResponse) {
+      throw new Error("Failed to fetch transaction history");
+    }
     const transactions = await heliusResponse.json();
 
     // Validate response
@@ -293,10 +316,14 @@ export const getTransactionHistory = async (
 
 export const getAssets = async (req: AuthenticatedRequest, res: Response) => {
   const { ownerAddress, page = 1, limit = 1000, displayOptions } = req.body;
-  const cluster = req.user.cluster;
+  const cluster = req.user?.cluster;
 
   if (!ownerAddress) {
     throw new BadRequestError("Owner address is required");
+  }
+
+  if (!cluster) {
+    throw new BadRequestError("Cluster is required");
   }
 
   try {
@@ -396,7 +423,7 @@ export const getTokenAccount = async (
   res: Response
 ) => {
   const { mint, owner } = req.query;
-  const cluster = req.user.cluster;
+  const cluster = req.user?.cluster;
 
   if (
     !mint ||
@@ -405,6 +432,10 @@ export const getTokenAccount = async (
     typeof owner !== "string"
   ) {
     throw new BadRequestError("Mint and owner addresses are required");
+  }
+
+  if (!cluster) {
+    throw new BadRequestError("Cluster is required");
   }
 
   try {
@@ -460,8 +491,12 @@ export const getPriorityFees = async (
   req: AuthenticatedRequest,
   res: Response
 ) => {
-  const cluster = req.user.cluster;
+  const cluster = req.user?.cluster;
   const { serializedTransaction, transactionEncoding = "base58" } = req.body;
+
+  if (!cluster) {
+    throw new BadRequestError("Cluster is required");
+  }
 
   try {
     const apiUrl =

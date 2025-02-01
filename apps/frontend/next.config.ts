@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  transpilePackages: ["@repo/brainpower-agent"],
 
   images: {
     domains: ["cdn.helius-rpc.com", "ipfs.io", "raw.githubusercontent.com"],

@@ -4,7 +4,6 @@ import { getMint } from "@solana/spl-token";
 import { BrainPowerAgent } from "../../agent/index.js";
 import { JupiterSwapResponse } from "../../types/index.js";
 import { createJupiterApiClient } from "@jup-ag/api";
-
 /**
  * Swap tokens using Jupiter Exchange
  * @param agent SolanaAgentKit instance

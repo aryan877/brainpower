@@ -342,7 +342,6 @@ function AssetCard({ asset }: { asset: Asset }) {
         asset={asset}
         onSuccess={() => {
           setShowTransferModal(false);
-          // Optionally trigger a refresh of the assets list
         }}
       />
     </>

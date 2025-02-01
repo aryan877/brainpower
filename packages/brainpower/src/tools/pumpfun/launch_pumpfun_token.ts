@@ -1,9 +1,6 @@
 // src/tools/launch_pumpfun_token.ts
 import { VersionedTransaction, Keypair } from "@solana/web3.js";
-import {
-  PumpfunLaunchResponse,
-  PumpFunTokenOptions,
-} from "../../types/index.js";
+import { PumpfunLaunchResponse, PumpFunTokenOptions } from "../../types/index.js";
 import { BrainPowerAgent } from "../../agent/index.js";
 
 async function uploadMetadata(

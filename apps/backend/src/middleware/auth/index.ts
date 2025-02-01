@@ -56,6 +56,10 @@ export async function authenticateUser(
     }
 
     const token = authHeader.split(" ")[1];
+    if (!token) {
+      throw new UnauthorizedError("No authentication token provided");
+    }
+
     try {
       const verifiedClaims = await privyClient.verifyAuthToken(token);
 

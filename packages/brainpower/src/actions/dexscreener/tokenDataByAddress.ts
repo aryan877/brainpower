@@ -1,9 +1,10 @@
 import { z } from "zod";
-import { Action } from "../../types/index.js";
-import { getTokenDataByAddress } from "../../tools/dexscreener/get_token_data.js";
+import { Action, HandlerResponse } from "../../types/index.js";
 import { BrainPowerAgent } from "../../agent/index.js";
 import { PublicKey } from "@solana/web3.js";
 import { ACTION_NAMES } from "../actionNames.js";
+import { getTokenDataByAddress } from "../../tools/index.js";
+import { JupiterTokenData } from "../../types/index.js";
 
 export type TokenDataByAddressInput = z.infer<typeof schema>;
 
@@ -46,7 +47,10 @@ export const tokenDataByAddress: Action = {
     ],
   ],
   schema,
-  handler: async (agent: BrainPowerAgent, input: Record<string, any>) => {
+  handler: async (
+    agent: BrainPowerAgent,
+    input: Record<string, any>,
+  ): Promise<HandlerResponse<JupiterTokenData>> => {
     try {
       const address = input.address as string;
       const tokenData = await getTokenDataByAddress(new PublicKey(address));
@@ -55,7 +59,10 @@ export const tokenDataByAddress: Action = {
         return {
           status: "error",
           message: `No token data found for address: ${address}`,
-          code: "TOKEN_NOT_FOUND",
+          error: {
+            code: "TOKEN_NOT_FOUND",
+            message: `No token data found for address: ${address}`,
+          },
         };
       }
 
@@ -68,7 +75,11 @@ export const tokenDataByAddress: Action = {
       return {
         status: "error",
         message: `Failed to get token data: ${error.message}`,
-        code: error.code || "UNKNOWN_ERROR",
+        error: {
+          code: error.code || "UNKNOWN_ERROR",
+          message: error.message,
+          details: error,
+        },
       };
     }
   },

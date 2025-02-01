@@ -28,7 +28,7 @@ export async function getTokenMetadata(
 
   // Read variable length strings
   const readString = () => {
-    let nameLength = data[offset];
+    let nameLength: number | undefined = data[offset];
 
     while (nameLength === 0) {
       offset++;
@@ -39,6 +39,9 @@ export async function getTokenMetadata(
     }
 
     offset++;
+    if (nameLength === undefined) {
+      return null;
+    }
     const name = decoder
       .decode(data.slice(offset, offset + nameLength))
       // @eslint-disable-next-line no-control-regex
@@ -66,7 +69,7 @@ export async function getTokenMetadata(
       const creator = {
         address: new PublicKey(data.slice(offset, offset + 32)),
         verified: data[offset + 32] === 1,
-        share: data[offset + 33],
+        share: data[offset + 33] as number,
       };
       offset += 34;
       return creator;

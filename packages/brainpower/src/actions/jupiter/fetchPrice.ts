@@ -1,7 +1,7 @@
-import { Action } from "../../types/action.js";
+import { Action } from "../../types/index.js";
 import { z } from "zod";
 import { PublicKey } from "@solana/web3.js";
-import { fetchPrice } from "../../tools/jupiter/fetch_price.js";
+import { fetchPrice } from "../../tools/index.js";
 import { BrainPowerAgent } from "../../agent/index.js";
 
 export type FetchPriceInput = z.infer<typeof fetchPriceSchema>;

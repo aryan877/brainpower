@@ -1,4 +1,4 @@
-import { Action } from "../../types/action.js";
+import { Action } from "../../types/index.js";
 import { z } from "zod";
 import { PublicKey } from "@solana/web3.js";
 import { JupiterTokenData } from "../../types/index.js";

@@ -4,11 +4,7 @@
  * provides a standardized way to handle their responses.
  */
 
-import {
-  PumpfunLaunchResponse,
-  ACTION_NAMES,
-  JupiterSwapResponse,
-} from "@repo/brainpower-agent";
+import { PumpfunLaunchResponse, ACTION_NAMES } from "@repo/brainpower-agent";
 
 /**
  * Possible status values for a tool execution result
@@ -53,7 +49,7 @@ export interface ToolResultBase<T = unknown> {
  */
 export type PumpFunLaunchToolResult = ToolResultBase<PumpfunLaunchResponse>;
 
-export type JupiterSwapToolResult = ToolResultBase<JupiterSwapResponse>;
+// export type JupiterSwapToolResult = ToolResultBase<JupiterSwapResponse>;
 
 /**
  * Registry that maps tool names to their corresponding result types

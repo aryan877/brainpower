@@ -1,4 +1,3 @@
-// import { PublicKey } from "@solana/web3.js";
 export * from "./input.js";
 export * from "./cluster.js";
 export * from "./action.js";
@@ -33,10 +32,6 @@ export interface PumpfunLaunchResponse {
   error?: string;
 }
 
-/**
- * Response format for Jupiter token data lookup
- * Contains token metadata and market information from Jupiter
- */
 export interface JupiterTokenData {
   address: string;
   name: string;
@@ -53,9 +48,6 @@ export interface JupiterTokenData {
   };
 }
 
-/**
- * Token holder interface
- */
 export interface TokenHolder {
   address: string;
   amount: string;
@@ -63,16 +55,13 @@ export interface TokenHolder {
   uiAmount: number;
   uiAmountString: string;
   owner?: string | null;
-  percentage?: number; // Percentage of total supply held
+  percentage?: number;
 }
 
 export interface JupiterFetchPriceResponse {
   price: string;
 }
 
-/**
- * Response format for Jupiter swap success UI
- */
 export interface JupiterSwapResponse {
   transaction: string;
   inputAmount: number;
@@ -84,6 +73,23 @@ export interface JupiterSwapResponse {
     code?: string;
     message?: string;
   };
+}
+
+export interface ChartAddressResponse {
+  address: string;
+}
+
+export interface TokenCheck {
+  tokenProgram: string;
+  tokenType: string;
+  risks: Array<{
+    name: string;
+    level: string;
+    description: string;
+    score: number;
+    value?: string;
+  }>;
+  score: number;
 }
 
 // export interface CollectionOptions {
@@ -140,22 +146,6 @@ export interface JupiterSwapResponse {
 //   status: "success" | "error";
 //   taskId?: string | undefined;
 //   signature?: string | undefined;
-// }
-
-/**
- * Example of an action with input and output
- */
-
-// export interface TokenCheck {
-//   tokenProgram: string;
-//   tokenType: string;
-//   risks: Array<{
-//     name: string;
-//     level: string;
-//     description: string;
-//     score: number;
-//   }>;
-//   score: number;
 // }
 
 // export interface PythPriceFeedIDItem {
@@ -249,7 +239,3 @@ export interface JupiterSwapResponse {
 //     options: { priorityLevel: string };
 //   }>;
 // }
-
-export interface ChartAddressResponse {
-  address: string;
-}

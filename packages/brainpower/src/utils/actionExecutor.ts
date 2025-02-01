@@ -2,9 +2,6 @@ import { Action, HandlerResponse } from "../types/action.js";
 import { BrainPowerAgent } from "../agent/index.js";
 import { ACTIONS } from "../actions/index.js";
 
-/**
- * Find an action by its name or one of its similes
- */
 export function findAction(query: string): Action | undefined {
   const normalizedQuery = query.toLowerCase().trim();
   return Object.values(ACTIONS).find(
@@ -16,9 +13,6 @@ export function findAction(query: string): Action | undefined {
   );
 }
 
-/**
- * Execute an action with the given input
- */
 export async function executeAction(
   action: Action,
   agent: BrainPowerAgent,

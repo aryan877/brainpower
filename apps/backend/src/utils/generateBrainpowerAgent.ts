@@ -57,6 +57,14 @@ export function generateBrainpowerAgent({
   const caip2 =
     cluster === "mainnet-beta" ? SOLANA_CAIP2.MAINNET : SOLANA_CAIP2.DEVNET;
 
+  if (!rpcUrl) {
+    throw new Error("RPC URL is undefined");
+  }
+
+  if (!PRIVY_APP_ID || !PRIVY_APP_SECRET) {
+    throw new Error("Privy credentials are undefined");
+  }
+
   return new BrainPowerAgent(
     rpcUrl,
     { OPENAI_API_KEY, PRIORITY_LEVEL: "high" },

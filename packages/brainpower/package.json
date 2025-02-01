@@ -4,14 +4,17 @@
   "type": "module",
   "exports": {
     ".": {
-      "types": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
       "default": "./dist/index.js"
     }
   },
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "check-types": "tsc --noEmit",
+    "prebuild": "npm run clean"
   },
   "license": "MIT",
   "dependencies": {
@@ -38,6 +41,7 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
     "@types/bn.js": "^5.1.6",
     "@types/chai": "^5.0.1",
     "@types/node": "^22.10.2",

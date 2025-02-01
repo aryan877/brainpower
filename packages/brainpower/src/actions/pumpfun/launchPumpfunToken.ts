@@ -1,8 +1,6 @@
-import { Action } from "../../types/action.js";
-// import { BrainPowerAgent } from "../../agent";
+import { Action } from "../../types/index.js";
 import { z } from "zod";
 import { ACTION_NAMES } from "../actionNames.js";
-// import { launchPumpFunToken } from "../../tools";
 
 export type LaunchPumpfunTokenInput = z.infer<typeof launchPumpfunTokenSchema>;
 

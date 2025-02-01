@@ -18,7 +18,6 @@ export function createSolanaTools(
       parameters: action.schema,
     };
 
-    // Only add execute function for backend tools (ones with handlers)
     if (action.handler) {
       toolConfig.execute = async (params: any) => {
         const result = await executeAction(action, BrainPowerAgent, params);
