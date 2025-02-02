@@ -20,27 +20,25 @@ interface InfoItemProps {
 
 function InfoItem({ label, children }: InfoItemProps) {
   return (
-    <div className="flex flex-col md:flex-row items-start md:items-center justify-between p-3 bg-background/50 rounded-lg hover:bg-background/70 transition-colors gap-2 overflow-hidden">
+    <div className="flex flex-col md:flex-row items-start md:items-center justify-between p-3 bg-background/50 rounded-lg hover:bg-background/70 transition-colors gap-2">
       <span className="text-muted-foreground text-sm whitespace-nowrap">
         {label}
       </span>
-      <div className="w-full md:w-auto overflow-hidden">{children}</div>
+      <div className="w-full md:w-auto break-all">{children}</div>
     </div>
   );
 }
 
 export function SwapSuccess({ data }: SwapSuccessProps) {
   return (
-    <Card className="bg-gradient-to-br from-primary/5 to-background w-full">
+    <Card className="bg-gradient-to-br from-primary/5 to-background w-full max-w-full">
       <CardHeader className="pb-2">
         <div className="flex items-center gap-3">
           <div className="p-2.5 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-            <ArrowRightLeft className="w-6 h-6 text-primary" />
+            <ArrowRightLeft className="w-5 h-5 text-primary" />
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="text-xl font-bold text-primary flex items-center gap-2">
-              Swap Successful!
-            </h3>
+            <h3 className="text-xl font-bold text-primary">Swap Successful!</h3>
             <p className="text-sm text-muted-foreground mt-1">
               Your token swap has been completed
             </p>
@@ -50,41 +48,48 @@ export function SwapSuccess({ data }: SwapSuccessProps) {
 
       <CardContent className="space-y-2.5">
         <InfoItem label="Transaction">
-          <CopyAddress
-            address={data.transaction}
-            explorerUrl={`https://solscan.io/tx/${data.transaction}`}
-          />
+          <div className="w-full break-all">
+            <CopyAddress
+              address={data.transaction}
+              explorerUrl={`https://solscan.io/tx/${data.transaction}`}
+            />
+          </div>
         </InfoItem>
+
         <div className="flex flex-col gap-4 p-3 bg-background/50 rounded-lg">
           <div className="flex flex-col w-full gap-2">
             <div className="text-sm text-muted-foreground">From</div>
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full">
-              <div className="font-mono text-sm whitespace-nowrap">
+            <div className="flex flex-col w-full gap-2">
+              <div className="font-mono text-sm break-all">
                 {data.inputAmount} {data.inputToken}
               </div>
-              <CopyAddress
-                address={data.inputToken}
-                explorerUrl={`https://solscan.io/token/${data.inputToken}`}
-                className="w-full sm:w-auto"
-              />
+              <div className="w-full break-all">
+                <CopyAddress
+                  address={data.inputToken}
+                  explorerUrl={`https://solscan.io/token/${data.inputToken}`}
+                />
+              </div>
             </div>
           </div>
 
-          <div className="flex items-center justify-center">
-            <ArrowRightLeft className="w-4 h-4 text-muted-foreground" />
+          <div className="flex items-center justify-center py-2">
+            <div className="p-2 bg-background/50 rounded-full">
+              <ArrowRightLeft className="w-4 h-4 text-muted-foreground" />
+            </div>
           </div>
 
           <div className="flex flex-col w-full gap-2">
             <div className="text-sm text-muted-foreground">To</div>
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full">
-              <div className="font-mono text-sm whitespace-nowrap">
+            <div className="flex flex-col w-full gap-2">
+              <div className="font-mono text-sm break-all">
                 {data.outputToken}
               </div>
-              <CopyAddress
-                address={data.outputToken}
-                explorerUrl={`https://solscan.io/token/${data.outputToken}`}
-                className="w-full sm:w-auto"
-              />
+              <div className="w-full break-all">
+                <CopyAddress
+                  address={data.outputToken}
+                  explorerUrl={`https://solscan.io/token/${data.outputToken}`}
+                />
+              </div>
             </div>
           </div>
         </div>

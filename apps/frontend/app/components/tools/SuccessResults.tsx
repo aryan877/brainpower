@@ -6,6 +6,8 @@ import {
   ChartAddressResponse,
   JupiterSwapResponse,
   TokenCheck,
+  TransferResponse,
+  TokenBalancesResponse,
 } from "@repo/brainpower-agent";
 import { PumpFunSuccess } from "./success/PumpFunSuccess";
 import { TokenAddressSuccess } from "./success/TokenAddressSuccess";
@@ -13,6 +15,9 @@ import { TokenHoldersSuccess } from "./success/TokenHoldersSuccess";
 import { ChartAddressSuccess } from "./success/ChartAddressSuccess";
 import { SwapSuccess } from "./success/SwapSuccess";
 import { RugcheckSuccess } from "./success/RugcheckSuccess";
+import { TransferSuccess } from "./success/TransferSuccess";
+import { TokenBalancesSuccess } from "./success/TokenBalancesSuccess";
+import { ConfirmationSuccess } from "./success/ConfirmationSuccess";
 
 // Define a mapping of tool names to their success result types
 export type SuccessResultsMap = {
@@ -22,6 +27,9 @@ export type SuccessResultsMap = {
   [ACTION_NAMES.GET_TOKEN_CHART_ADDRESS]: ChartAddressResponse;
   [ACTION_NAMES.JUPITER_SWAP]: JupiterSwapResponse;
   [ACTION_NAMES.RUGCHECK_BY_ADDRESS]: TokenCheck;
+  [ACTION_NAMES.TRANSFER]: TransferResponse;
+  [ACTION_NAMES.GET_TOKEN_BALANCES]: TokenBalancesResponse;
+  [ACTION_NAMES.ASK_FOR_CONFIRMATION]: { confirmed: boolean };
 };
 
 // Registry of tools that have success components
@@ -32,6 +40,9 @@ export const SUCCESS_COMPONENTS_REGISTRY = {
   [ACTION_NAMES.GET_TOKEN_CHART_ADDRESS]: true,
   [ACTION_NAMES.JUPITER_SWAP]: true,
   [ACTION_NAMES.RUGCHECK_BY_ADDRESS]: true,
+  [ACTION_NAMES.TRANSFER]: true,
+  [ACTION_NAMES.GET_TOKEN_BALANCES]: true,
+  [ACTION_NAMES.ASK_FOR_CONFIRMATION]: true,
 } as const;
 
 // Type guard to check if a tool has success results
@@ -63,6 +74,12 @@ export function SuccessResults<T extends keyof SuccessResultsMap>({
       return <SwapSuccess data={data as JupiterSwapResponse} />;
     case ACTION_NAMES.RUGCHECK_BY_ADDRESS:
       return <RugcheckSuccess data={data as TokenCheck} />;
+    case ACTION_NAMES.TRANSFER:
+      return <TransferSuccess data={data as TransferResponse} />;
+    case ACTION_NAMES.GET_TOKEN_BALANCES:
+      return <TokenBalancesSuccess data={data as TokenBalancesResponse} />;
+    case ACTION_NAMES.ASK_FOR_CONFIRMATION:
+      return <ConfirmationSuccess data={data as { confirmed: boolean }} />;
     default:
       return null;
   }

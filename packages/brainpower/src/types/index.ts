@@ -239,3 +239,21 @@ export interface TokenCheck {
 //     options: { priorityLevel: string };
 //   }>;
 // }
+
+export interface TokenBalancesResponse {
+  sol: number;
+  tokens: Array<{
+    tokenAddress: string;
+    name: string;
+    symbol: string;
+    balance: number;
+    decimals: number;
+  }>;
+}
+
+export interface TransferResponse {
+  signature: string;
+  amount: number;
+  token?: string;
+  recipient: string;
+}

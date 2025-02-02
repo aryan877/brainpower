@@ -1,2 +1,4 @@
 import { LaunchPumpfunTokenInput } from "../actions/pumpfun/launchPumpfunToken.js";
-export type { LaunchPumpfunTokenInput };
+import { AskForConfirmationInput } from "../actions/confirmation/askForConfirmation.js";
+
+export type { LaunchPumpfunTokenInput, AskForConfirmationInput };

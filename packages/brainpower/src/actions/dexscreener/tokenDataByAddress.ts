@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { Action, HandlerResponse } from "../../types/index.js";
-import { BrainPowerAgent } from "../../agent/index.js";
+import { BrainPowerAgent } from "src/agent/index.js";
 import { PublicKey } from "@solana/web3.js";
 import { ACTION_NAMES } from "../actionNames.js";
 import { getTokenDataByAddress } from "../../tools/index.js";

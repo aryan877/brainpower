@@ -109,12 +109,12 @@ async function getAssets(
   return response.data;
 }
 
-async function getTokenAccount(mint: string, owner: string) {
-  const { data } = await api.get(
-    `/api/wallet/token-account?mint=${mint}&owner=${owner}`
-  );
-  return { tokenAccount: data.tokenAccount, exists: data.exists };
-}
+// async function getTokenAccount(mint: string, owner: string) {
+//   const { data } = await api.get(
+//     `/api/wallet/token-account?mint=${mint}&owner=${owner}`
+//   );
+//   return { tokenAccount: data.tokenAccount, exists: data.exists };
+// }
 
 async function getPriorityFees(
   serializedTransaction?: string
@@ -135,6 +135,6 @@ export const walletClient = {
   simulateTransactionFee,
   getTransactionHistory,
   getAssets,
-  getTokenAccount,
+  // getTokenAccount,
   getPriorityFees,
 };

@@ -2,7 +2,7 @@ import { z } from "zod";
 import { Action, HandlerResponse } from "../../types/index.js";
 import { getTokenAddressFromTicker } from "../../tools/index.js";
 import { ACTION_NAMES } from "../actionNames.js";
-import { BrainPowerAgent } from "../../agent/index.js";
+import { BrainPowerAgent } from "src/agent/index.js";
 import { ChartAddressResponse } from "../../types/index.js";
 
 export type GetTokenChartAddressInput = z.infer<typeof schema>;

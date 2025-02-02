@@ -1,5 +1,5 @@
 import { Action, HandlerResponse } from "../../types/index.js";
-import { BrainPowerAgent } from "../../agent/index.js";
+import { BrainPowerAgent } from "src/agent/index.js";
 import { z } from "zod";
 import { ACTION_NAMES } from "../actionNames.js";
 import { getTokenDataByTicker } from "../../tools/index.js";

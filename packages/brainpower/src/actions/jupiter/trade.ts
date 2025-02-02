@@ -1,6 +1,6 @@
 import { PublicKey } from "@solana/web3.js";
 import { Action, HandlerResponse } from "../../types/action.js";
-import { BrainPowerAgent } from "../../agent/index.js";
+import { BrainPowerAgent } from "src/agent/index.js";
 import { z } from "zod";
 import { trade } from "../../tools/index.js";
 import { ACTION_NAMES } from "../actionNames.js";

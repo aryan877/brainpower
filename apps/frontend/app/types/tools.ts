@@ -4,7 +4,12 @@
  * provides a standardized way to handle their responses.
  */
 
-import { PumpfunLaunchResponse, ACTION_NAMES } from "@repo/brainpower-agent";
+import {
+  PumpfunLaunchResponse,
+  ACTION_NAMES,
+  LaunchPumpfunTokenInput,
+  AskForConfirmationInput,
+} from "@repo/brainpower-agent";
 
 /**
  * Possible status values for a tool execution result
@@ -49,6 +54,13 @@ export interface ToolResultBase<T = unknown> {
  */
 export type PumpFunLaunchToolResult = ToolResultBase<PumpfunLaunchResponse>;
 
+/**
+ * Specific result type for the Confirmation tool
+ */
+export type ConfirmationToolResult = ToolResultBase<{
+  confirmed: boolean;
+}>;
+
 // export type JupiterSwapToolResult = ToolResultBase<JupiterSwapResponse>;
 
 /**
@@ -60,6 +72,7 @@ export type PumpFunLaunchToolResult = ToolResultBase<PumpfunLaunchResponse>;
  */
 export interface ToolResultTypes {
   [ACTION_NAMES.LAUNCH_PUMPFUN_TOKEN]: PumpFunLaunchToolResult;
+  [ACTION_NAMES.ASK_FOR_CONFIRMATION]: ConfirmationToolResult;
   // [ACTION_NAMES.JUPITER_SWAP]: JupiterSwapToolResult;
   // Add other tool result types here as needed
 }
@@ -98,3 +111,17 @@ export function isToolResult(value: unknown): value is ToolResultBase {
       }
   );
 }
+
+/**
+ * Registry that maps tool names to their corresponding input types
+ */
+export interface ToolInputTypes {
+  [ACTION_NAMES.LAUNCH_PUMPFUN_TOKEN]: LaunchPumpfunTokenInput;
+  [ACTION_NAMES.ASK_FOR_CONFIRMATION]: AskForConfirmationInput;
+  // Add new tool input types here
+}
+
+/**
+ * Helper type that extracts the input type for a specific tool
+ */
+export type ToolInputType<T extends keyof ToolInputTypes> = ToolInputTypes[T];

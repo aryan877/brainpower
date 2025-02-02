@@ -77,6 +77,12 @@ export interface Action {
   schema: z.ZodType<any>;
 
   /**
+   * Whether this action requires user confirmation before execution
+   * @default false
+   */
+  requiresConfirmation?: boolean;
+
+  /**
    * Function that executes the action
    */
   handler?: Handler;

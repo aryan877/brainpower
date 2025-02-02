@@ -1,15 +1,17 @@
 import { PumpFunLaunchTool } from "./PumpFunLaunchTool";
+import { ConfirmationTool } from "./ConfirmationTool";
 import { ToolInvocation } from "ai";
 import {
   isToolResult,
   ToolResultType,
   ToolResultTypes,
+  ToolInputType,
 } from "../../types/tools";
 import { ACTION_NAMES } from "@repo/brainpower-agent";
 
 interface ToolConfig<T extends keyof ToolResultTypes> {
   component: React.ComponentType<{
-    args: Record<string, unknown>;
+    args: ToolInputType<T>;
     onSubmit: (result: ToolResultType<T>) => void;
   }>;
   preprocess?: (result: unknown) => ToolResultType<T>;
@@ -22,6 +24,9 @@ type ToolRegistry = {
 export const toolRegistry: ToolRegistry = {
   [ACTION_NAMES.LAUNCH_PUMPFUN_TOKEN]: {
     component: PumpFunLaunchTool,
+  },
+  [ACTION_NAMES.ASK_FOR_CONFIRMATION]: {
+    component: ConfirmationTool,
   },
   // [ACTION_NAMES.JUPITER_SWAP]: {
   //   component: SwapTool,

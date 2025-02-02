@@ -8,7 +8,7 @@ import {
   simulateTransactionFee,
   getTransactionHistory,
   getAssets,
-  getTokenAccount,
+  // getTokenAccount,
   getPriorityFees,
 } from "../controllers/walletController.js";
 import { authenticateUser } from "../middleware/auth/index.js";
@@ -41,6 +41,6 @@ export function setupWalletRoutes(router: Router): Router {
     validateSimulateFee,
     asyncHandler(simulateTransactionFee)
   );
-  router.get("/token-account", asyncHandler(getTokenAccount));
+  // router.get("/token-account", asyncHandler(getTokenAccount));
   return router;
 }

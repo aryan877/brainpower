@@ -13,7 +13,6 @@ export * from "./types/index.js";
 export { TOKENS } from "./constants/index.js";
 
 // Internal exports (not exposed to frontend but available for internal backend use)
-export { ACTIONS } from "./actions/index.js";
 export { BrainPowerAgent } from "./agent/index.js";
 export * from "./tools/index.js";
 export { createSolanaTools } from "./vercel-ai/index.js";

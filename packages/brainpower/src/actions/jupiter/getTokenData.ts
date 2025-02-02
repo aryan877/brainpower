@@ -6,7 +6,7 @@ import {
   getTokenAddressFromTicker,
   getTokenDataByAddress,
 } from "../../tools/index.js";
-import { BrainPowerAgent } from "../../agent/index.js";
+import { BrainPowerAgent } from "src/agent/index.js";
 
 export type GetTokenDataInput = z.infer<typeof getTokenDataSchema>;
 

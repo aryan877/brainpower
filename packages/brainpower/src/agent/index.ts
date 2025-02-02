@@ -7,9 +7,9 @@ import {
   LAMPORTS_PER_SOL,
   SystemProgram,
   TransactionInstruction,
-  ComputeBudgetProgram,
-  TransactionMessage,
-  AddressLookupTableAccount,
+  // ComputeBudgetProgram,
+  // TransactionMessage,
+  // AddressLookupTableAccount,
 } from "@solana/web3.js";
 import { Config } from "../types/index.js";
 import { PrivyClient } from "@privy-io/server-auth";

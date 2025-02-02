@@ -16,6 +16,7 @@ export function createSolanaTools(
       id: action.name,
       description: action.description,
       parameters: action.schema,
+      requires_confirmation: action.requiresConfirmation ?? false,
     };
 
     if (action.handler) {

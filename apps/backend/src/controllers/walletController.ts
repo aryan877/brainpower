@@ -402,91 +402,6 @@ export const getAssets = async (req: AuthenticatedRequest, res: Response) => {
   }
 };
 
-interface TokenAccountResponse {
-  address: string;
-  mint: string;
-  owner: string;
-  amount: number;
-  delegated_amount: number;
-  frozen: boolean;
-}
-
-interface GetTokenAccountsResponse {
-  total: number;
-  limit: number;
-  cursor?: string;
-  token_accounts: TokenAccountResponse[];
-}
-
-export const getTokenAccount = async (
-  req: AuthenticatedRequest,
-  res: Response
-) => {
-  const { mint, owner } = req.query;
-  const cluster = req.user?.cluster;
-
-  if (
-    !mint ||
-    !owner ||
-    typeof mint !== "string" ||
-    typeof owner !== "string"
-  ) {
-    throw new BadRequestError("Mint and owner addresses are required");
-  }
-
-  if (!cluster) {
-    throw new BadRequestError("Cluster is required");
-  }
-
-  try {
-    const apiUrl =
-      cluster === "mainnet-beta"
-        ? "https://mainnet.helius-rpc.com"
-        : "https://devnet.helius-rpc.com";
-
-    // Get token accounts from Helius
-    const response = await fetch(
-      `${apiUrl}/?api-key=${process.env.HELIUS_API_KEY}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          jsonrpc: "2.0",
-          id: "helius-test",
-          method: "getTokenAccounts",
-          params: {
-            mint,
-            owner,
-            displayOptions: {
-              showZeroBalance: true,
-            },
-          },
-        }),
-      }
-    );
-
-    const data = await response.json();
-
-    if (data.error) {
-      console.error("Helius API error:", data.error);
-      throw new Error(data.error.message || "Failed to fetch token accounts");
-    }
-
-    const result = data.result as GetTokenAccountsResponse;
-    const tokenAccount = result.token_accounts[0];
-
-    // Add token account existence check
-    const exists = tokenAccount !== undefined;
-
-    res.json({ tokenAccount, exists });
-  } catch (error) {
-    console.error("Error fetching token account:", error);
-    throw new BadRequestError("Failed to fetch token account");
-  }
-};
-
 export const getPriorityFees = async (
   req: AuthenticatedRequest,
   res: Response
@@ -559,3 +474,88 @@ export const getPriorityFees = async (
     throw new BadRequestError("Failed to fetch priority fees");
   }
 };
+
+// interface TokenAccountResponse {
+//   address: string;
+//   mint: string;
+//   owner: string;
+//   amount: number;
+//   delegated_amount: number;
+//   frozen: boolean;
+// }
+
+// interface GetTokenAccountsResponse {
+//   total: number;
+//   limit: number;
+//   cursor?: string;
+//   token_accounts: TokenAccountResponse[];
+// }
+
+// export const getTokenAccount = async (
+//   req: AuthenticatedRequest,
+//   res: Response
+// ) => {
+//   const { mint, owner } = req.query;
+//   const cluster = req.user?.cluster;
+
+//   if (
+//     !mint ||
+//     !owner ||
+//     typeof mint !== "string" ||
+//     typeof owner !== "string"
+//   ) {
+//     throw new BadRequestError("Mint and owner addresses are required");
+//   }
+
+//   if (!cluster) {
+//     throw new BadRequestError("Cluster is required");
+//   }
+
+//   try {
+//     const apiUrl =
+//       cluster === "mainnet-beta"
+//         ? "https://mainnet.helius-rpc.com"
+//         : "https://devnet.helius-rpc.com";
+
+//     // Get token accounts from Helius
+//     const response = await fetch(
+//       `${apiUrl}/?api-key=${process.env.HELIUS_API_KEY}`,
+//       {
+//         method: "POST",
+//         headers: {
+//           "Content-Type": "application/json",
+//         },
+//         body: JSON.stringify({
+//           jsonrpc: "2.0",
+//           id: "helius-test",
+//           method: "getTokenAccounts",
+//           params: {
+//             mint,
+//             owner,
+//             displayOptions: {
+//               showZeroBalance: true,
+//             },
+//           },
+//         }),
+//       }
+//     );
+
+//     const data = await response.json();
+
+//     if (data.error) {
+//       console.error("Helius API error:", data.error);
+//       throw new Error(data.error.message || "Failed to fetch token accounts");
+//     }
+
+//     const result = data.result as GetTokenAccountsResponse;
+//     const tokenAccount = result.token_accounts[0];
+
+//     // Add token account existence check
+//     const exists = tokenAccount !== undefined;
+
+//     res.json({ tokenAccount, exists });
+//   } catch (error) {
+//     console.error("Error fetching token account:", error);
+//     throw new BadRequestError("Failed to fetch token account");
+//   }
+// };

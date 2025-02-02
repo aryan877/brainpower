@@ -8,6 +8,13 @@ import {
   Users,
   LineChart,
   ShieldAlert,
+  Send,
+  Coins,
+  CircleDollarSign,
+  Gauge,
+  Download,
+  Trash,
+  AlertCircle,
 } from "lucide-react";
 import React from "react";
 
@@ -47,6 +54,38 @@ const TOOL_DISPLAY_CONFIG: Record<
   [ACTION_NAMES.RUGCHECK_BY_ADDRESS]: {
     icon: <ShieldAlert className="w-3 h-3" />,
     label: "Rugcheck",
+  },
+  [ACTION_NAMES.TRANSFER]: {
+    icon: <Send className="w-3 h-3" />,
+    label: "Transfer",
+  },
+  [ACTION_NAMES.GET_TOKEN_BALANCES]: {
+    icon: <Coins className="w-3 h-3" />,
+    label: "Token Balances",
+  },
+  [ACTION_NAMES.GET_BALANCE]: {
+    icon: <CircleDollarSign className="w-3 h-3" />,
+    label: "SOL Balance",
+  },
+  [ACTION_NAMES.GET_BALANCE_OTHER]: {
+    icon: <Wallet className="w-3 h-3" />,
+    label: "Other Balance",
+  },
+  [ACTION_NAMES.GET_TPS]: {
+    icon: <Gauge className="w-3 h-3" />,
+    label: "Network TPS",
+  },
+  [ACTION_NAMES.REQUEST_FAUCET_FUNDS]: {
+    icon: <Download className="w-3 h-3" />,
+    label: "Faucet",
+  },
+  [ACTION_NAMES.CLOSE_EMPTY_TOKEN_ACCOUNTS]: {
+    icon: <Trash className="w-3 h-3" />,
+    label: "Close Empty",
+  },
+  [ACTION_NAMES.ASK_FOR_CONFIRMATION]: {
+    icon: <AlertCircle className="w-3 h-3" />,
+    label: "Confirmation",
   },
 };
 

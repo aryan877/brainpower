@@ -1,7 +1,7 @@
 import { VersionedTransaction, PublicKey } from "@solana/web3.js";
 import { TOKENS, DEFAULT_OPTIONS } from "../../constants/index.js";
 import { getMint } from "@solana/spl-token";
-import { BrainPowerAgent } from "../../agent/index.js";
+import { BrainPowerAgent } from "src/agent/index.js";
 import { JupiterSwapResponse } from "../../types/index.js";
 import { createJupiterApiClient } from "@jup-ag/api";
 /**
@@ -57,7 +57,7 @@ export async function trade(
     const swapTransactionBuf = Buffer.from(swapTransaction, "base64");
     const transaction = VersionedTransaction.deserialize(swapTransactionBuf);
 
-    // Sign and send transaction with confirmation
+    // Sign and send transaction
     const signature = await agent.signAndSendTransaction(transaction, {
       commitment: "processed",
     });

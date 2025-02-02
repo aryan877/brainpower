@@ -49,6 +49,7 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
     error,
     stop,
     addToolResult,
+    reload,
   } = useChat({
     api: "/api/chat/message",
     id: threadId || undefined,
@@ -67,6 +68,28 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
     generateId: () => `msg_${nanoid()}`,
     sendExtraMessageFields: true,
   });
+
+  // Handle failed tool calls
+  const handleFailedTools = (errorMessage: string, code: string) => {
+    const lastMessage = messages[messages.length - 1];
+    const pendingTools = lastMessage?.toolInvocations?.filter(
+      (tool) => tool.state === "call"
+    );
+
+    pendingTools?.forEach((tool) => {
+      addToolResult({
+        toolCallId: tool.toolCallId,
+        result: {
+          status: "error",
+          message: errorMessage,
+          error: {
+            code,
+            message: errorMessage,
+          },
+        },
+      });
+    });
+  };
 
   // Check for active tool calls in any message
   useEffect(() => {
@@ -106,27 +129,7 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
 
   // Add handler for stopping
   const handleStop = () => {
-    // Find any pending tool invocations in the last message
-    const lastMessage = messages[messages.length - 1];
-    const pendingTools = lastMessage?.toolInvocations?.filter(
-      (tool) => tool.state === "call"
-    );
-
-    // Add error result for each pending tool
-    pendingTools?.forEach((tool) => {
-      addToolResult({
-        toolCallId: tool.toolCallId,
-        result: {
-          status: "error",
-          message: "Operation stopped by user",
-          error: {
-            code: "OPERATION_STOPPED",
-            message: "Operation was manually stopped by the user",
-          },
-        },
-      });
-    });
-
+    handleFailedTools("Operation stopped by user", "OPERATION_STOPPED");
     setIsWaitingForResponse(false);
     stop();
   };
@@ -142,6 +145,11 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
         wrappedHandleSubmit(formEvent);
       }
     }
+  };
+
+  const handleRetry = () => {
+    handleFailedTools("Operation failed", "OPERATION_FAILED");
+    reload();
   };
 
   if (!threadId) {
@@ -203,28 +211,7 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
               {error.message}
             </p>
             <Button
-              onClick={() => {
-                // Find any pending tool invocations in the last message
-                const lastMessage = messages[messages.length - 1];
-                const pendingTools = lastMessage?.toolInvocations?.filter(
-                  (tool) => tool.state === "call"
-                );
-
-                // Add error result for each pending tool
-                pendingTools?.forEach((tool) => {
-                  addToolResult({
-                    toolCallId: tool.toolCallId,
-                    result: {
-                      status: "error",
-                      message: "Operation failed",
-                      error: {
-                        code: "OPERATION_FAILED",
-                        message: error.message || "Unknown error occurred",
-                      },
-                    },
-                  });
-                });
-              }}
+              onClick={handleRetry}
               variant="outline"
               size="sm"
               className="flex-shrink-0 text-destructive hover:bg-destructive/20 border-destructive/20"

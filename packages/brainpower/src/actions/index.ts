@@ -6,6 +6,16 @@ import tradeAction from "./jupiter/trade.js";
 import { ACTION_NAMES } from "./actionNames.js";
 import getTokenChartAddressAction from "./dexscreener/getTokenChartAddress.js";
 import rugcheckAction from "./rugcheck/rugcheck.js";
+import {
+  closeEmptyTokenAccountsAction,
+  getBalanceAction,
+  getBalanceOtherAction,
+  getTokenBalancesAction,
+  getTPSAction,
+  requestFaucetFundsAction,
+  transferAction,
+} from "./solana/index.js";
+import askForConfirmationAction from "./confirmation/askForConfirmation.js";
 
 export { ACTION_NAMES };
 
@@ -17,6 +27,14 @@ export const ACTIONS = {
   [ACTION_NAMES.GET_TOKEN_TOP_HOLDERS]: tokenTopHoldersAction,
   [ACTION_NAMES.GET_TOKEN_CHART_ADDRESS]: getTokenChartAddressAction,
   [ACTION_NAMES.RUGCHECK_BY_ADDRESS]: rugcheckAction,
+  [ACTION_NAMES.CLOSE_EMPTY_TOKEN_ACCOUNTS]: closeEmptyTokenAccountsAction,
+  [ACTION_NAMES.GET_BALANCE]: getBalanceAction,
+  [ACTION_NAMES.GET_BALANCE_OTHER]: getBalanceOtherAction,
+  [ACTION_NAMES.GET_TOKEN_BALANCES]: getTokenBalancesAction,
+  [ACTION_NAMES.GET_TPS]: getTPSAction,
+  [ACTION_NAMES.REQUEST_FAUCET_FUNDS]: requestFaucetFundsAction,
+  [ACTION_NAMES.TRANSFER]: transferAction,
+  [ACTION_NAMES.ASK_FOR_CONFIRMATION]: askForConfirmationAction,
 };
 
 export type { Action, ActionExample, Handler } from "../types/action.js";

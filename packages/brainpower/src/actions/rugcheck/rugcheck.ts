@@ -3,7 +3,12 @@ import { Action, HandlerResponse } from "../../types/action.js";
 import { ACTION_NAMES } from "../actionNames.js";
 import { fetchTokenDetailedReport } from "../../tools/rugcheck/rugcheck.js";
 import { TokenCheck } from "../../types/index.js";
-import { BrainPowerAgent } from "@/agent/index.js";
+
+export type RugcheckInput = z.infer<typeof rugcheckSchema>;
+
+const rugcheckSchema = z.object({
+  mint: z.string().min(32).max(44),
+});
 
 const rugcheckAction: Action = {
   name: ACTION_NAMES.RUGCHECK_BY_ADDRESS,
@@ -35,9 +40,7 @@ const rugcheckAction: Action = {
       },
     ],
   ],
-  schema: z.object({
-    mint: z.string().min(32).max(44),
-  }),
+  schema: rugcheckSchema,
   handler: async (
     BrainPowerAgent,
     input: Record<string, any>,

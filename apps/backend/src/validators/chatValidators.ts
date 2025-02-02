@@ -4,7 +4,7 @@ import { validateRequest } from "./validateRequest.js";
 const toolInvocationSchema = z.object({
   toolCallId: z.string(),
   toolName: z.string(),
-  args: z.record(z.unknown()),
+  args: z.record(z.unknown()).optional().default({}), // Made args optional with empty object default
   result: z.unknown().optional(),
   state: z.enum(["partial-call", "call", "result"]),
 });
