@@ -230,10 +230,7 @@ export default function ChatMessage({
                 <div className="flex-1 min-w-0">
                   <div
                     className={cn(
-                      "prose prose-base max-w-none break-words",
-                      "prose-p:text-foreground/90 prose-p:leading-relaxed prose-p:my-1 dark:prose-p:text-foreground/95",
-                      "prose-code:bg-muted/60 prose-code:text-foreground/90 prose-code:rounded-md dark:prose-code:bg-muted/30",
-                      "dark:prose-invert dark:prose-pre:bg-muted/20",
+                      "prose prose-base max-w-none break-words dark:prose-invert",
                       isLoading && "opacity-60"
                     )}
                   >

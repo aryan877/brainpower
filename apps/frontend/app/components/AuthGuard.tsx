@@ -2,9 +2,9 @@
 
 import { usePrivy } from "@privy-io/react-auth";
 import { ReactNode } from "react";
-import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import Image from "next/image";
+import { WelcomePage } from "./WelcomePage";
 
 export function AuthGuard({ children }: { children: ReactNode }) {
   const { ready, authenticated, login } = usePrivy();
@@ -36,20 +36,7 @@ export function AuthGuard({ children }: { children: ReactNode }) {
   }
 
   if (!authenticated) {
-    return (
-      <div className="h-screen w-screen flex flex-col items-center justify-center gap-6 bg-background">
-        <h1 className="text-3xl font-bold text-foreground">
-          Welcome to BrainPower
-        </h1>
-        <p className="text-muted-foreground max-w-md text-center">
-          Connect with your wallet or email to get started with your AI-powered
-          chat experience.
-        </p>
-        <Button onClick={login} size="lg" className="font-medium">
-          Login to continue
-        </Button>
-      </div>
-    );
+    return <WelcomePage onLogin={login} />;
   }
 
   return <>{children}</>;

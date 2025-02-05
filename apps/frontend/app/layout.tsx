@@ -1,5 +1,5 @@
 import "./globals.css";
-import { Inter, Plus_Jakarta_Sans } from "next/font/google";
+import { Montserrat, Plus_Jakarta_Sans } from "next/font/google";
 import { NotificationContainer } from "./components/NotificationContainer";
 import { PrivyProvider } from "./providers/PrivyProvider";
 import { ReactQueryProvider } from "./providers/ReactQueryProvider";
@@ -7,7 +7,11 @@ import { ThemeProvider } from "./providers/ThemeProvider";
 import { WalletProvider } from "./providers/WalletProvider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
-const inter = Inter({ subsets: ["latin"] });
+const montserrat = Montserrat({
+  subsets: ["latin"],
+  variable: "--font-montserrat",
+});
+
 const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
   variable: "--font-jakarta",
@@ -26,7 +30,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.className} ${jakarta.variable} font-sans`}>
+      <body className={`${montserrat.variable} ${jakarta.variable} font-sans`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

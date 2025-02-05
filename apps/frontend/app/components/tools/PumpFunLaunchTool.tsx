@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, Upload, Rocket, X } from "lucide-react";
+import { Loader2, Upload, Rocket, X, Wand2, Info } from "lucide-react";
 import Image from "next/image";
 import { LaunchPumpfunTokenInput } from "@repo/brainpower-agent";
 import { PumpFunLaunchToolResult } from "../../types/tools";
@@ -16,6 +16,12 @@ import { ipfsClient } from "../../clients/ipfs";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { useImageGeneration } from "../../hooks/useImageGeneration";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const formSchema = z.object({
   tokenName: z.string().min(1, "Token name is required"),
@@ -43,6 +49,10 @@ export function PumpFunLaunchTool({ args, onSubmit }: PumpFunLaunchToolProps) {
   const { wallet, sendTransaction } = useWallet();
   const { addNotification } = useNotificationStore();
   const [isDragging, setIsDragging] = useState(false);
+  const [imagePrompt, setImagePrompt] = useState("");
+  const [showPromptInput, setShowPromptInput] = useState(false);
+  const { mutateAsync: generateImage, isPending: isGenerating } =
+    useImageGeneration();
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -93,6 +103,47 @@ export function PumpFunLaunchTool({ args, onSubmit }: PumpFunLaunchToolProps) {
     setIsDragging(false);
     const file = e.dataTransfer.files?.[0];
     if (file) handleFile(file);
+  };
+
+  const handleGenerateImage = async () => {
+    if (!imagePrompt.trim()) {
+      setImageError("Please enter a prompt for image generation");
+      return;
+    }
+
+    setImageError("");
+
+    try {
+      const response = await generateImage(imagePrompt);
+
+      if (!response.success || !response.data.imageData) {
+        throw new Error("Failed to generate image");
+      }
+
+      // Convert base64 to blob directly
+      const base64Data = response.data.imageData.split(",")[1]; // Remove data:image/png;base64, prefix
+      const binaryData = atob(base64Data);
+      const array = new Uint8Array(binaryData.length);
+      for (let i = 0; i < binaryData.length; i++) {
+        array[i] = binaryData.charCodeAt(i);
+      }
+      const imageBlob = new Blob([array], { type: "image/png" });
+
+      // Create File object
+      const file = new File([imageBlob], `ai-generated-${Date.now()}.png`, {
+        type: "image/png",
+        lastModified: Date.now(),
+      });
+
+      // Use the same handleFile function we use for regular uploads
+      handleFile(file);
+      setShowPromptInput(false);
+      setImagePrompt("");
+    } catch (error) {
+      setImageError(
+        error instanceof Error ? error.message : "Failed to generate image"
+      );
+    }
   };
 
   const handleSubmit = async (data: z.infer<typeof formSchema>) => {
@@ -281,74 +332,144 @@ export function PumpFunLaunchTool({ args, onSubmit }: PumpFunLaunchToolProps) {
           <Label>
             Token Image <span className="text-destructive">*</span>
           </Label>
-          <div className="flex items-center gap-4">
-            <div className="flex-1">
-              <div
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
-                onDrop={handleDrop}
-                onClick={() => document.getElementById("image-upload")?.click()}
-                className={cn(
-                  "flex flex-col items-center justify-center w-full h-[160px] border-2 border-dashed rounded-lg cursor-pointer transition-all duration-200",
-                  isDragging
-                    ? "border-primary bg-primary/5 scale-[1.02]"
-                    : "border-primary/20",
-                  imageError && "border-destructive",
-                  "hover:bg-primary/5"
-                )}
-              >
-                {imagePreview ? (
-                  <div className="relative w-full h-full flex items-center justify-center">
-                    <Image
-                      src={imagePreview}
-                      alt="Preview"
-                      width={128}
-                      height={128}
-                      className="max-h-[140px] w-auto object-contain"
-                    />
-                    <div className="absolute inset-0 bg-black/50 text-white flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                      <p className="text-sm">Click or drop to replace</p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center justify-center h-full">
-                    <Upload
-                      className={cn(
-                        "w-8 h-8 mb-2 transition-transform duration-200",
-                        isDragging
-                          ? "text-primary scale-110"
-                          : "text-primary/60"
-                      )}
-                    />
-                    <p className="text-sm text-muted-foreground text-center">
-                      {isDragging ? (
-                        <span className="text-primary font-medium">
-                          Drop image here
-                        </span>
-                      ) : (
-                        <>
-                          Click to upload or drag image
-                          <br />
-                          <span className="text-xs">
-                            PNG, JPG, GIF up to 10MB
-                          </span>
-                        </>
-                      )}
-                    </p>
-                  </div>
-                )}
-                <input
-                  id="image-upload"
-                  type="file"
-                  className="hidden"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                />
+          <div className="flex flex-col gap-4">
+            {showPromptInput ? (
+              <div className="space-y-2">
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Enter a prompt to generate an image..."
+                    value={imagePrompt}
+                    onChange={(e) => setImagePrompt(e.target.value)}
+                    disabled={isGenerating}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleGenerateImage}
+                    disabled={isGenerating}
+                  >
+                    {isGenerating ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Wand2 className="w-4 h-4" />
+                    )}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowPromptInput(false)}
+                    disabled={isGenerating}
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <Info className="w-3 h-3" />
+                  <span>Limited to 5 generations per day</span>
+                  <Tooltip>
+                    <TooltipTrigger></TooltipTrigger>
+                    <TooltipContent>
+                      <p>
+                        AI image generation is limited to 5 requests per day per
+                        user.
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
               </div>
-              {imageError && (
-                <p className="text-sm text-destructive mt-1">{imageError}</p>
+            ) : (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowPromptInput(true)}
+                className="w-full"
+              >
+                <Wand2 className="w-4 h-4 mr-2" />
+                Generate with AI
+              </Button>
+            )}
+            <div
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              onClick={() => document.getElementById("image-upload")?.click()}
+              className={cn(
+                "flex flex-col items-center justify-center w-full h-[160px] border-2 border-dashed rounded-lg cursor-pointer transition-all duration-200",
+                isDragging
+                  ? "border-primary bg-primary/5 scale-[1.02]"
+                  : "border-primary/20",
+                imageError && "border-destructive",
+                "hover:bg-primary/5"
               )}
+            >
+              {imagePreview ? (
+                <div className="relative w-full h-full flex items-center justify-center">
+                  <Image
+                    src={imagePreview}
+                    alt="Preview"
+                    width={128}
+                    height={128}
+                    className="max-h-[140px] w-auto object-contain"
+                  />
+                  <div className="absolute inset-0 bg-black/50 text-white flex flex-col gap-2 items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                    <p className="text-sm">Click or drop to replace</p>
+                    {selectedImage && (
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        className="mt-2"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const link = document.createElement("a");
+                          link.href = imagePreview;
+                          link.download = selectedImage.name;
+                          document.body.appendChild(link);
+                          link.click();
+                          document.body.removeChild(link);
+                        }}
+                      >
+                        Download
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center h-full">
+                  <Upload
+                    className={cn(
+                      "w-8 h-8 mb-2 transition-transform duration-200",
+                      isDragging ? "text-primary scale-110" : "text-primary/60"
+                    )}
+                  />
+                  <p className="text-sm text-muted-foreground text-center">
+                    {isDragging ? (
+                      <span className="text-primary font-medium">
+                        Drop image here
+                      </span>
+                    ) : (
+                      <>
+                        Click to upload or drag image
+                        <br />
+                        <span className="text-xs">
+                          PNG, JPG, GIF up to 10MB
+                        </span>
+                      </>
+                    )}
+                  </p>
+                </div>
+              )}
+              <input
+                id="image-upload"
+                type="file"
+                className="hidden"
+                accept="image/*"
+                onChange={handleImageChange}
+              />
             </div>
+            {imageError && (
+              <p className="text-sm text-destructive mt-1">{imageError}</p>
+            )}
           </div>
         </div>
 

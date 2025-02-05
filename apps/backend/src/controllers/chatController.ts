@@ -1,7 +1,11 @@
 import { Response } from "express";
 import { ChatThread } from "../models/ChatThread.js";
 import { AuthenticatedRequest } from "../middleware/auth/index.js";
-import { NotFoundError } from "../middleware/errors/types.js";
+import {
+  NotFoundError,
+  APIError,
+  ErrorCode,
+} from "../middleware/errors/types.js";
 import { getUserCluster, getUserId } from "../utils/userIdentification.js";
 import { createSolanaTools } from "@repo/brainpower-agent";
 import { streamText, smoothStream } from "ai";
@@ -36,11 +40,11 @@ export const getThreads = async (req: AuthenticatedRequest, res: Response) => {
       ? threads[limit].createdAt.toISOString()
       : undefined;
 
-  res.json({
+  return {
     threads: items,
     nextCursor,
     hasMore,
-  });
+  };
 };
 
 export const createNewThread = async (
@@ -56,16 +60,25 @@ export const createNewThread = async (
     messages: [],
   });
 
-  res.json({
+  return {
     threadId: chatThread.threadId,
     createdAt: chatThread.createdAt,
     updatedAt: chatThread.updatedAt,
     title: chatThread.title || undefined,
     messages: [],
-  });
+  };
 };
 
 export const sendMessage = async (req: AuthenticatedRequest, res: Response) => {
+  // Create an AbortController that will be triggered when the request is aborted
+  const controller = new AbortController();
+  const { signal } = controller;
+
+  // Add abort handler to clean up when the request is closed
+  req.on("close", () => {
+    controller.abort();
+  });
+
   const userId = getUserId(req);
   const cluster = getUserCluster(req);
   const { messages, threadId } = req.body;
@@ -78,7 +91,7 @@ export const sendMessage = async (req: AuthenticatedRequest, res: Response) => {
     });
 
     if (!chatThread) {
-      return res.status(404).json({ error: "Thread not found" });
+      throw new NotFoundError("Thread not found");
     }
 
     // Update title if first user message and no title exists
@@ -110,13 +123,18 @@ export const sendMessage = async (req: AuthenticatedRequest, res: Response) => {
         chunking: "word",
         delayInMs: 15,
       }),
+      abortSignal: signal,
     });
 
     const streamResponse = result.toDataStreamResponse();
-
     const stream = streamResponse.body;
+
     if (!stream) {
-      throw new Error("No stream available");
+      throw new APIError(
+        500,
+        ErrorCode.INTERNAL_SERVER_ERROR,
+        "No stream available"
+      );
     }
 
     const reader = stream.getReader();
@@ -127,21 +145,45 @@ export const sendMessage = async (req: AuthenticatedRequest, res: Response) => {
           res.end();
           break;
         }
+        // Check if the request was aborted
+        if (signal.aborted) {
+          reader.releaseLock();
+          res.end();
+          return;
+        }
         res.write(value);
       }
     } catch (error) {
       reader.releaseLock();
       console.error("Stream error:", error);
+      if (!res.headersSent) {
+        throw new APIError(
+          500,
+          ErrorCode.INTERNAL_SERVER_ERROR,
+          "Stream processing failed",
+          error instanceof Error ? error.message : undefined
+        );
+      }
       res.end();
     }
   } catch (error) {
     if (!res.headersSent) {
-      if (error instanceof Error) {
-        res.status(500).json({ error: error.message });
-      } else {
-        res.status(500).json({ error: "An unexpected error occurred" });
+      // If it's already an APIError, rethrow it
+      if (error instanceof APIError) {
+        throw error;
       }
+
+      // For other errors, wrap them in APIError
+      throw new APIError(
+        500,
+        ErrorCode.INTERNAL_SERVER_ERROR,
+        error instanceof Error ? error.message : "An unexpected error occurred",
+        error instanceof Error ? error.stack : undefined
+      );
     }
+  } finally {
+    // Clean up
+    controller.abort();
   }
 };
 
@@ -162,12 +204,12 @@ export const getThreadHistory = async (
     throw new NotFoundError("Thread not found");
   }
 
-  res.json({
+  return {
     threadId: chatThread.threadId,
     messages: chatThread.messages,
     createdAt: chatThread.createdAt,
     updatedAt: chatThread.updatedAt,
-  });
+  };
 };
 
 export const deleteThread = async (
@@ -183,7 +225,7 @@ export const deleteThread = async (
     throw new NotFoundError("Thread not found");
   }
 
-  res.json({ message: "Thread deleted successfully" });
+  return { message: "Thread deleted successfully" };
 };
 
 export const saveAllMessages = async (
@@ -207,9 +249,9 @@ export const saveAllMessages = async (
   chatThread.messages = messages;
   await chatThread.save();
 
-  res.json({
+  return {
     success: true,
     threadId,
     messageCount: messages.length,
-  });
+  };
 };

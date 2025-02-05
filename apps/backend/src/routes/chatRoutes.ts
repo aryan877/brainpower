@@ -1,5 +1,4 @@
 import { Router } from "express";
-import OpenAI from "openai";
 import { authenticateUser } from "../middleware/auth/index.js";
 import { validateCluster } from "../middleware/auth/cluster.js";
 import {

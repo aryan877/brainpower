@@ -44,7 +44,7 @@ export const uploadToIPFS = async (req: FileRequest, res: Response) => {
     }
 
     const imageUrl = `https://gateway.pinata.cloud/ipfs/${response.data.IpfsHash}`;
-    res.json({ imageUrl });
+    return { imageUrl };
   } catch (error) {
     console.error("IPFS upload error:", error);
 
@@ -102,10 +102,10 @@ export const uploadToPumpFunIPFS = async (req: FileRequest, res: Response) => {
       throw new DatabaseError("Failed to get metadata URI from pump.fun");
     }
 
-    res.json({
+    return {
       metadataUri: response.data.metadataUri,
       metadata: response.data.metadata,
-    });
+    };
   } catch (error) {
     console.error("Pump.fun IPFS upload error:", error);
 

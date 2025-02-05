@@ -28,10 +28,10 @@ export const storeWallet = async (req: AuthenticatedRequest, res: Response) => {
     { upsert: true }
   );
 
-  res.json({
+  return {
     address,
     chainType,
-  });
+  };
 };
 
 export const getUserWallets = async (
@@ -41,9 +41,9 @@ export const getUserWallets = async (
   const userId = getUserId(req);
   const user = await User.findOne({ userId });
 
-  res.json({
+  return {
     wallets: user?.wallets || [],
-  });
+  };
 };
 
 export const getBalance = async (req: AuthenticatedRequest, res: Response) => {
@@ -64,7 +64,7 @@ export const getBalance = async (req: AuthenticatedRequest, res: Response) => {
     const pubkey = new PublicKey(address);
     const balance = await connection.getBalance(pubkey);
 
-    res.json({ balance });
+    return { balance };
   } catch (error) {
     console.error("Error fetching balance:", error);
     throw new BadRequestError("Failed to fetch balance");
@@ -88,7 +88,7 @@ export const getLatestBlockhash = async (
     const { blockhash, lastValidBlockHeight } =
       await connection.getLatestBlockhash(commitment as any);
 
-    res.json({ blockhash, lastValidBlockHeight });
+    return { blockhash, lastValidBlockHeight };
   } catch (error) {
     console.error("Error getting latest blockhash:", error);
     throw new BadRequestError("Failed to get latest blockhash");
@@ -146,14 +146,14 @@ export const sendTransaction = async (
       ).lastValidBlockHeight,
     });
 
-    res.json({
+    return {
       signature,
       confirmation,
       transaction: {
         message: transaction.message,
         signatures: transaction.signatures,
       },
-    });
+    };
   } catch (error) {
     console.error("Error sending transaction:", error);
     throw new BadRequestError("Failed to send transaction", error);
@@ -174,7 +174,7 @@ export const simulateTransactionFee = async (
   // Handle case where serializedTransaction is not provided
   if (!serializedTransaction) {
     // Return default simulation values
-    return res.json({
+    return {
       simulation: {
         logs: [],
         error: null,
@@ -182,7 +182,7 @@ export const simulateTransactionFee = async (
         accounts: [],
         returnData: null,
       },
-    });
+    };
   }
 
   try {
@@ -215,7 +215,7 @@ export const simulateTransactionFee = async (
       throw new Error("Invalid simulation response");
     }
 
-    res.json({
+    return {
       simulation: {
         logs: simulationResponse.value.logs || [],
         error: simulationResponse.value.err,
@@ -223,7 +223,7 @@ export const simulateTransactionFee = async (
         accounts: simulationResponse.value.accounts,
         returnData: simulationResponse.value.returnData,
       },
-    });
+    };
   } catch (error) {
     console.error("Error simulating transaction:", error);
     throw new BadRequestError("Failed to simulate transaction", error);
@@ -287,27 +287,24 @@ export const getTransactionHistory = async (
     const lastSignature = transactions[transactions.length - 1]?.signature;
     const hasMore = transactions.length === limit;
 
-    res.json({
+    return {
       transactions,
       lastSignature,
       hasMore,
       warning:
         "This endpoint may return incomplete data. For critical applications, use getSignaturesForAddress and fetch transactions individually.",
-    });
+    };
   } catch (error) {
     console.error("Error fetching transaction history:", error);
 
-    // Check if it's an API key issue
     if (error instanceof Error && error.message.includes("401")) {
       throw new BadRequestError("Invalid API key or unauthorized access");
     }
 
-    // Check if it's a rate limit issue
     if (error instanceof Error && error.message.includes("429")) {
       throw new BadRequestError("Rate limit exceeded. Please try again later");
     }
 
-    // For other errors, return a generic message
     throw new BadRequestError(
       "Unable to fetch transaction history. Please try again later"
     );
@@ -332,7 +329,6 @@ export const getAssets = async (req: AuthenticatedRequest, res: Response) => {
         ? "https://mainnet.helius-rpc.com"
         : "https://devnet.helius-rpc.com";
 
-    // Make RPC call to getAssetsByOwner
     const response = await fetch(
       `${apiUrl}/addresses/${ownerAddress}/assets?api-key=${process.env.HELIUS_API_KEY}`,
       {
@@ -361,43 +357,36 @@ export const getAssets = async (req: AuthenticatedRequest, res: Response) => {
     const data = await response.json();
 
     if (data.error) {
-      console.error("Helius API error:");
-      console.error(data.error);
+      console.error("Helius API error:", data.error);
       throw new Error(
         data.error.message || "Failed to fetch assets from Helius"
       );
     }
 
-    // Validate response
     if (!data.result) {
-      console.error("Invalid response format from Helius:");
-      console.error(data);
+      console.error("Invalid response format from Helius:", data);
       throw new Error("Invalid response from Helius API");
     }
 
-    res.json({
+    return {
       result: {
         items: data.result.items || [],
         total: data.result.total || 0,
         limit: data.result.limit || limit,
         page: data.result.page || page,
       },
-    });
+    };
   } catch (error) {
-    console.error("Error fetching assets:");
-    console.error(error);
+    console.error("Error fetching assets:", error);
 
-    // Check if it's an API key issue
     if (error instanceof Error && error.message.includes("401")) {
       throw new BadRequestError("Invalid API key or unauthorized access");
     }
 
-    // Check if it's a rate limit issue
     if (error instanceof Error && error.message.includes("429")) {
       throw new BadRequestError("Rate limit exceeded. Please try again later");
     }
 
-    // For other errors, return a generic message
     throw new BadRequestError("Failed to fetch assets. Please try again later");
   }
 };
@@ -460,15 +449,13 @@ export const getPriorityFees = async (
       throw new Error(data.error.message || "Failed to fetch priority fees");
     }
 
-    // Return both the priority fee levels and a recommended value
-    // Calculate recommended as the medium level or 10000, whichever is higher
     const priorityFeeLevels = data.result.priorityFeeLevels;
     const recommended = Math.max(priorityFeeLevels?.medium || 0, 10000);
 
-    res.json({
+    return {
       ...priorityFeeLevels,
       recommended,
-    });
+    };
   } catch (error) {
     console.error("Error fetching priority fees:", error);
     throw new BadRequestError("Failed to fetch priority fees");

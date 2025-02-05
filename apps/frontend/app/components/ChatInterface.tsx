@@ -207,7 +207,7 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
         <div className="mx-auto w-full max-w-3xl px-4">
           <Card className="flex items-center gap-3 border-destructive/20 bg-neutral-100 dark:bg-neutral-800 p-3 md:p-4 my-2">
             <AlertCircle className="h-4 md:h-5 w-4 md:w-5 flex-shrink-0 text-destructive" />
-            <p className="flex-1 text-sm md:text-[15px] text-foreground break-words line-clamp-3">
+            <p className="flex-1 text-sm md:text-[15px] text-foreground dark:text-foreground break-words line-clamp-3">
               {error.message}
             </p>
             <Button
@@ -226,9 +226,9 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
       {/* Braining indicator */}
       {isWaitingForResponse && (
         <div className="mx-auto w-full max-w-3xl px-4">
-          <div className="flex items-center gap-2 text-primary my-2">
+          <div className="flex items-center gap-2 text-primary dark:text-primary/90 my-2">
             <div className="animate-spin rounded-full h-4 w-4 md:h-5 md:w-5 border-2 border-primary border-t-transparent" />
-            <span className="text-sm md:text-base font-medium animate-pulse">
+            <span className="text-sm md:text-base font-medium animate-pulse text-foreground dark:text-foreground">
               {loadingMessages[loadingMessageIndex]}
             </span>
           </div>
@@ -244,18 +244,14 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
           <div className="relative flex items-center">
             <Textarea
               value={input}
-              onChange={(e) => {
-                handleInputChange(e);
-                e.target.style.height = "inherit";
-                e.target.style.height = `${Math.min(e.target.scrollHeight, 200)}px`;
-              }}
+              onChange={handleInputChange}
               placeholder={
                 hasActiveToolCall
                   ? "Please complete/cancel action or wait for response..."
                   : "Type your message..."
               }
               rows={1}
-              className="resize-none pr-14 text-sm md:text-[15px]"
+              className="resize-none pr-14 text-sm md:text-[15px] text-foreground dark:text-foreground placeholder:text-muted-foreground/70"
               style={{ minHeight: "44px", maxHeight: "200px" }}
               disabled={isLoading || hasActiveToolCall}
               onKeyDown={handleKeyDown}

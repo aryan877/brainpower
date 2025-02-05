@@ -12,6 +12,7 @@
     "@coral-xyz/anchor": "^0.29.0",
     "@hookform/resolvers": "^3.10.0",
     "@privy-io/react-auth": "^2.0.4",
+    "@radix-ui/react-accordion": "^1.2.2",
     "@radix-ui/react-avatar": "^1.1.2",
     "@radix-ui/react-dialog": "^1.1.4",
     "@radix-ui/react-dropdown-menu": "^2.1.4",

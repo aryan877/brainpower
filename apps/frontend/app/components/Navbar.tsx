@@ -23,5 +23,4 @@ export function Navbar({ onMenuClick }: NavbarProps) {
     </header>
   );
 }
-
 export default Navbar;
