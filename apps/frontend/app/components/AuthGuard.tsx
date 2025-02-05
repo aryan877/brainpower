@@ -11,26 +11,44 @@ export function AuthGuard({ children }: { children: ReactNode }) {
 
   if (!ready) {
     return (
-      <div className="h-screen w-screen flex flex-col items-center justify-center gap-4 bg-background">
+      <div className="h-screen w-screen flex flex-col items-center justify-center bg-background">
         <motion.div
+          initial={{ opacity: 0 }}
           animate={{
-            scale: 1.2,
+            opacity: 1,
           }}
           transition={{
             duration: 0.5,
-            repeat: Infinity,
-            repeatType: "reverse",
+            ease: "easeOut",
           }}
+          className="relative"
         >
           <Image
-            src="/text-logo.svg"
+            src="/logo-group.svg"
             alt="BrainPower Logo"
-            width={200}
+            width={180}
             height={40}
+            className="h-8 w-auto"
             priority
           />
+          <motion.div
+            className="absolute -inset-6 rounded-full"
+            animate={{
+              opacity: [0.3, 0.6, 0.3],
+              scale: [0.8, 1, 0.8],
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              ease: "easeInOut",
+              times: [0, 0.5, 1],
+            }}
+            style={{
+              background:
+                "radial-gradient(circle, rgba(239, 68, 68, 0.15) 0%, transparent 70%)",
+            }}
+          />
         </motion.div>
-        <p className="text-muted-foreground">Loading authentication...</p>
       </div>
     );
   }

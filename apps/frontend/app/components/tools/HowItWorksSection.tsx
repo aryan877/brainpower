@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { SectionHeader } from "@/components/ui/SectionHeader";
 
 interface StepProps {
   number: number;
@@ -57,15 +58,15 @@ export function HowItWorksSection() {
   ];
 
   return (
-    <div className="relative z-[30] flex flex-col items-center justify-start gap-12 px-4 max-w-7xl mx-auto pt-32">
-      <div className="text-center bg-gradient-to-b from-muted-foreground via-white via-muted-foreground to-white bg-clip-text w-full">
-        <h2 className="text-5xl md:text-6xl mb-6 text-transparent">
-          How Brainpower Works
-        </h2>
-        <p className="text-base md:text-lg text-muted-foreground/60 max-w-3xl mx-auto text-center leading-relaxed tracking-wide">
-          Launch a vampire squid token and auto-generate description
-        </p>
-      </div>
+    <div
+      id="how"
+      className="z-[30] flex flex-col items-center justify-start gap-12 px-4 max-w-7xl mx-auto pt-32"
+    >
+      <SectionHeader
+        title="How Brainpower Works"
+        description="Launch a vampire squid token and auto-generate description"
+        titleSize="md"
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
         {steps.map((step) => (

@@ -1,8 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Twitter, Headphones, Linkedin, MessageSquare } from "lucide-react";
 import { useEffect, useState, useCallback, useMemo } from "react";
-import { motion } from "framer-motion";
+import { SectionHeader } from "@/components/ui/SectionHeader";
 
 export function Footer() {
   const [imageHeight, setImageHeight] = useState<number>(0);
@@ -37,112 +36,27 @@ export function Footer() {
       {/* Divine light effect */}
       <div className="absolute inset-0 flex items-start justify-center overflow-hidden z-[1]">
         {/* Side gradients - static */}
-        <div className="absolute left-0 w-[45%] h-full bg-gradient-to-r from-black via-black to-transparent z-[2]" />
-        <div className="absolute right-0 w-[45%] h-full bg-gradient-to-l from-black via-black to-transparent z-[2]" />
+        <div className="absolute left-0 w-[35%] h-full bg-gradient-to-r from-black via-black to-transparent z-[2]" />
+        <div className="absolute right-0 w-[35%] h-full bg-gradient-to-l from-black via-black to-transparent z-[2]" />
 
-        {/* Main power surge beam */}
-        <motion.div
-          animate={{
-            opacity: [0.15, 0.35, 0.15],
-            scale: [1, 1.05, 1],
-            y: [-10, -5, -10],
-          }}
-          transition={{
-            duration: 4,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-          className="absolute -top-20 w-[800px] h-[1200px] bg-gradient-to-b from-white/50 via-destructive/30 to-transparent rotate-180 scale-y-[-1] blur-[45px] mix-blend-screen"
-        />
+        {/* Static light effects */}
+        <div className="absolute -top-20 w-[200px] h-[1200px] bg-gradient-to-b from-white/20 via-destructive/10 to-transparent rotate-180 scale-y-[-1] blur-[45px] mix-blend-screen" />
 
-        {/* Neural lightning network */}
-        <motion.div
-          animate={{
-            rotate: [0, 360],
-          }}
-          transition={{
-            duration: 45,
-            repeat: Infinity,
-            ease: "linear",
-          }}
-          className="absolute top-40 w-[600px] h-[600px]"
-        >
-          {/* Neural power nodes */}
-          {[...Array(4)].map((_, i) => (
-            <motion.div
-              key={i}
-              animate={{
-                opacity: [0.2, 0.6, 0.2],
-                scale: [1, 1.08, 1],
-              }}
-              transition={{
-                duration: 2.5,
-                repeat: Infinity,
-                ease: "easeInOut",
-                delay: i * 0.4,
-              }}
-              className={`absolute w-[150px] h-[150px] bg-gradient-radial 
-                ${i % 2 === 0 ? "from-destructive/50 via-destructive/15" : "from-white/30 via-gray-300/10"} 
-                to-transparent blur-[20px]`}
-              style={{
-                left: `${Math.sin(i * (Math.PI / 2)) * 200}px`,
-                top: `${Math.cos(i * (Math.PI / 2)) * 200}px`,
-              }}
-            />
-          ))}
-        </motion.div>
+        {/* Static power nodes */}
+        <div className="absolute top-40 w-[140px] h-[140px]">
+          <div className="absolute w-[40px] h-[40px] left-[50px] top-0 bg-gradient-radial from-destructive/20 via-destructive/5 to-transparent blur-[20px]" />
+          <div className="absolute w-[40px] h-[40px] right-[50px] top-0 bg-gradient-radial from-white/10 via-gray-300/5 to-transparent blur-[20px]" />
+          <div className="absolute w-[40px] h-[40px] left-[50px] bottom-0 bg-gradient-radial from-destructive/20 via-destructive/5 to-transparent blur-[20px]" />
+          <div className="absolute w-[40px] h-[40px] right-[50px] bottom-0 bg-gradient-radial from-white/10 via-gray-300/5 to-transparent blur-[20px]" />
+        </div>
 
-        {/* Power surge flashes */}
-        <motion.div
-          animate={{
-            opacity: [0, 0.6, 0],
-            scale: [0.9, 1.1, 0.9],
-          }}
-          transition={{
-            duration: 1.2,
-            repeat: Infinity,
-            ease: "easeInOut",
-            repeatDelay: 2,
-          }}
-          className="absolute top-1/4 left-1/3 w-[120px] h-[120px] bg-gradient-radial from-destructive/60 via-destructive/20 to-transparent blur-[12px]"
-        />
+        {/* Static power core */}
+        <div className="absolute top-40 w-[100px] h-[100px] rounded-full bg-gradient-radial from-destructive/15 via-destructive/5 to-transparent blur-[35px] mix-blend-screen" />
 
-        {/* Brain power core */}
-        <motion.div
-          animate={{
-            scale: [1, 1.08, 1],
-            opacity: [0.15, 0.3, 0.15],
-          }}
-          transition={{
-            duration: 3,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-          className="absolute top-40 w-[400px] h-[400px] rounded-full bg-gradient-radial from-destructive/25 via-destructive/8 to-transparent blur-[35px] mix-blend-screen"
-        />
-
-        {/* Quick energy sparks */}
-        {[...Array(3)].map((_, i) => (
-          <motion.div
-            key={`spark-${i}`}
-            animate={{
-              opacity: [0, 0.5, 0],
-              scale: [0.8, 1, 0.8],
-              x: [0, (i - 1) * 20, 0],
-            }}
-            transition={{
-              duration: 0.8,
-              repeat: Infinity,
-              ease: "easeInOut",
-              repeatDelay: 2.5,
-              delay: i * 0.5,
-            }}
-            className="absolute top-1/3 w-[40px] h-[40px] bg-gradient-radial from-white/60 via-destructive/30 to-transparent blur-[8px]"
-            style={{
-              left: `${45 + i * 5}%`,
-            }}
-          />
-        ))}
+        {/* Static energy dots */}
+        <div className="absolute top-1/3 left-[49%] w-[10px] h-[10px] bg-gradient-radial from-white/20 via-destructive/10 to-transparent blur-[8px]" />
+        <div className="absolute top-1/3 left-[50%] w-[10px] h-[10px] bg-gradient-radial from-white/20 via-destructive/10 to-transparent blur-[8px]" />
+        <div className="absolute top-1/3 left-[51%] w-[10px] h-[10px] bg-gradient-radial from-white/20 via-destructive/10 to-transparent blur-[8px]" />
       </div>
 
       {/* Background Brain Effect */}
@@ -184,9 +98,12 @@ export function Footer() {
           height={40}
           className="h-8 w-auto mb-6"
         />
-        <p className="text-lg text-muted-foreground mb-2">
-          Forget tradingview tabs. Your Solana empire starts with a chat.
-        </p>
+        <SectionHeader
+          title=""
+          description="Forget tradingview tabs. Your Solana empire starts with a chat."
+          titleSize="sm"
+          className="mb-2"
+        />
         <p className="text-muted-foreground mb-8">
           Agentic. Effortless. Yours.
         </p>
@@ -194,37 +111,27 @@ export function Footer() {
         {/* Social Links */}
         <div className="flex items-center gap-6">
           <Link
-            href="https://twitter.com/brainpowerai"
+            href="https://x.com/brainpower009"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-muted-foreground hover:text-foreground transition-colors"
+            className="transition-opacity hover:opacity-80"
           >
-            <Twitter className="h-6 w-6" />
+            <Image
+              src="/landing/footer/twitter.svg"
+              alt="X (Twitter)"
+              width={48}
+              height={48}
+            />
           </Link>
-          <Link
-            href="https://discord.gg/brainpower"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <MessageSquare className="h-6 w-6" />
-          </Link>
-          <Link
-            href="https://linkedin.com/company/brainpower"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <Linkedin className="h-6 w-6" />
-          </Link>
-          <Link
-            href="https://t.me/brainpower"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <Headphones className="h-6 w-6" />
-          </Link>
+          <div className="opacity-30 cursor-not-allowed transition-opacity hover:opacity-40">
+            <Image
+              src="/landing/footer/discord.svg"
+              alt="Discord (Coming Soon)"
+              width={48}
+              height={48}
+              className="grayscale"
+            />
+          </div>
         </div>
       </div>
     </footer>

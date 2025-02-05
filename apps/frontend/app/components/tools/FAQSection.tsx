@@ -4,6 +4,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { SectionHeader } from "@/components/ui/SectionHeader";
 
 export function FAQSection() {
   const faqs = [
@@ -40,16 +41,15 @@ export function FAQSection() {
   ];
 
   return (
-    <div className="relative z-[30] flex flex-col items-center justify-start gap-8 px-4 max-w-7xl mx-auto pt-24 pb-0">
-      <div className="text-center bg-gradient-to-b from-muted-foreground via-white via-muted-foreground to-white bg-clip-text w-full mb-4">
-        <h2 className="text-5xl md:text-6xl mb-6 text-transparent">
-          Let&apos;s Answer Your Questions
-        </h2>
-        <p className="text-base md:text-lg text-muted-foreground/60 max-w-3xl mx-auto text-center leading-relaxed tracking-wide">
-          Everything you need to know about Brainpower and how it can transform
-          your Solana experience.
-        </p>
-      </div>
+    <div
+      id="faq"
+      className="z-[30] flex flex-col items-center justify-start gap-8 px-4 max-w-7xl mx-auto pt-24 pb-0"
+    >
+      <SectionHeader
+        title="Let's Answer Your Questions"
+        description="Everything you need to know about Brainpower and how it can transform your Solana experience."
+        titleSize="md"
+      />
 
       <div className="w-full max-w-3xl bg-black/40 backdrop-blur-sm rounded-2xl p-6 border border-destructive/20">
         <Accordion type="single" collapsible className="w-full">

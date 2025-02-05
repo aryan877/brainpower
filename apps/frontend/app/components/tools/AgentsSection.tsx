@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { SectionHeader } from "@/components/ui/SectionHeader";
 
 interface AgentCardProps {
   title: string;
@@ -136,16 +137,15 @@ export function AgentsSection() {
   ];
 
   return (
-    <div className="relative z-[30] flex flex-col items-center justify-start gap-12 px-4 max-w-7xl mx-auto pt-32">
-      <div className="text-center bg-gradient-to-b from-muted-foreground via-white via-muted-foreground to-white bg-clip-text w-full">
-        <h2 className="text-5xl md:text-6xl mb-6 text-transparent">
-          Meet the Agents
-        </h2>
-        <p className="text-base md:text-lg text-muted-foreground/60 max-w-3xl mx-auto text-center leading-relaxed tracking-wide">
-          Simplify crypto investing, trading, and portfolio management with
-          cutting-edge tools designed for everyone—from beginners to pros.
-        </p>
-      </div>
+    <div
+      id="agents"
+      className="relative z-[30] flex flex-col items-center justify-start gap-12 px-4 max-w-7xl mx-auto pt-32"
+    >
+      <SectionHeader
+        title="Meet the Agents"
+        description="Simplify crypto investing, trading, and portfolio management with cutting-edge tools designed for everyone—from beginners to pros."
+        titleSize="md"
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-6 w-full">
         {agents.slice(0, 2).map((agent) => (

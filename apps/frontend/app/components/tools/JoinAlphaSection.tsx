@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
 import Image from "next/image";
+import { SectionHeader } from "@/components/ui/SectionHeader";
 
 interface BenefitProps {
   text: string;
@@ -20,20 +21,40 @@ function Benefit({ text }: BenefitProps) {
 export function JoinAlphaSection({ onLogin }: { onLogin: () => void }) {
   return (
     <div className="relative z-[30] px-4 max-w-7xl mx-auto pt-32 pb-32">
-      <div className="relative backdrop-blur-sm rounded-3xl p-12 md:p-20">
+      <div className="relative backdrop-blur-sm rounded-3xl p-12 md:p-20 group">
         <Image
           src="/landing/footer/background.svg"
           alt="Background pattern"
           fill
           className="object-cover object-top rounded-3xl"
         />
+        <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-red-500/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        <div
+          className="absolute inset-0 rounded-3xl transition-all duration-500"
+          style={{
+            background:
+              "radial-gradient(circle at top right, rgba(255,0,0,0.05), transparent 50%)",
+            opacity: 0,
+          }}
+        />
+        <div
+          className="absolute inset-0 rounded-3xl group-hover:opacity-100 transition-opacity duration-500"
+          style={{
+            background:
+              "radial-gradient(circle at top right, rgba(255,0,0,0.1), transparent 50%)",
+            opacity: 0,
+          }}
+        />
         <div className="relative z-10 flex flex-col items-center text-center max-w-3xl mx-auto">
           <div className="bg-gradient-to-b from-muted-foreground via-white via-muted-foreground to-white bg-clip-text w-full">
-            <h2 className="text-5xl md:text-6xl mb-2 text-transparent">
-              Join the Alpha
-            </h2>
+            <SectionHeader
+              title="Join the Alpha"
+              description=""
+              titleSize="md"
+              className="-mb-1"
+            />
             <p className="text-base md:text-lg text-red-500 text-center leading-relaxed tracking-wide mb-8">
-              First 500 users unlock
+              First 200 users unlock
             </p>
           </div>
 
@@ -45,11 +66,10 @@ export function JoinAlphaSection({ onLogin }: { onLogin: () => void }) {
 
           <Button
             onClick={onLogin}
-            size="lg"
             variant="outline"
-            className="!bg-[#121212] border-destructive hover:!bg-[#121212]/90 transition-colors px-8 py-6 text-lg shadow-[0_4px_20px_-1px] shadow-destructive/40"
+            className="!bg-[#121212] border-destructive hover:!bg-[#121212]/90 transition-colors shadow-[0_4px_20px_-1px] shadow-destructive/40 px-8 py-6 text-lg"
           >
-            Get Started Now
+            Chat with Agent
           </Button>
         </div>
       </div>
