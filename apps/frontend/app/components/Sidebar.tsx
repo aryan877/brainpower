@@ -121,7 +121,7 @@ export default function Sidebar({
         </DialogContent>
       </Dialog>
 
-      <aside className="flex flex-col h-full bg-background border-r relative">
+      <aside className="flex flex-col h-full bg-background border-r relative dark:border-r-white/10">
         <div className={`p-4 ${isCollapsed ? "px-2" : ""}`}>
           <div
             className={`flex items-center gap-2 mb-4 ${

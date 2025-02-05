@@ -84,7 +84,7 @@ export function WelcomePage({ onLogin }: { onLogin: () => void }) {
                 onLogin();
               }}
               variant="outline"
-              className="!bg-[#121212] border-destructive hover:!bg-[#121212]/90 transition-colors shadow-[0_4px_20px_-1px] shadow-destructive/40"
+              className="!bg-black/60 border-white/10 hover:!bg-black/40 text-white hover:text-white transition-colors"
             >
               Chat with Agent
             </Button>
@@ -114,7 +114,7 @@ export function WelcomePage({ onLogin }: { onLogin: () => void }) {
           <Button
             onClick={onLogin}
             variant="outline"
-            className="hidden md:inline-flex !bg-[#121212] border-destructive hover:!bg-[#121212]/90 transition-colors shadow-[0_4px_20px_-1px] shadow-destructive/40"
+            className="hidden md:inline-flex !bg-black/60 border-white/10 hover:!bg-black/40 text-white hover:text-white transition-colors"
           >
             Chat with Agent
           </Button>

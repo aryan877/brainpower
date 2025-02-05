@@ -5,13 +5,21 @@ import { ReactNode } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { WelcomePage } from "./WelcomePage";
+import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
 
 export function AuthGuard({ children }: { children: ReactNode }) {
   const { ready, authenticated, login } = usePrivy();
+  const [mounted, setMounted] = useState(false);
+  const { theme } = useTheme();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   if (!ready) {
     return (
-      <div className="h-screen w-screen flex flex-col items-center justify-center bg-background">
+      <div className="h-screen w-screen flex flex-col items-center justify-center">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{
@@ -23,31 +31,30 @@ export function AuthGuard({ children }: { children: ReactNode }) {
           }}
           className="relative"
         >
-          <Image
-            src="/logo-group.svg"
-            alt="BrainPower Logo"
-            width={180}
-            height={40}
-            className="h-8 w-auto"
-            priority
-          />
           <motion.div
-            className="absolute -inset-6 rounded-full"
             animate={{
-              opacity: [0.3, 0.6, 0.3],
-              scale: [0.8, 1, 0.8],
+              opacity: [1, 0.5, 1],
+              scale: [1, 0.97, 1],
             }}
             transition={{
-              duration: 2,
+              duration: 1.5,
               repeat: Infinity,
               ease: "easeInOut",
-              times: [0, 0.5, 1],
             }}
-            style={{
-              background:
-                "radial-gradient(circle, rgba(239, 68, 68, 0.15) 0%, transparent 70%)",
-            }}
-          />
+          >
+            <Image
+              src={
+                mounted && theme === "light"
+                  ? "/logo-group-light.svg"
+                  : "/logo-group.svg"
+              }
+              alt="BrainPower Logo"
+              width={180}
+              height={40}
+              className="h-8 w-auto"
+              priority
+            />
+          </motion.div>
         </motion.div>
       </div>
     );
