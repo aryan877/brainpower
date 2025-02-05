@@ -22,10 +22,10 @@ function AgentCard({
 }: AgentCardProps) {
   return (
     <div
-      className={`relative backdrop-blur-sm rounded-2xl p-6 overflow-hidden group transition-all duration-300 border border-muted ${
+      className={`relative backdrop-blur-sm rounded-2xl p-6 overflow-hidden group transition-all duration-300 border border-white/10 ${
         bgImageSrc
           ? "bg-black/30 hover:bg-black/20"
-          : "bg-gradient-to-b from-[#121212] to-black/40 hover:from-[#121212]/90 hover:to-black/30"
+          : "bg-[#121212] hover:bg-[#121212]/90"
       } ${className}`}
     >
       {bgImageSrc && (
@@ -139,7 +139,7 @@ export function AgentsSection() {
   return (
     <div
       id="agents"
-      className="relative z-[30] flex flex-col items-center justify-start gap-12 px-4 max-w-7xl mx-auto pt-32"
+      className="relative z-[30] flex flex-col items-center justify-start gap-12 px-4 max-w-7xl mx-auto pt-32 text-white"
     >
       <SectionHeader
         title="Meet the Agents"

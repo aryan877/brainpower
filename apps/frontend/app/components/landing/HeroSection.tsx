@@ -8,7 +8,7 @@ interface HeroSectionProps {
 
 export function HeroSection({ onLogin }: HeroSectionProps) {
   return (
-    <div className="relative z-[30] flex flex-col items-center justify-start gap-8 px-4 max-w-7xl mx-auto pt-40">
+    <div className="relative z-[30] flex flex-col items-center justify-start gap-8 px-4 max-w-7xl mx-auto pt-40 text-white">
       {/* Background Effects */}
       <div className="absolute inset-0 -z-10">
         <div className="absolute inset-0 z-0">
@@ -166,13 +166,13 @@ export function HeroSection({ onLogin }: HeroSectionProps) {
 
       {/* Content */}
       <div className="text-center flex flex-col gap-0 relative z-10">
-        <h1 className="text-6xl text-transparent text-center mx-auto leading-tight pb-0 bg-gradient-to-r from-muted-foreground via-white via-muted-foreground to-white bg-clip-text">
+        <h1 className="text-6xl text-transparent text-center mx-auto leading-tight pb-0 bg-gradient-to-r from-white/80 via-white via-white/80 to-white bg-clip-text">
           Your Solana Agent
         </h1>
-        <h2 className="text-6xl text-transparent text-center mx-auto leading-tight pb-4 bg-gradient-to-r from-muted-foreground via-white via-muted-foreground to-white bg-clip-text">
+        <h2 className="text-6xl text-transparent text-center mx-auto leading-tight pb-4 bg-gradient-to-r from-white/80 via-white via-white/80 to-white bg-clip-text">
           Chat Smarter, Execute Faster
         </h2>
-        <p className="text-lg md:text-xl text-muted-foreground/60 max-w-3xl text-center mx-auto mt-4 tracking-wide">
+        <p className="text-lg md:text-xl text-white/60 max-w-3xl text-center mx-auto mt-4 tracking-wide">
           AI employee for Solana that&apos;s organized into specialized agents,
           each built to handle a distinct set of crypto operations.
         </p>

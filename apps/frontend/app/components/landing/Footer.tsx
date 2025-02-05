@@ -29,9 +29,9 @@ export function Footer() {
   );
 
   return (
-    <footer className="relative z-[30]" style={footerStyle}>
+    <footer className="relative z-[30] text-white" style={footerStyle}>
       {/* Top gradient border */}
-      <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-muted-foreground/20 via-destructive to-muted-foreground/20 z-[2]" />
+      <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-white/20 via-destructive to-white/20 z-[2]" />
 
       {/* Divine light effect */}
       <div className="absolute inset-0 flex items-start justify-center overflow-hidden z-[1]">

@@ -10,17 +10,17 @@ interface BenefitProps {
 function Benefit({ text }: BenefitProps) {
   return (
     <div className="flex items-center bg-[#200000] border border-red-500/20 gap-2 px-4 py-2 rounded-full">
-      <div className="rounded-full p-1 bg-muted">
+      <div className="rounded-full p-1 bg-black/50">
         <Check className="h-4 w-4 text-white" />
       </div>
-      <span className="text-muted-foreground">{text}</span>
+      <span className="text-white/70">{text}</span>
     </div>
   );
 }
 
 export function JoinAlphaSection({ onLogin }: { onLogin: () => void }) {
   return (
-    <div className="relative z-[30] px-4 max-w-7xl mx-auto pt-32 pb-32">
+    <div className="relative z-[30] px-4 max-w-7xl mx-auto pt-32 pb-32 text-white">
       <div className="relative backdrop-blur-sm rounded-3xl p-12 md:p-20 group">
         <Image
           src="/landing/footer/background.svg"

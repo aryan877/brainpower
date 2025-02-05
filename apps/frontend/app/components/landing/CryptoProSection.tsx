@@ -8,7 +8,7 @@ interface FeatureCardProps {
 }
 function FeatureCard({ title, description, containerSrc }: FeatureCardProps) {
   return (
-    <div className="relative rounded-2xl p-3 pb-5 overflow-hidden group transition-all duration-500 border border-muted bg-[#0A0A0A] hover:bg-[#070707]">
+    <div className="relative rounded-2xl p-3 pb-5 overflow-hidden group transition-all duration-500 border border-white/10 bg-[#0A0A0A] hover:bg-[#070707]">
       <div
         className="absolute inset-0 bg-gradient-to-br from-white/[0.08] via-transparent to-transparent transition-all duration-500"
         style={{
@@ -34,10 +34,10 @@ function FeatureCard({ title, description, containerSrc }: FeatureCardProps) {
         />
       </div>
       <div className="relative px-1 py-4">
-        <h3 className="text-base font-medium mb-2 group-hover:text-white/90 transition-colors duration-300">
+        <h3 className="text-base font-medium mb-2 text-white/90 group-hover:text-white transition-colors duration-300">
           {title}
         </h3>
-        <p className="text-muted-foreground/80 text-base group-hover:text-muted-foreground/90 transition-colors duration-300">
+        <p className="text-white/60 text-base group-hover:text-white/80 transition-colors duration-300">
           {description}
         </p>
       </div>
@@ -66,7 +66,7 @@ export function CryptoProSection() {
   ];
 
   return (
-    <div className="relative z-[30] flex flex-col items-center justify-start gap-12 px-4 max-w-7xl mx-auto pt-32">
+    <div className="relative z-[30] flex flex-col items-center justify-start gap-12 px-4 max-w-7xl mx-auto pt-32 text-white">
       <SectionHeader
         title={[`"But I'm Not a Crypto Pro"`]}
         description="Launch a vampire squid token and auto-generate description"

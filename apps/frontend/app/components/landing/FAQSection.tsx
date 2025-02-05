@@ -43,7 +43,7 @@ export function FAQSection() {
   return (
     <div
       id="faq"
-      className="z-[30] flex flex-col items-center justify-start gap-8 px-4 max-w-7xl mx-auto pt-24 pb-0"
+      className="z-[30] flex flex-col items-center justify-start gap-8 px-4 max-w-7xl mx-auto pt-24 pb-0 text-white"
     >
       <SectionHeader
         title="Let's Answer Your Questions"
@@ -51,14 +51,16 @@ export function FAQSection() {
         titleSize="md"
       />
 
-      <div className="w-full max-w-3xl bg-[#1a1a1a] backdrop-blur-sm rounded-2xl p-6 border border-white/5">
+      <div className="w-full max-w-3xl bg-[#1a1a1a] backdrop-blur-sm rounded-2xl p-6 border border-white/10">
         <Accordion type="single" collapsible className="w-full">
           {faqs.map((faq, index) => (
             <AccordionItem key={index} value={`item-${index}`}>
-              <AccordionTrigger className="text-left">
+              <AccordionTrigger className="text-left text-white/90 hover:text-white">
                 {faq.question}
               </AccordionTrigger>
-              <AccordionContent>{faq.answer}</AccordionContent>
+              <AccordionContent className="text-white/70">
+                {faq.answer}
+              </AccordionContent>
             </AccordionItem>
           ))}
         </Accordion>

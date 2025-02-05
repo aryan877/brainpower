@@ -9,7 +9,7 @@ interface StepProps {
 
 function Step({ number, description, imageSrc }: StepProps) {
   return (
-    <div className="relative backdrop-blur-sm rounded-2xl p-6 pb-8 overflow-hidden group transition-all duration-300 border border-[#17171B] bg-[#0B0B0D] hover:bg-[#0B0B0D]/90">
+    <div className="relative backdrop-blur-sm rounded-2xl p-6 pb-8 overflow-hidden group transition-all duration-300 border border-white/10 bg-[#0B0B0D] hover:bg-[#0B0B0D]/90">
       <div className="flex items-center gap-2 mb-4">
         <Image
           src={imageSrc}
@@ -21,9 +21,7 @@ function Step({ number, description, imageSrc }: StepProps) {
         <div className="text-white">Step {number}</div>
       </div>
       <div className="px-1">
-        <p className="text-muted-foreground text-sm leading-relaxed">
-          {description}
-        </p>
+        <p className="text-white/60 text-sm leading-relaxed">{description}</p>
       </div>
     </div>
   );
@@ -60,7 +58,7 @@ export function HowItWorksSection() {
   return (
     <div
       id="how"
-      className="z-[30] flex flex-col items-center justify-start gap-12 px-4 max-w-7xl mx-auto pt-32"
+      className="z-[30] flex flex-col items-center justify-start gap-12 px-4 max-w-7xl mx-auto pt-32 text-white"
     >
       <SectionHeader
         title="How Brainpower Works"

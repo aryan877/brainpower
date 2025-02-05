@@ -3,14 +3,14 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
-import { HeroSection } from "./tools/HeroSection";
-import { ChatGPTSection } from "./tools/ChatGPTSection";
-import { AgentsSection } from "./tools/AgentsSection";
-import { HowItWorksSection } from "./tools/HowItWorksSection";
-import { CryptoProSection } from "./tools/CryptoProSection";
-import { FAQSection } from "./tools/FAQSection";
-import { JoinAlphaSection } from "./tools/JoinAlphaSection";
-import { Footer } from "./tools/Footer";
+import { HeroSection } from "./landing/HeroSection";
+import { ChatGPTSection } from "./landing/ChatGPTSection";
+import { AgentsSection } from "./landing/AgentsSection";
+import { HowItWorksSection } from "./landing/HowItWorksSection";
+import { CryptoProSection } from "./landing/CryptoProSection";
+import { FAQSection } from "./landing/FAQSection";
+import { JoinAlphaSection } from "./landing/JoinAlphaSection";
+import { Footer } from "./landing/Footer";
 
 export function WelcomePage({ onLogin }: { onLogin: () => void }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -26,7 +26,7 @@ export function WelcomePage({ onLogin }: { onLogin: () => void }) {
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
   return (
-    <div className="min-h-screen w-screen relative overflow-hidden bg-black">
+    <div className="min-h-screen w-screen relative overflow-hidden bg-black dark">
       {/* Navigation */}
       <div className="fixed top-0 left-0 right-0 z-50 flex justify-center w-full bg-transparent">
         <nav className="flex items-center px-6 py-4 w-full max-w-7xl relative">
@@ -43,7 +43,7 @@ export function WelcomePage({ onLogin }: { onLogin: () => void }) {
           {/* Mobile Menu Button */}
           <button
             onClick={toggleMenu}
-            className="md:hidden z-50 text-foreground hover:text-muted-foreground transition-colors ml-auto"
+            className="md:hidden z-50 text-white hover:text-white/80 transition-colors ml-auto"
           >
             {isMenuOpen ? (
               <X className="h-6 w-6" />
@@ -55,26 +55,26 @@ export function WelcomePage({ onLogin }: { onLogin: () => void }) {
           {/* Mobile Menu */}
           <div
             className={`
-            fixed inset-0 bg-background/95 backdrop-blur-sm md:hidden transition-transform duration-300 ease-in-out
+            fixed inset-0 bg-black/95 backdrop-blur-sm md:hidden transition-transform duration-300 ease-in-out
             ${isMenuOpen ? "translate-x-0" : "translate-x-full"}
             flex flex-col items-center justify-center gap-8 z-40
           `}
           >
             <button
               onClick={() => scrollToSection("agents")}
-              className="text-lg font-medium text-muted-foreground hover:text-foreground transition-colors"
+              className="text-lg font-medium text-white/70 hover:text-white transition-colors"
             >
               Agents
             </button>
             <button
               onClick={() => scrollToSection("how")}
-              className="text-lg font-medium text-muted-foreground hover:text-foreground transition-colors"
+              className="text-lg font-medium text-white/70 hover:text-white transition-colors"
             >
               How
             </button>
             <button
               onClick={() => scrollToSection("faq")}
-              className="text-lg font-medium text-muted-foreground hover:text-foreground transition-colors"
+              className="text-lg font-medium text-white/70 hover:text-white transition-colors"
             >
               FAQ
             </button>
@@ -94,19 +94,19 @@ export function WelcomePage({ onLogin }: { onLogin: () => void }) {
           <div className="hidden md:flex items-center justify-center flex-1 gap-8 mx-8">
             <button
               onClick={() => scrollToSection("agents")}
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              className="text-sm font-medium text-white/70 hover:text-white transition-colors"
             >
               Agents
             </button>
             <button
               onClick={() => scrollToSection("how")}
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              className="text-sm font-medium text-white/70 hover:text-white transition-colors"
             >
               How
             </button>
             <button
               onClick={() => scrollToSection("faq")}
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              className="text-sm font-medium text-white/70 hover:text-white transition-colors"
             >
               FAQ
             </button>

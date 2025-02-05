@@ -2,7 +2,7 @@ import { SectionHeader } from "@/components/ui/SectionHeader";
 
 export function ChatGPTSection() {
   return (
-    <div className="z-[30] flex flex-col items-center justify-start gap-6 px-4 max-w-7xl mx-auto pt-3">
+    <div className="z-[30] flex flex-col items-center justify-start gap-6 px-4 max-w-7xl mx-auto pt-3 text-white">
       {/* Content */}
       <SectionHeader
         title="Like ChatGPT, but It Does the Crypto For You"
