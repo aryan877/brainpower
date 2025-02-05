@@ -92,16 +92,6 @@ function AgentCard({
 export function AgentsSection() {
   const agents = [
     {
-      title: "Pump Fun Agent",
-      description:
-        "Your one-stop solution for memecoin magic and token launches on Pump.fun.",
-      imageSrc: "/landing/agents/pump-fun-agent.svg",
-      imageAlt: "Pump Fun Agent Interface",
-      bgImageSrc: "/landing/agents/pump-fun-bg.svg",
-      textBelow: true,
-      className: "md:col-span-1 lg:col-span-2 h-[400px]",
-    },
-    {
       title: "Token Analysis Agent",
       description:
         "Your personal detective for token insights and contract breakdowns.",
@@ -148,22 +138,55 @@ export function AgentsSection() {
       />
 
       <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-6 w-full">
-        {agents.slice(0, 2).map((agent) => (
-          <AgentCard
-            key={agent.title}
-            title={agent.title}
-            description={agent.description}
-            imageSrc={agent.imageSrc}
-            imageAlt={agent.imageAlt}
-            bgImageSrc={agent.bgImageSrc}
-            textBelow={agent.textBelow}
-            className={agent.className}
-          />
-        ))}
+        <div className="relative backdrop-blur-sm rounded-2xl p-6 overflow-hidden group transition-all duration-300 border border-muted bg-black/30 hover:bg-black/20 md:col-span-1 lg:col-span-2 h-[400px]">
+          <div className="absolute inset-0 z-0">
+            <Image
+              src="/landing/agents/pump-fun-bg.svg"
+              alt="Background"
+              fill
+              className="object-cover scale-110 transform"
+            />
+          </div>
+          <div className="absolute inset-0 bg-gradient-to-b from-black/10 to-black/40 group-hover:from-black/0 group-hover:to-black/30 transition-all duration-300" />
+          <div className="flex flex-col h-full relative">
+            <div className="relative flex-1">
+              <Image
+                src="/landing/agents/pump-fun-agent.svg"
+                alt="Pump Fun Agent Interface"
+                width={600}
+                height={400}
+                className="w-full h-auto rounded-lg"
+              />
+              <Image
+                src="/landing/agents/pump-fun-agent-animated.svg"
+                alt="Pump Fun Agent Animation"
+                width={600}
+                height={400}
+                className="absolute top-0 left-0 w-full h-auto rounded-lg"
+              />
+            </div>
+            <div className="relative z-10 mt-4">
+              <h3 className="text-2xl mb-3">Pump Fun Agent</h3>
+              <p className="text-muted-foreground">
+                Your one-stop solution for memecoin magic and token launches on
+                Pump.fun.
+              </p>
+            </div>
+          </div>
+        </div>
+        <AgentCard
+          key={agents[0].title}
+          title={agents[0].title}
+          description={agents[0].description}
+          imageSrc={agents[0].imageSrc}
+          imageAlt={agents[0].imageAlt}
+          bgImageSrc={agents[0].bgImageSrc}
+          className={agents[0].className}
+        />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
-        {agents.slice(2).map((agent) => (
+        {agents.slice(1).map((agent) => (
           <AgentCard
             key={agent.title}
             title={agent.title}
