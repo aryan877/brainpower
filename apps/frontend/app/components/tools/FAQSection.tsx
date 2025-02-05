@@ -51,7 +51,7 @@ export function FAQSection() {
         titleSize="md"
       />
 
-      <div className="w-full max-w-3xl bg-black/40 backdrop-blur-sm rounded-2xl p-6 border border-destructive/20">
+      <div className="w-full max-w-3xl bg-[#1a1a1a] backdrop-blur-sm rounded-2xl p-6 border border-white/5">
         <Accordion type="single" collapsible className="w-full">
           {faqs.map((faq, index) => (
             <AccordionItem key={index} value={`item-${index}`}>

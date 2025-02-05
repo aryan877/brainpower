@@ -1,12 +1,18 @@
-<svg width="405" height="222" viewBox="0 0 405 222" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M186 172H256.092C260.447 172 264.553 169.974 267.203 166.518L320.5 97" stroke="#3E0606"/>
-<path d="M186 172H256.092C260.447 172 264.553 169.974 267.203 166.518L320.5 97" stroke="url(#paint0_linear_103_21383)"/>
-<path d="M186 122H260.384C262.299 122 264.193 121.607 265.949 120.847L321 97" stroke="#3E0606"/>
-<path d="M186 122H260.384C262.299 122 264.193 121.607 265.949 120.847L321 97" stroke="url(#paint1_linear_103_21383)"/>
-<path d="M186 71.79H260.384C262.299 71.79 264.193 72.1826 265.949 72.9435L321 96.79" stroke="#3E0606"/>
-<path d="M186 71.79H260.384C262.299 71.79 264.193 72.1826 265.949 72.9435L321 96.79" stroke="url(#paint2_linear_103_21383)"/>
-<path d="M186 21.79H256.092C260.447 21.79 264.553 23.8162 267.203 27.272L320.5 96.79" stroke="#3E0606"/>
-<path d="M186 21.79H256.092C260.447 21.79 264.553 23.8162 267.203 27.272L320.5 96.79" stroke="url(#paint3_linear_103_21383)"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="405" height="222" viewBox="0 0 405 222" fill="none">
+<g>
+<path d="M186 172H256.092C260.447 172 264.553 169.974 267.203 166.518L320.5 97" stroke="url(#flowingRed)" stroke-width="1" stroke-dasharray="200">
+<animate attributeName="stroke-dashoffset" from="200" to="0" dur="2s" repeatCount="indefinite"/>
+</path>
+<path d="M186 122H260.384C262.299 122 264.193 121.607 265.949 120.847L321 97" stroke="url(#flowingRed)" stroke-width="1" stroke-dasharray="200">
+<animate attributeName="stroke-dashoffset" from="200" to="0" dur="2s" repeatCount="indefinite"/>
+</path>
+<path d="M186 71.79H260.384C262.299 71.79 264.193 72.1826 265.949 72.9435L321 96.79" stroke="url(#flowingRed)" stroke-width="1" stroke-dasharray="200">
+<animate attributeName="stroke-dashoffset" from="200" to="0" dur="2s" repeatCount="indefinite"/>
+</path>
+<path d="M186 21.79H256.092C260.447 21.79 264.553 23.8162 267.203 27.272L320.5 96.79" stroke="url(#flowingRed)" stroke-width="1" stroke-dasharray="200">
+<animate attributeName="stroke-dashoffset" from="200" to="0" dur="2s" repeatCount="indefinite"/>
+</path>
+</g>
 <g filter="url(#filter0_dddddi_103_21383)">
 <rect x="7" y="1" width="179" height="41" rx="7" fill="#D9D9D9" fill-opacity="0.04"/>
 <rect x="7" y="1" width="179" height="41" rx="7" fill="url(#paint4_linear_103_21383)"/>
@@ -103,7 +109,7 @@
 <path d="M322 97C322 98.1046 321.105 99 320 99C318.895 99 318 98.1046 318 97C318 95.8954 318.895 95 320 95C321.105 95 322 95.8954 322 97Z" fill="url(#paint26_linear_103_21383)"/>
 <path d="M320 99.5C321.381 99.5 322.5 98.3807 322.5 97C322.5 95.6193 321.381 94.5 320 94.5C318.619 94.5 317.5 95.6193 317.5 97C317.5 98.3807 318.619 99.5 320 99.5Z" stroke="black"/>
 </g>
-<defs>
+<defs xmlns="http://www.w3.org/2000/svg">
 <filter id="filter0_dddddi_103_21383" x="0" y="0" width="198" height="72" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
 <feFlood flood-opacity="0" result="BackgroundImageFix"/>
 <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
@@ -505,5 +511,26 @@
 <stop stop-color="#F00001"/>
 <stop offset="1" stop-color="#8A0001"/>
 </linearGradient>
+    <filter id="filter0_dddddi_103_21383" x="0" y="0" width="198" height="72" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="1"/>
+<feGaussianBlur stdDeviation="1"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.37 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_103_21383"/>
+</filter>
+
+<linearGradient id="flowingRed" x1="0%" y1="0%" x2="100%" y2="0%">
+<stop offset="0%" stop-color="#FF0000">
+<animate attributeName="offset" values="0;1" dur="2s" repeatCount="indefinite"/>
+</stop>
+<stop offset="50%" stop-color="#FF4444">
+<animate attributeName="offset" values="0;1" dur="2s" repeatCount="indefinite"/>
+</stop>
+<stop offset="100%" stop-color="#FF0000">
+<animate attributeName="offset" values="0;1" dur="2s" repeatCount="indefinite"/>
+</stop>
+</linearGradient>
+
 </defs>
 </svg>
