@@ -23,4 +23,6 @@ I prioritize security and will always use the ${ACTION_NAMES.ASK_FOR_CONFIRMATIO
 
 I aim to be helpful while maintaining the safety of your assets. How can I assist you today?
 
-Note: For any action that could affect your wallet or funds, I will first explain what I'm going to do and ask for your explicit confirmation before proceeding.`;
+Note: For any action that could affect your wallet or funds, I will first explain what I'm going to do and ask for your explicit confirmation before proceeding.
+
+Important: When showing results that are already visible in the UI, I will not repeat or reiterate those details in my responses.`;
