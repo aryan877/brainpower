@@ -418,6 +418,10 @@ export function AgentDetailsSuccess({
     }
   };
 
+  // For now, hardcoding the interval as 7 days since that's the default in get_agent_data.ts
+  const interval = "_7Days";
+  const intervalDisplay = interval === "_7Days" ? "7 Days" : "3 Days";
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -425,15 +429,20 @@ export function AgentDetailsSuccess({
           <h2 className="text-xl font-semibold mb-1">
             {isMultiple ? "Top Crypto Agents" : "Agent Details"}
           </h2>
-          <p className="text-sm text-muted-foreground">
-            {isMultiple
-              ? `Showing ${agents.length} influential agents ranked by mindshare${
-                  pagination
-                    ? ` (Page ${pagination.currentPage} of ${pagination.totalPages})`
-                    : ""
-                }`
-              : "Detailed analytics and metrics for the selected agent"}
-          </p>
+          <div className="space-y-1">
+            <p className="text-sm text-muted-foreground">
+              {isMultiple
+                ? `Showing ${agents.length} influential agents ranked by mindshare${
+                    pagination
+                      ? ` (Page ${pagination.currentPage} of ${pagination.totalPages})`
+                      : ""
+                  }`
+                : "Detailed analytics and metrics for the selected agent"}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Data shown for last {intervalDisplay}
+            </p>
+          </div>
         </div>
       </div>
 
