@@ -9,8 +9,7 @@ export default function bunnyImageLoader({
 }) {
   // Replace this with your Bunny CDN URL
   const BUNNY_CDN_URL =
-    process.env.NEXT_PUBLIC_BUNNY_CDN_URL ||
-    "https://your-bunny-cdn-url.b-cdn.net";
+    process.env.NEXT_PUBLIC_BUNNY_CDN_URL || "https://brainpower.b-cdn.net";
 
   // If the source is already a full URL, return it as is
   if (src.startsWith("http")) {
