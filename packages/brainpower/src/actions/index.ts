@@ -16,6 +16,10 @@ import {
   transferAction,
 } from "./solana/index.js";
 import askForConfirmationAction from "./confirmation/askForConfirmation.js";
+import getAgentByTwitter from "./cookie3/getAgentByTwitter.js";
+import getAgentByContract from "./cookie3/getAgentByContract.js";
+import getTopAgents from "./cookie3/getTopAgents.js";
+import searchTweets from "./cookie3/searchTweets.js";
 
 export { ACTION_NAMES };
 
@@ -35,6 +39,11 @@ export const ACTIONS = {
   [ACTION_NAMES.REQUEST_FAUCET_FUNDS]: requestFaucetFundsAction,
   [ACTION_NAMES.TRANSFER]: transferAction,
   [ACTION_NAMES.ASK_FOR_CONFIRMATION]: askForConfirmationAction,
+  // Cookie3 Actions
+  [ACTION_NAMES.GET_AGENT_BY_TWITTER]: getAgentByTwitter,
+  [ACTION_NAMES.GET_AGENT_BY_CONTRACT]: getAgentByContract,
+  [ACTION_NAMES.GET_TOP_AGENTS]: getTopAgents,
+  [ACTION_NAMES.SEARCH_TWEETS]: searchTweets,
 };
 
 export type { Action, ActionExample, Handler } from "../types/action.js";

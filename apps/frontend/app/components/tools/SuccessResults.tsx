@@ -8,6 +8,9 @@ import {
   TokenCheck,
   TransferResponse,
   TokenBalancesResponse,
+  AgentDetails,
+  TweetSearchResult,
+  AgentsPagedResponse,
 } from "@repo/brainpower-agent";
 import { PumpFunSuccess } from "./success/PumpFunSuccess";
 import { TokenAddressSuccess } from "./success/TokenAddressSuccess";
@@ -18,6 +21,8 @@ import { RugcheckSuccess } from "./success/RugcheckSuccess";
 import { TransferSuccess } from "./success/TransferSuccess";
 import { TokenBalancesSuccess } from "./success/TokenBalancesSuccess";
 import { ConfirmationSuccess } from "./success/ConfirmationSuccess";
+import { AgentDetailsSuccess } from "./success/AgentDetailsSuccess";
+import { TweetSearchSuccess } from "./success/TweetSearchSuccess";
 
 // Define a mapping of tool names to their success result types
 export type SuccessResultsMap = {
@@ -30,6 +35,11 @@ export type SuccessResultsMap = {
   [ACTION_NAMES.TRANSFER]: TransferResponse;
   [ACTION_NAMES.GET_TOKEN_BALANCES]: TokenBalancesResponse;
   [ACTION_NAMES.ASK_FOR_CONFIRMATION]: { confirmed: boolean };
+  // Cookie3 Success Results
+  [ACTION_NAMES.GET_AGENT_BY_TWITTER]: AgentDetails;
+  [ACTION_NAMES.GET_AGENT_BY_CONTRACT]: AgentDetails;
+  [ACTION_NAMES.GET_TOP_AGENTS]: AgentsPagedResponse;
+  [ACTION_NAMES.SEARCH_TWEETS]: TweetSearchResult[];
 };
 
 // Registry of tools that have success components
@@ -43,6 +53,11 @@ export const SUCCESS_COMPONENTS_REGISTRY = {
   [ACTION_NAMES.TRANSFER]: true,
   [ACTION_NAMES.GET_TOKEN_BALANCES]: true,
   [ACTION_NAMES.ASK_FOR_CONFIRMATION]: true,
+  // Cookie3 Components
+  [ACTION_NAMES.GET_AGENT_BY_TWITTER]: true,
+  [ACTION_NAMES.GET_AGENT_BY_CONTRACT]: true,
+  [ACTION_NAMES.GET_TOP_AGENTS]: true,
+  [ACTION_NAMES.SEARCH_TWEETS]: true,
 } as const;
 
 // Type guard to check if a tool has success results
@@ -80,6 +95,16 @@ export function SuccessResults<T extends keyof SuccessResultsMap>({
       return <TokenBalancesSuccess data={data as TokenBalancesResponse} />;
     case ACTION_NAMES.ASK_FOR_CONFIRMATION:
       return <ConfirmationSuccess data={data as { confirmed: boolean }} />;
+    // Cookie3 Success Components
+    case ACTION_NAMES.GET_AGENT_BY_TWITTER:
+    case ACTION_NAMES.GET_AGENT_BY_CONTRACT:
+      return <AgentDetailsSuccess data={data as AgentDetails} />;
+    case ACTION_NAMES.GET_TOP_AGENTS:
+      return (
+        <AgentDetailsSuccess data={data as AgentsPagedResponse} isMultiple />
+      );
+    case ACTION_NAMES.SEARCH_TWEETS:
+      return <TweetSearchSuccess data={data as TweetSearchResult[]} />;
     default:
       return null;
   }

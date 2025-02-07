@@ -198,8 +198,8 @@ export default function ChatMessage({
               className={cn(
                 "rounded-2xl",
                 message.role === "assistant"
-                  ? "bg-[#ff4444]/20 border-none"
-                  : "bg-muted/10 dark:bg-muted/5 border-none",
+                  ? "bg-muted/30 dark:bg-muted/20 border-none"
+                  : "bg-muted/80 dark:bg-muted/60 border-none",
                 "transition-all duration-200"
               )}
             >
@@ -220,8 +220,8 @@ export default function ChatMessage({
                   </div>
                 ) : (
                   <div className="flex-shrink-0">
-                    <Avatar className="w-8 h-8 ring-1 ring-primary/30 bg-primary/10 flex items-center justify-center transition-all duration-200 hover:ring-primary/50 hover:bg-primary/20">
-                      <User className="w-5 h-5 text-primary" />
+                    <Avatar className="w-8 h-8 ring-1 ring-border bg-background flex items-center justify-center transition-all duration-200 hover:ring-border/80 hover:bg-muted/50">
+                      <User className="w-5 h-5 text-foreground/80" />
                     </Avatar>
                   </div>
                 )}

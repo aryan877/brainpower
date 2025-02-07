@@ -156,7 +156,7 @@ export function WalletInfo({
               <div className="break-all text-foreground">{walletAddress}</div>
               <div className="pt-1">
                 <Link href="/wallet" className="no-underline w-full block">
-                  <Button variant="default" size="default" className="w-full">
+                  <Button variant="outline" size="default" className="w-full">
                     Manage Wallet
                   </Button>
                 </Link>

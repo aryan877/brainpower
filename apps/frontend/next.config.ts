@@ -5,7 +5,60 @@ const nextConfig: NextConfig = {
   transpilePackages: ["@repo/brainpower-agent"],
 
   images: {
-    domains: ["cdn.helius-rpc.com", "ipfs.io", "raw.githubusercontent.com"],
+    loader: "custom",
+    loaderFile: "./app/utils/bunny-image-loader.ts",
+    domains: ["brainpower.b-cdn.net"],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "cdn.helius-rpc.com",
+      },
+      {
+        protocol: "https",
+        hostname: "ipfs.io",
+      },
+      {
+        protocol: "https",
+        hostname: "raw.githubusercontent.com",
+      },
+      {
+        protocol: "https",
+        hostname: "arweave.net",
+      },
+      {
+        protocol: "https",
+        hostname: "www.arweave.net",
+      },
+      {
+        protocol: "https",
+        hostname: "metadata.degods.com",
+      },
+      {
+        protocol: "https",
+        hostname: "metadata.y00ts.com",
+      },
+      {
+        protocol: "https",
+        hostname: "nftstorage.link",
+      },
+      {
+        protocol: "https",
+        hostname: "shdw-drive.genesysgo.net",
+      },
+      {
+        protocol: "https",
+        hostname: "assets.solana.fm",
+      },
+      {
+        protocol: "https",
+        hostname:
+          "bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi.ipfs.dweb.link",
+      },
+      {
+        protocol: "https",
+        hostname: "pbs.twimg.com",
+      },
+    ],
   },
 
   async headers() {

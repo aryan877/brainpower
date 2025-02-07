@@ -1,5 +1,5 @@
 export { ACTION_NAMES } from "./actions/actionNames.js";
-
+export { getTopAgents } from "./tools/cookie3/get_agent_data.js";
 // Types and interfaces for frontend use
 export type {
   Action,

@@ -24,11 +24,11 @@ function AgentCard({
     <div
       className={`relative backdrop-blur-sm rounded-2xl p-6 overflow-hidden group transition-all duration-300 border border-white/10 ${
         bgImageSrc
-          ? "bg-black/30 hover:bg-black/20"
+          ? "bg-black hover:bg-black/90"
           : "bg-[#121212] hover:bg-[#121212]/90"
       } ${className}`}
     >
-      {bgImageSrc && (
+      {bgImageSrc ? (
         <>
           <div className="absolute inset-0 z-0">
             <Image
@@ -40,6 +40,8 @@ function AgentCard({
           </div>
           <div className="absolute inset-0 bg-gradient-to-b from-black/10 to-black/40 group-hover:from-black/0 group-hover:to-black/30 transition-all duration-300" />
         </>
+      ) : (
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black transition-all duration-300" />
       )}
       <div className="flex flex-col h-full relative">
         {textBelow ? (
@@ -105,7 +107,7 @@ export function AgentsSection() {
       title: "Token Analysis Agent",
       description:
         "Your personal detective for token insights and contract breakdowns.",
-      imageSrc: "/landing/agents/token-analysis-agent.svg",
+      imageSrc: "/landing/agents/token-analysis-agent.png",
       imageAlt: "Token Analysis Agent Interface",
       className: "md:col-span-3 lg:col-span-3 h-[400px]",
     },

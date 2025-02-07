@@ -2,6 +2,7 @@
 
 import { useChat } from "ai/react";
 import { useEffect, useRef, useState, FormEvent } from "react";
+import React from "react";
 import {
   AlertCircle,
   RefreshCcw,
@@ -15,6 +16,7 @@ import { nanoid } from "nanoid";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 
 interface ChatInterfaceProps {
   threadId: string | null;
@@ -170,7 +172,7 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
   return (
     <div className="flex flex-col h-full">
       {/* Messages container */}
-      <div className="flex-1 overflow-y-auto brainpower-scrollbar">
+      <div className="flex-1 overflow-y-auto brainpower-scrollbar divide-border/40">
         {messages.length === 0 ? (
           <div className="h-full flex items-center justify-center p-4">
             <div className="text-center max-w-md mx-auto space-y-2">
@@ -184,20 +186,55 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
             </div>
           </div>
         ) : (
-          messages.map((message) => (
-            <ChatMessage
-              key={message.id}
-              message={message}
-              isLoading={
-                isLoading &&
-                messages.length > 0 &&
-                message.id === messages[messages.length - 1].id &&
-                message.role === "assistant"
+          <div className="space-y-0">
+            {messages.reduce((groups: React.ReactElement[], message, index) => {
+              const prevMessage = messages[index - 1];
+              const isNewGroup =
+                !prevMessage || prevMessage.role !== message.role;
+              const isFirstInGroup = isNewGroup;
+
+              if (isFirstInGroup) {
+                groups.push(
+                  <div
+                    key={`group-${message.role}-${index}`}
+                    className={cn(
+                      "relative",
+                      index !== 0 && "border-t-2 border-border/60 mt-3 pt-3"
+                    )}
+                  >
+                    <ChatMessage
+                      key={message.id}
+                      message={message}
+                      isLoading={
+                        isLoading &&
+                        messages.length > 0 &&
+                        message.id === messages[messages.length - 1].id &&
+                        message.role === "assistant"
+                      }
+                      isWaitingForResponse={isWaitingForResponse}
+                      addToolResult={addToolResult}
+                    />
+                  </div>
+                );
+              } else {
+                groups.push(
+                  <ChatMessage
+                    key={message.id}
+                    message={message}
+                    isLoading={
+                      isLoading &&
+                      messages.length > 0 &&
+                      message.id === messages[messages.length - 1].id &&
+                      message.role === "assistant"
+                    }
+                    isWaitingForResponse={isWaitingForResponse}
+                    addToolResult={addToolResult}
+                  />
+                );
               }
-              isWaitingForResponse={isWaitingForResponse}
-              addToolResult={addToolResult}
-            />
-          ))
+              return groups;
+            }, [])}
+          </div>
         )}
         <div ref={messagesEndRef} />
       </div>
@@ -205,16 +242,16 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
       {/* Error display */}
       {error && (
         <div className="mx-auto w-full max-w-3xl px-4">
-          <Card className="flex items-center gap-3 border-destructive/20 bg-neutral-100 dark:bg-neutral-800 p-3 md:p-4 my-2">
-            <AlertCircle className="h-4 md:h-5 w-4 md:w-5 flex-shrink-0 text-destructive" />
-            <p className="flex-1 text-sm md:text-[15px] text-foreground dark:text-foreground break-words line-clamp-3">
+          <Card className="flex items-center gap-3 bg-muted/80 dark:bg-muted/60 border-none p-3 md:p-4 my-2">
+            <AlertCircle className="h-4 md:h-5 w-4 md:w-5 flex-shrink-0 text-[#ff4444]" />
+            <p className="flex-1 text-sm md:text-[15px] text-foreground break-words line-clamp-3">
               {error.message}
             </p>
             <Button
               onClick={handleRetry}
               variant="outline"
               size="sm"
-              className="flex-shrink-0 text-destructive hover:bg-destructive/20 border-destructive/20"
+              className="flex-shrink-0 text-[#ff4444] hover:bg-[#ff4444]/20 border-[#ff4444]/30 hover:border-[#ff4444]/40"
             >
               <RefreshCcw className="h-3 w-3 md:h-4 md:w-4 mr-1.5" />
               <span>Retry</span>

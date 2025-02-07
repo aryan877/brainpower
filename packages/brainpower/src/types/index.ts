@@ -257,3 +257,68 @@ export interface TransferResponse {
   token?: string;
   recipient: string;
 }
+
+// Cookie3 API Types
+// These types are used for interacting with the Cookie3 API which provides
+// social media analytics and blockchain data for crypto projects
+export interface Contract {
+  chain: number;
+  contractAddress: string;
+}
+
+export interface Tweet {
+  tweetUrl: string;
+  tweetAuthorProfileImageUrl: string;
+  tweetAuthorDisplayName: string;
+  smartEngagementPoints: number;
+  impressionsCount: number;
+}
+
+export interface AgentDetails {
+  agentName: string;
+  contracts: Contract[];
+  twitterUsernames: string[];
+  mindshare: number;
+  mindshareDeltaPercent: number;
+  marketCap: number;
+  marketCapDeltaPercent: number;
+  price: number;
+  priceDeltaPercent: number;
+  liquidity: number;
+  volume24Hours: number;
+  volume24HoursDeltaPercent: number;
+  holdersCount: number;
+  holdersCountDeltaPercent: number;
+  averageImpressionsCount: number;
+  averageImpressionsCountDeltaPercent: number;
+  averageEngagementsCount: number;
+  averageEngagementsCountDeltaPercent: number;
+  followersCount: number;
+  smartFollowersCount: number;
+  topTweets: Tweet[];
+}
+
+export interface AgentsPagedResponse {
+  data: AgentDetails[];
+  currentPage: number;
+  totalPages: number;
+  totalCount: number;
+}
+
+export interface TweetSearchResult {
+  authorUsername: string;
+  createdAt: string;
+  engagementsCount: number;
+  impressionsCount: number;
+  isQuote: boolean;
+  isReply: boolean;
+  likesCount: number;
+  quotesCount: number;
+  repliesCount: number;
+  retweetsCount: number;
+  smartEngagementPoints: number;
+  text: string;
+  matchingScore: number;
+}
+
+export type Interval = "_3Days" | "_7Days";

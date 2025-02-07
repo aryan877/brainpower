@@ -25,26 +25,31 @@ export interface NotificationProps {
 }
 
 const icons = {
-  success: <CheckCircle className="h-5 w-5 text-green-500" />,
-  error: <XCircle className="h-5 w-5 text-destructive" />,
-  warning: <AlertTriangle className="h-5 w-5 text-yellow-500" />,
-  info: <AlertCircle className="h-5 w-5 text-blue-500" />,
+  success: <CheckCircle className="h-5 w-5" />,
+  error: <XCircle className="h-5 w-5" />,
+  warning: <AlertTriangle className="h-5 w-5" />,
+  info: <AlertCircle className="h-5 w-5" />,
 };
 
 const variantStyles = {
-  success:
-    "border-green-200 bg-green-50 dark:border-green-500/20 dark:bg-green-950/50",
-  error: "border-destructive/50 bg-destructive/10",
-  warning:
-    "border-yellow-200 bg-yellow-50 dark:border-yellow-500/20 dark:bg-yellow-950/50",
-  info: "border-blue-200 bg-blue-50 dark:border-blue-500/20 dark:bg-blue-950/50",
+  success: "bg-green-500/15 dark:bg-green-500/25 border-green-500/30",
+  error: "bg-destructive/15 dark:bg-destructive/25 border-destructive/30",
+  warning: "bg-yellow-500/15 dark:bg-yellow-500/25 border-yellow-500/30",
+  info: "bg-blue-500/15 dark:bg-blue-500/25 border-blue-500/30",
+};
+
+const iconStyles = {
+  success: "text-green-600 dark:text-green-400",
+  error: "text-destructive dark:text-destructive",
+  warning: "text-yellow-600 dark:text-yellow-400",
+  info: "text-blue-600 dark:text-blue-400",
 };
 
 const textStyles = {
-  success: "text-green-700 dark:text-green-400",
-  error: "text-destructive dark:text-destructive",
-  warning: "text-yellow-700 dark:text-yellow-400",
-  info: "text-blue-700 dark:text-blue-400",
+  success: "text-green-800 dark:text-green-200",
+  error: "text-destructive-foreground dark:text-destructive-foreground",
+  warning: "text-yellow-800 dark:text-yellow-200",
+  info: "text-blue-800 dark:text-blue-200",
 };
 
 const formatDetails = (details: unknown): string => {
@@ -102,17 +107,19 @@ export const Notification = ({
     >
       <Card
         className={cn(
-          "flex items-start gap-3 p-3 backdrop-blur-sm shadow-lg",
+          "flex items-start gap-3 p-4 shadow-lg border",
           variantStyles[type]
         )}
       >
-        <div className="flex-shrink-0 mt-1">{icons[type]}</div>
+        <div className={cn("flex-shrink-0", iconStyles[type])}>
+          {icons[type]}
+        </div>
         <div className="flex-1 mr-2 min-w-0">
-          <p className={cn("text-sm font-medium truncate", textStyles[type])}>
+          <p className={cn("text-sm font-medium leading-5", textStyles[type])}>
             {message}
           </p>
           {formattedDetails && (
-            <pre className="mt-2 text-xs text-muted-foreground break-words whitespace-pre-wrap font-mono bg-background/50 p-2 rounded max-h-[200px] overflow-y-auto">
+            <pre className="mt-2 text-xs text-muted-foreground break-words whitespace-pre-wrap font-mono bg-background/80 dark:bg-background/40 p-3 rounded-md max-h-[200px] overflow-y-auto border border-border/50">
               {formattedDetails}
             </pre>
           )}
@@ -121,7 +128,11 @@ export const Notification = ({
           onClick={onClose}
           variant="ghost"
           size="icon"
-          className="flex-shrink-0 h-8 w-8 text-muted-foreground hover:text-foreground"
+          className={cn(
+            "flex-shrink-0 h-8 w-8 rounded-full hover:bg-background/80 dark:hover:bg-background/40",
+            iconStyles[type],
+            "transition-colors"
+          )}
         >
           <X className="h-4 w-4" />
         </Button>

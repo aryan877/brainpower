@@ -15,6 +15,10 @@ import {
   Download,
   Trash,
   AlertCircle,
+  Bot,
+  Twitter,
+  TrendingUp,
+  MessageCircle,
 } from "lucide-react";
 import React from "react";
 
@@ -86,6 +90,23 @@ const TOOL_DISPLAY_CONFIG: Record<
   [ACTION_NAMES.ASK_FOR_CONFIRMATION]: {
     icon: <AlertCircle className="w-3 h-3" />,
     label: "Confirmation",
+  },
+  // Cookie3 Tool Names
+  [ACTION_NAMES.GET_AGENT_BY_TWITTER]: {
+    icon: <Twitter className="w-3 h-3" />,
+    label: "Agent by Twitter",
+  },
+  [ACTION_NAMES.GET_AGENT_BY_CONTRACT]: {
+    icon: <Bot className="w-3 h-3" />,
+    label: "Agent by Contract",
+  },
+  [ACTION_NAMES.GET_TOP_AGENTS]: {
+    icon: <TrendingUp className="w-3 h-3" />,
+    label: "Top Agents",
+  },
+  [ACTION_NAMES.SEARCH_TWEETS]: {
+    icon: <MessageCircle className="w-3 h-3" />,
+    label: "Search Tweets",
   },
 };
 

@@ -8,6 +8,7 @@ import { setupChatRoutes } from "./routes/chatRoutes.js";
 import { setupWalletRoutes } from "./routes/walletRoutes.js";
 import { setupIPFSRoutes } from "./routes/ipfsRoutes.js";
 import { setupImageRoutes } from "./routes/imageRoutes.js";
+import { setupCookie3Routes } from "./routes/cookie3Routes.js";
 import { errorHandler } from "./middleware/errors/errorHandler.js";
 import { notFoundHandler } from "./middleware/errors/notFoundHandler.js";
 import { ErrorCode, ErrorResponse } from "./middleware/errors/types.js";
@@ -87,6 +88,7 @@ export const initializeRoutes = async () => {
   app.use("/api/wallet", setupWalletRoutes(express.Router()));
   app.use("/api/ipfs", setupIPFSRoutes(express.Router()));
   app.use("/api/image", setupImageRoutes(express.Router()));
+  app.use("/api/cookie3", setupCookie3Routes(express.Router()));
   console.log("🛠️ Routes configured");
 
   // Handle 404 for undefined routes
