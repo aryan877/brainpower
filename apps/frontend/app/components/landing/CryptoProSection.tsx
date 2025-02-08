@@ -51,19 +51,19 @@ export function CryptoProSection() {
       title: "AI-Powered Actions",
       description:
         "Hit us up with a command—our AI blasts token launches, swaps, analytics, and more. Pure instant action.",
-      containerSrc: "/landing/crypto-pro/container-1.svg",
+      containerSrc: "/landing/crypto-pro/container-1.png",
     },
     {
       title: "Smart Automation",
       description:
         "No BS checks. Our AI locks down every transaction with precision—so you can chill.",
-      containerSrc: "/landing/crypto-pro/container-2.svg",
+      containerSrc: "/landing/crypto-pro/container-2.png",
     },
     {
       title: "Complete Toolkit",
       description:
         "Get the full crypto arsenal—launch tokens, run swaps, do rugchecks, and more with one damn chat.",
-      containerSrc: "/landing/crypto-pro/container-3.svg",
+      containerSrc: "/landing/crypto-pro/container-3.png",
     },
   ];
 
