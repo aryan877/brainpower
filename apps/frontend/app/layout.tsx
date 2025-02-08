@@ -30,6 +30,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning className="dark">
+      <head>
+        <script
+          defer
+          data-domain="brainpower.sh"
+          src="https://plausible.io/js/script.js"
+        ></script>
+      </head>
       <body className={`${montserrat.variable} ${jakarta.variable} font-sans`}>
         <ThemeProvider
           attribute="class"
