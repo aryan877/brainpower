@@ -208,7 +208,7 @@ export function HeroSection({ onLogin }: HeroSectionProps) {
       {/* App Preview */}
       <div className="relative w-full max-w-6xl mt-16 flex justify-center items-center z-10">
         <Image
-          src="/landing/hero/hero-bg.svg"
+          src="/landing/hero/hero-bg.png"
           alt="BrainPower App Preview"
           width={1200}
           height={675}
