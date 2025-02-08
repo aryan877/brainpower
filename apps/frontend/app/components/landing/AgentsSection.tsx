@@ -22,12 +22,14 @@ function AgentCard({
 }: AgentCardProps) {
   return (
     <div
-      className={`relative backdrop-blur-sm rounded-2xl p-6 overflow-hidden group transition-all duration-300 border border-white/10 ${
+      className={`relative backdrop-blur-sm rounded-2xl p-6 overflow-hidden group transition-all duration-300 ${
         bgImageSrc
-          ? "bg-black hover:bg-black/90"
+          ? "bg-black/30 hover:bg-black/40"
           : "bg-[#121212] hover:bg-[#121212]/90"
       } ${className}`}
     >
+      <div className="absolute inset-0 rounded-2xl border border-white/10 pointer-events-none z-[5]" />
+
       {bgImageSrc ? (
         <>
           <div className="absolute inset-0 z-0">
@@ -43,7 +45,7 @@ function AgentCard({
       ) : (
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black transition-all duration-300" />
       )}
-      <div className="flex flex-col h-full relative">
+      <div className="flex flex-col h-full relative z-[2]">
         {textBelow ? (
           <>
             {imageSrc && (
