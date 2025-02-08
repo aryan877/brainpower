@@ -48,19 +48,21 @@ function FeatureCard({ title, description, containerSrc }: FeatureCardProps) {
 export function CryptoProSection() {
   const features = [
     {
-      title: "Plain-English commands",
-      description: '"Create a token for my Bored Ape fanclub" works.',
+      title: "AI-Powered Actions",
+      description:
+        "Hit us up with a command—our AI blasts token launches, swaps, analytics, and more. Pure instant action.",
       containerSrc: "/landing/crypto-pro/container-1.svg",
     },
     {
-      title: "Guardrails",
+      title: "Smart Automation",
       description:
-        "Blocks invalid supplies, wrong decimals, and sketchy contracts.",
+        "No BS checks. Our AI locks down every transaction with precision—so you can chill.",
       containerSrc: "/landing/crypto-pro/container-2.svg",
     },
     {
-      title: "Teach mode",
-      description: '"Explain this like I\'m new" → Simple, actionable answers.',
+      title: "Complete Toolkit",
+      description:
+        "Get the full crypto arsenal—launch tokens, run swaps, do rugchecks, and more with one damn chat.",
       containerSrc: "/landing/crypto-pro/container-3.svg",
     },
   ];
@@ -68,8 +70,8 @@ export function CryptoProSection() {
   return (
     <div className="relative z-[30] flex flex-col items-center justify-start gap-12 px-4 max-w-7xl mx-auto pt-32 text-white">
       <SectionHeader
-        title={[`"But I'm Not a Crypto Pro"`]}
-        description="Launch a vampire squid token and auto-generate description"
+        title="Unleash the Crypto Beast"
+        description="Just give a shout—our AI's ready to blast token launches, swaps, market moves, and lock down your stack. No fluff, just raw crypto action."
         titleSize="md"
       />
 

@@ -145,7 +145,7 @@ export function AgentsSection() {
     >
       <SectionHeader
         title="Meet the Agents"
-        description="Simplify crypto investing, trading, and portfolio management with cutting-edge tools designed for everyone—from beginners to pros."
+        description="Supercharge your crypto game with powerful agents built for every trader and investor—from newbies to veterans. And this is just the start: new, game-changing agents are coming in hot!"
         titleSize="md"
       />
 
@@ -176,6 +176,10 @@ export function AgentsSection() {
             className={agent.className}
           />
         ))}
+      </div>
+
+      <div className="mt-8 text-center text-lg text-gray-300">
+        More agents are coming soon—rapid updates ahead!
       </div>
     </div>
   );

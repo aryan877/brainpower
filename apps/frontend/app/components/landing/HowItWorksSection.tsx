@@ -31,26 +31,30 @@ export function HowItWorksSection() {
   const steps = [
     {
       number: 1,
-      title: "Generate",
-      description: "Generates token name (e.g., $SQUIDLY), description, taxes",
+      title: "One Simple Prompt",
+      description:
+        "Just shout, 'create a PEPE token,' and watch our AI get down to business.",
       imageSrc: "/landing/how-it-works/step-1.svg",
     },
     {
       number: 2,
-      title: "Configure",
-      description: "Prefills Pump.fun parameters in a chat pop-up",
+      title: "AI Magic Happens",
+      description:
+        "Boom! Our AI flips your idea into killer token art—pure magic.",
       imageSrc: "/landing/how-it-works/step-2.svg",
     },
     {
       number: 3,
-      title: "Approve",
-      description: "Waits for your meme image + one-click approval",
+      title: "Form Auto-Fill",
+      description:
+        "Forget boring forms. Our AI fills out all that crap in a flash—effortless.",
       imageSrc: "/landing/how-it-works/step-3.svg",
     },
     {
       number: 4,
-      title: "Launch",
-      description: "Launches → Sends TX link → You're live in 60 seconds.",
+      title: "Quick Review & Launch",
+      description:
+        "Give it a quick glance then launch—what used to take minutes is now a fuckin' snap.",
       imageSrc: "/landing/how-it-works/step-4.svg",
     },
   ];
@@ -61,8 +65,8 @@ export function HowItWorksSection() {
       className="z-[30] flex flex-col items-center justify-start gap-12 px-4 max-w-7xl mx-auto pt-32 text-white"
     >
       <SectionHeader
-        title="How Brainpower Works"
-        description="Launch a vampire squid token and auto-generate description"
+        title="Crypto, No BS"
+        description="Just say it—our AI handles token creation, market moves, and secures your stack. No forms, no crap. Pure, raw crypto."
         titleSize="md"
       />
 

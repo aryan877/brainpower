@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { HeroSection } from "./landing/HeroSection";
 import { ChatGPTSection } from "./landing/ChatGPTSection";
 import { AgentsSection } from "./landing/AgentsSection";
@@ -14,6 +14,16 @@ import { Footer } from "./landing/Footer";
 
 export function WelcomePage({ onLogin }: { onLogin: () => void }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const scrollToSection = (sectionId: string) => {
     const section = document.getElementById(sectionId);
@@ -28,22 +38,36 @@ export function WelcomePage({ onLogin }: { onLogin: () => void }) {
   return (
     <div className="min-h-screen w-screen relative overflow-hidden bg-black dark">
       {/* Navigation */}
-      <div className="fixed top-0 left-0 right-0 z-50 flex justify-center w-full bg-transparent">
-        <nav className="flex items-center px-6 py-4 w-full max-w-7xl relative">
+      <div
+        className={`fixed top-0 left-0 right-0 z-50 flex justify-center w-full transition-all duration-300 ${
+          isScrolled
+            ? "bg-black/80 backdrop-blur-md shadow-lg"
+            : "bg-transparent"
+        }`}
+      >
+        <nav
+          className={`flex items-center w-full max-w-7xl relative transition-all duration-300 ${
+            isScrolled ? "px-6 py-3" : "px-6 py-4"
+          }`}
+        >
           <Link href="/" className="flex items-center z-50">
             <Image
               src="/logo-group.svg"
               alt="BrainPower Logo"
               width={140}
               height={30}
-              className="h-6 w-auto"
+              className={`w-auto transition-all duration-300 ${
+                isScrolled ? "h-5" : "h-6"
+              }`}
             />
           </Link>
 
           {/* Mobile Menu Button */}
           <button
             onClick={toggleMenu}
-            className="md:hidden z-50 text-white hover:text-white/80 transition-colors ml-auto"
+            className={`md:hidden z-50 text-white hover:text-white/80 transition-all duration-300 ml-auto ${
+              isScrolled ? "scale-90" : "scale-100"
+            }`}
           >
             {isMenuOpen ? (
               <X className="h-6 w-6" />
@@ -55,7 +79,7 @@ export function WelcomePage({ onLogin }: { onLogin: () => void }) {
           {/* Mobile Menu */}
           <div
             className={`
-            fixed inset-0 bg-black/95 backdrop-blur-sm md:hidden transition-transform duration-300 ease-in-out
+            fixed inset-0 bg-black/95 backdrop-blur-md md:hidden transition-transform duration-300 ease-in-out
             ${isMenuOpen ? "translate-x-0" : "translate-x-full"}
             flex flex-col items-center justify-center gap-8 z-40
           `}
@@ -94,19 +118,25 @@ export function WelcomePage({ onLogin }: { onLogin: () => void }) {
           <div className="hidden md:flex items-center justify-center flex-1 gap-8 mx-8">
             <button
               onClick={() => scrollToSection("agents")}
-              className="text-sm font-medium text-white/70 hover:text-white transition-colors"
+              className={`font-medium text-white/70 hover:text-white transition-all duration-300 ${
+                isScrolled ? "text-xs" : "text-sm"
+              }`}
             >
               Agents
             </button>
             <button
               onClick={() => scrollToSection("how")}
-              className="text-sm font-medium text-white/70 hover:text-white transition-colors"
+              className={`font-medium text-white/70 hover:text-white transition-all duration-300 ${
+                isScrolled ? "text-xs" : "text-sm"
+              }`}
             >
               How
             </button>
             <button
               onClick={() => scrollToSection("faq")}
-              className="text-sm font-medium text-white/70 hover:text-white transition-colors"
+              className={`font-medium text-white/70 hover:text-white transition-all duration-300 ${
+                isScrolled ? "text-xs" : "text-sm"
+              }`}
             >
               FAQ
             </button>
@@ -114,7 +144,11 @@ export function WelcomePage({ onLogin }: { onLogin: () => void }) {
           <Button
             onClick={onLogin}
             variant="outline"
-            className="hidden md:inline-flex !bg-black/60 border-white/10 hover:!bg-black/40 text-white hover:text-white transition-colors"
+            className={`hidden md:inline-flex border-white/10 text-white hover:text-white transition-all duration-300 ${
+              isScrolled
+                ? "!bg-white/5 hover:!bg-white/10 scale-90 text-sm"
+                : "!bg-black/60 hover:!bg-black/40 scale-100 text-base"
+            }`}
           >
             Chat with Agent
           </Button>

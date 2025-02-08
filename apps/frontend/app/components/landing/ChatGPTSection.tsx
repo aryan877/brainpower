@@ -5,8 +5,8 @@ export function ChatGPTSection() {
     <div className="z-[30] flex flex-col items-center justify-start gap-6 px-4 max-w-7xl mx-auto pt-3 text-white">
       {/* Content */}
       <SectionHeader
-        title="Like ChatGPT, but It Does the Crypto For You"
-        description="Brainpower isn't just a chatbot – it's your AI employee for Solana that's organized into specialized agents, each built to handle a distinct set of crypto operations. Whether you're launching a memecoin, analyzing token data, staking assets, managing liquidity, or executing trades, Brainpower's got an agent for that."
+        title="ChatGPT for Solana: Simply Type & Activate"
+        description="Meet Brainpower—your AI powerhouse for all things crypto on Solana. Just type your command, and our specialized agents will handle everything from launching tokens and swapping assets to performing rug checks, analyzing tweets, and checking token data. Experience effortless crypto operations powered by our robust backend actions."
         titleSize="sm"
       />
     </div>
