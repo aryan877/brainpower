@@ -50,7 +50,7 @@ const iconStyles = {
 
 const textStyles = {
   success: "text-green-800 dark:text-green-200",
-  error: "text-destructive-foreground dark:text-destructive-foreground",
+  error: "text-red-800 dark:text-destructive-foreground",
   warning: "text-yellow-800 dark:text-yellow-200",
   info: "text-blue-800 dark:text-blue-200",
 };
