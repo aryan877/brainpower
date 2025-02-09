@@ -139,30 +139,32 @@ export function HeroSection({ onLogin }: HeroSectionProps) {
         </div>
 
         {/* Brain image */}
-        <div className="absolute inset-0 flex items-start justify-center z-10">
+        <div className="absolute inset-0 flex items-start justify-center z-[1]">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 0.4, scale: 1 }}
+            animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1.2, ease: "easeOut" }}
           >
-            <Image
-              src="/landing/hero/big-brain.png"
-              alt="Brain Background"
-              width={1200}
-              height={1200}
-              className="w-[1200px] h-auto translate-y-8"
-              priority
-            />
+            <div className="relative">
+              <Image
+                src="/landing/hero/big-brain.png"
+                alt="Brain Background"
+                width={1200}
+                height={1200}
+                className="w-[1200px] h-auto translate-y-8"
+                priority
+              />
+              {/* Direct bottom gradient overlay for the brain image */}
+              <div className="absolute bottom-0 left-0 right-0 h-[70%] bg-gradient-to-t from-black via-black/80 to-transparent" />
+            </div>
           </motion.div>
         </div>
         {/* Side fades */}
-        <div className="absolute inset-0 z-[11]">
+        <div className="absolute inset-0 z-[2]">
           <div className="absolute left-0 w-[35%] h-full bg-gradient-to-r from-black via-black/95 to-transparent" />
           <div className="absolute right-0 w-[35%] h-full bg-gradient-to-l from-black via-black/95 to-transparent" />
         </div>
       </div>
-
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/50 to-black z-0" />
 
       {/* Content */}
       <div className="text-center flex flex-col gap-0 relative z-10">
@@ -207,14 +209,18 @@ export function HeroSection({ onLogin }: HeroSectionProps) {
 
       {/* App Preview */}
       <div className="relative w-full max-w-6xl mt-16 flex justify-center items-center z-10">
-        <Image
-          src="/landing/hero/hero-bg.png"
-          alt="BrainPower App Preview"
-          width={1200}
-          height={675}
-          className="w-full h-auto rounded-xl bg-transparent"
-          priority
-        />
+        <div className="relative w-full">
+          <Image
+            src="/landing/hero/hero-bg.png"
+            alt="BrainPower App Preview"
+            width={1200}
+            height={675}
+            className="w-full h-auto rounded-xl bg-transparent"
+            priority
+          />
+          {/* Add gradient overlay directly on the image container */}
+          <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black via-black/80 to-transparent rounded-xl" />
+        </div>
       </div>
     </div>
   );
