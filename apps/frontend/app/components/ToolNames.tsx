@@ -69,7 +69,7 @@ const TOOL_DISPLAY_CONFIG: Record<
   },
   [ACTION_NAMES.GET_BALANCE]: {
     icon: <CircleDollarSign className="w-3 h-3" />,
-    label: "SOL Balance",
+    label: "Token Balance",
   },
   [ACTION_NAMES.GET_BALANCE_OTHER]: {
     icon: <Wallet className="w-3 h-3" />,
