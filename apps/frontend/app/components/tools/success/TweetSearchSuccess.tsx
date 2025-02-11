@@ -30,7 +30,7 @@ export function TweetSearchSuccess({ data }: TweetSearchSuccessProps) {
                   href={`https://twitter.com/${tweet.authorUsername}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="font-medium hover:underline text-sm"
+                  className="font-medium hover:underline text-sm text-foreground hover:text-foreground/90"
                 >
                   @{tweet.authorUsername}
                 </a>
@@ -50,7 +50,7 @@ export function TweetSearchSuccess({ data }: TweetSearchSuccessProps) {
             </div>
 
             {/* Tweet Content */}
-            <div className="text-sm mb-3">{tweet.text}</div>
+            <div className="text-sm mb-3 text-foreground">{tweet.text}</div>
 
             {/* Tweet Stats */}
             <div className="flex items-center gap-6 text-sm text-muted-foreground">

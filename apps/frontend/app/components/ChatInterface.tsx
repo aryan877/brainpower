@@ -282,7 +282,7 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
                 : "Type your message..."
             }
             rows={2}
-            className="resize-none pr-14 text-sm md:text-[15px] text-foreground dark:text-foreground placeholder:text-muted-foreground/70"
+            className="resize-none pr-14 text-sm md:text-[15px] text-foreground placeholder:text-muted-foreground/70"
             style={{ minHeight: "60px", maxHeight: "200px" }}
             disabled={isLoading || hasActiveToolCall}
             onKeyDown={handleKeyDown}
@@ -361,18 +361,19 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
             {messages.reduce((groups: React.ReactElement[], message) => {
               return [
                 ...groups,
-                <ChatMessage
-                  key={message.id}
-                  message={message}
-                  isLoading={
-                    isLoading &&
-                    messages.length > 0 &&
-                    message.id === messages[messages.length - 1].id &&
-                    message.role === "assistant"
-                  }
-                  isWaitingForResponse={isWaitingForResponse}
-                  addToolResult={addToolResult}
-                />,
+                <div key={message.id} className="max-w-3xl mx-auto py-3">
+                  <ChatMessage
+                    message={message}
+                    isLoading={
+                      isLoading &&
+                      messages.length > 0 &&
+                      message.id === messages[messages.length - 1].id &&
+                      message.role === "assistant"
+                    }
+                    isWaitingForResponse={isWaitingForResponse}
+                    addToolResult={addToolResult}
+                  />
+                </div>,
               ];
             }, [])}
           </div>

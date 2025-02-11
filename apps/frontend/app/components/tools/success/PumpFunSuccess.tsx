@@ -16,7 +16,7 @@ interface PumpFunSuccessProps {
 
 export function PumpFunSuccess({ data }: PumpFunSuccessProps) {
   return (
-    <Card className="bg-gradient-to-br from-green-500/10 to-background">
+    <Card className="bg-gradient-to-br from-primary/10 to-background">
       <CardHeader className="pb-2">
         <div className="flex items-center gap-3">
           <div className="relative flex-shrink-0 flex items-center">
@@ -29,7 +29,7 @@ export function PumpFunSuccess({ data }: PumpFunSuccessProps) {
             />
           </div>
           <div className="flex-1">
-            <h3 className="text-xl font-bold text-green-500 flex items-center gap-2">
+            <h3 className="text-xl font-bold text-primary flex items-center gap-2">
               Token Launch Successful!
               <CheckCircle2 className="w-6 h-6 text-green-500 stroke-[2.5]" />
             </h3>
@@ -54,7 +54,7 @@ export function PumpFunSuccess({ data }: PumpFunSuccessProps) {
       <CardFooter className="flex flex-col sm:flex-row gap-2">
         <Button
           variant="outline"
-          className="w-full text-sm hover:bg-green-500/10 hover:text-green-500 transition-colors"
+          className="w-full text-sm hover:bg-primary/10 hover:text-primary transition-colors"
           onClick={() =>
             window.open(`https://pump.fun/coin/${data.mint}`, "_blank")
           }

@@ -106,7 +106,7 @@ function AgentCard({ agent }: { agent: AgentDetails }) {
                   {agent.agentName}
                 </h3>
                 {hasSolanaContracts && (
-                  <div className="shrink-0 px-2 py-0.5 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 text-xs font-medium">
+                  <div className="shrink-0 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-medium">
                     Solana
                   </div>
                 )}
@@ -135,16 +135,16 @@ function AgentCard({ agent }: { agent: AgentDetails }) {
                 <TooltipTrigger asChild>
                   <div className="flex items-center gap-3 bg-background/50 px-3 py-2 rounded-md shrink-0">
                     {agent.mindshareDeltaPercent >= 0 ? (
-                      <TrendingUp className="w-4 h-4 text-green-500" />
+                      <TrendingUp className="w-4 h-4 text-primary" />
                     ) : (
-                      <TrendingDown className="w-4 h-4 text-red-500" />
+                      <TrendingDown className="w-4 h-4 text-destructive" />
                     )}
                     <div>
                       <div className="text-sm text-muted-foreground font-medium">
                         Mindshare
                       </div>
                       <div
-                        className={`text-sm font-semibold ${agent.mindshareDeltaPercent >= 0 ? "text-green-500" : "text-red-500"}`}
+                        className={`text-sm font-semibold ${agent.mindshareDeltaPercent >= 0 ? "text-primary" : "text-destructive"}`}
                       >
                         {formatNumber(agent.mindshare)}
                       </div>
@@ -167,7 +167,7 @@ function AgentCard({ agent }: { agent: AgentDetails }) {
                   <div className="text-sm font-semibold">
                     ${formatNumber(agent.marketCap)}
                     <span
-                      className={`ml-1 ${agent.marketCapDeltaPercent >= 0 ? "text-green-500" : "text-red-500"}`}
+                      className={`ml-1 ${agent.marketCapDeltaPercent >= 0 ? "text-primary" : "text-destructive"}`}
                     >
                       {formatPercentage(agent.marketCapDeltaPercent)}%
                     </span>
@@ -185,7 +185,7 @@ function AgentCard({ agent }: { agent: AgentDetails }) {
                   <div className="text-sm font-semibold">
                     ${formatNumber(agent.price)}
                     <span
-                      className={`ml-1 ${agent.priceDeltaPercent >= 0 ? "text-green-500" : "text-red-500"}`}
+                      className={`ml-1 ${agent.priceDeltaPercent >= 0 ? "text-primary" : "text-destructive"}`}
                     >
                       {formatPercentage(agent.priceDeltaPercent)}%
                     </span>
@@ -229,7 +229,7 @@ function AgentCard({ agent }: { agent: AgentDetails }) {
                       className="flex items-center gap-2 text-sm group hover:bg-accent/50 rounded-md px-3 py-2 transition-colors bg-background/80"
                     >
                       <div className="flex items-center gap-2 flex-1 min-w-0">
-                        <Wallet className="w-3.5 h-3.5 text-purple-500" />
+                        <Wallet className="w-3.5 h-3.5 text-primary" />
                         <CopyAddress
                           address={contract.contractAddress}
                           explorerUrl={`https://solscan.io/token/${contract.contractAddress}`}
@@ -240,7 +240,7 @@ function AgentCard({ agent }: { agent: AgentDetails }) {
                         href={`https://solscan.io/token/${contract.contractAddress}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-xs px-2 py-0.5 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 hover:bg-purple-200 dark:hover:bg-purple-900/50 transition-colors"
+                        className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-medium hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors"
                         onClick={(e) => e.stopPropagation()}
                       >
                         View on Solscan

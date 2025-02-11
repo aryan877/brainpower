@@ -49,7 +49,7 @@ export function ConfirmationTool({ args, onSubmit }: ConfirmationToolProps) {
           <div className="flex items-center gap-4 w-full">
             <Button
               onClick={handleConfirm}
-              className="flex-1 bg-[#16a34a] hover:bg-[#15803d] transition-colors duration-200"
+              className="flex-1 bg-primary hover:bg-primary/90 transition-colors duration-200"
               size="lg"
             >
               <Check className="mr-2 h-5 w-5" />

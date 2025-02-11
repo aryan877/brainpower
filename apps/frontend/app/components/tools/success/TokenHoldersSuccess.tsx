@@ -29,7 +29,9 @@ export function TokenHoldersSuccess({ data }: TokenHoldersSuccessProps) {
         <div className="p-2 bg-muted rounded-lg flex items-center justify-center">
           <Users className="w-5 h-5 text-muted-foreground" />
         </div>
-        <h3 className="text-xl font-bold leading-none">Top Token Holders</h3>
+        <h3 className="text-xl font-bold leading-none text-foreground">
+          Top Token Holders
+        </h3>
       </CardHeader>
       <CardContent>
         <div className="relative w-full overflow-auto">
@@ -73,10 +75,10 @@ export function TokenHoldersSuccess({ data }: TokenHoldersSuccessProps) {
                       </a>
                     )}
                   </TableCell>
-                  <TableCell className="text-right font-mono">
+                  <TableCell className="text-right font-mono text-foreground">
                     {formatNumber(holder.uiAmountString)}
                   </TableCell>
-                  <TableCell className="text-right font-mono">
+                  <TableCell className="text-right font-mono text-foreground">
                     {holder.percentage?.toFixed(2)}%
                   </TableCell>
                 </TableRow>

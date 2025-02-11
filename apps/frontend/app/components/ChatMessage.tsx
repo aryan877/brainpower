@@ -133,21 +133,21 @@ export default function ChatMessage({
           <XCircle
             className={cn(
               "w-4 h-4 flex-shrink-0 mt-[2px]",
-              isError ? "text-[#ff4444]" : "text-[#ff4444]/90"
+              isError ? "text-destructive" : "text-destructive/90"
             )}
           />
           <div className="flex-1 min-w-0">
             <p
               className={cn(
                 "text-[0.9375rem] leading-normal m-0",
-                isError ? "text-[#ff4444]" : "text-[#ff4444]/90"
+                isError ? "text-destructive" : "text-destructive/90"
               )}
             >
               {toolResult.message ||
                 (isError ? "Operation failed" : "Operation cancelled")}
             </p>
             {isError && errorMessage && (
-              <p className="text-[0.875rem] mt-1 text-[#ff4444]/80 leading-normal m-0">
+              <p className="text-[0.875rem] mt-1 text-destructive/80 leading-normal m-0">
                 {errorMessage}
               </p>
             )}
@@ -203,171 +203,154 @@ export default function ChatMessage({
         </div>
       )}
       {isMessageReadyToRender(message) && (
-        <div className="py-3">
-          <div className="max-w-3xl mx-auto px-4">
+        <div className="max-w-3xl mx-auto py-3">
+          <div className="relative">
             <div
               className={cn(
-                message.role === "user" &&
-                  "bg-muted/80 dark:bg-muted/60 rounded-2xl",
-                "transition-all duration-200"
+                "flex items-start gap-4",
+                message.role === "user"
+                  ? "bg-muted dark:bg-muted rounded-2xl p-4"
+                  : "py-2 px-4"
               )}
             >
-              <div
-                className={cn(
-                  "flex items-start gap-4",
-                  message.role === "user" ? "p-4" : "py-2 px-4"
-                )}
-              >
-                {/* Avatar */}
-                {message.role === "assistant" ? (
-                  <div className="flex-shrink-0">
-                    <Avatar className="w-8 h-8 ring-1 ring-[#ff4444]/30 bg-[#ff4444]/20 flex items-center justify-center transition-all duration-200 hover:ring-[#ff4444]/40 hover:bg-[#ff4444]/30">
-                      <div className="flex items-center gap-2">
-                        <Image
-                          src="/logo.svg"
-                          alt="BrainPower Logo"
-                          width={24}
-                          height={24}
-                        />
-                      </div>
-                    </Avatar>
-                  </div>
-                ) : (
-                  <div className="flex-shrink-0">
-                    <Avatar className="w-8 h-8 ring-1 ring-border bg-background flex items-center justify-center transition-all duration-200 hover:ring-border/80 hover:bg-muted/50">
-                      <User className="w-5 h-5 text-foreground/80" />
-                    </Avatar>
-                  </div>
-                )}
-
-                {/* Content */}
-                <div className="flex-1 min-w-0">
-                  <div
-                    className={cn(
-                      "prose dark:prose-invert prose-p:mt-0 prose-p:mb-3 prose-p:leading-normal prose-p:text-[16px]",
-                      isLoading && "opacity-60"
-                    )}
-                  >
-                    {/* Show tool results first */}
-                    {message.toolInvocations &&
-                      message.toolInvocations.length > 0 && (
-                        <div className="space-y-3 mb-4 not-prose">
-                          {message.toolInvocations.map((toolInvocation) =>
-                            renderToolInvocation(toolInvocation)
-                          )}
-                        </div>
-                      )}
-                    {/* Then show message content */}
-                    {message.content?.trim() && (
-                      <div className="relative pr-8">
-                        {" "}
-                        {/* Added padding-right to prevent overlap */}
-                        <ReactMarkdown
-                          components={{
-                            code({ className, children, ...props }) {
-                              const isInline = (props as { inline?: boolean })
-                                .inline;
-                              const match = /language-(\w+)/.exec(
-                                className || ""
-                              );
-                              return !isInline && match ? (
-                                <div
-                                  key={nanoid()}
-                                  className="relative group/code mt-4 mb-1"
-                                >
-                                  <div className="absolute -top-4 left-0 right-0 h-6 bg-muted/50 backdrop-blur supports-[backdrop-filter]:bg-muted/30 rounded-t-lg flex items-center px-4">
-                                    <span className="text-xs font-medium text-foreground/70">
-                                      {match[1].toUpperCase()}
-                                    </span>
-                                  </div>
-                                  <div className="!bg-muted/30 dark:!bg-muted/20 !rounded-lg !rounded-tl-none !pt-4 text-sm !mt-0 !mb-0 whitespace-pre-wrap break-all">
-                                    <SyntaxHighlighter
-                                      style={vscDarkPlus}
-                                      language={match[1]}
-                                    >
-                                      {String(children).replace(/\n$/, "")}
-                                    </SyntaxHighlighter>
-                                  </div>
-                                </div>
-                              ) : (
-                                <code
-                                  key={nanoid()}
-                                  {...props}
-                                  className={cn(
-                                    "px-1.5 py-0.5 rounded-md text-[16px] break-all",
-                                    message.role === "assistant"
-                                      ? "bg-muted/40 dark:bg-muted/30"
-                                      : "bg-primary/10"
-                                  )}
-                                >
-                                  {children}
-                                </code>
-                              );
-                            },
-                            p({ children }) {
-                              return (
-                                <p
-                                  key={nanoid()}
-                                  className="mb-3 last:mb-0 break-words text-[16px] leading-relaxed"
-                                >
-                                  {children}
-                                </p>
-                              );
-                            },
-                            ul({ children }) {
-                              return (
-                                <ul
-                                  key={nanoid()}
-                                  className="mb-3 last:mb-0 space-y-2 text-[16px] list-disc pl-4 marker:text-muted-foreground"
-                                >
-                                  {children}
-                                </ul>
-                              );
-                            },
-                            ol({ children }) {
-                              return (
-                                <ol
-                                  key={nanoid()}
-                                  className="mb-3 last:mb-0 space-y-2 text-[16px] list-decimal pl-4 marker:text-muted-foreground"
-                                >
-                                  {children}
-                                </ol>
-                              );
-                            },
-                          }}
-                        >
-                          {message.content}
-                        </ReactMarkdown>
-                        <div className="absolute bottom-0 right-0">
-                          <button
-                            onClick={handleCopy}
-                            className="p-1.5 hover:bg-primary/10 rounded-md transition-colors"
-                            title="Copy message"
-                          >
-                            {copied ? (
-                              <Check className="w-4 h-4 text-green-500" />
-                            ) : (
-                              <Copy className="w-4 h-4 text-muted-foreground hover:text-primary" />
-                            )}
-                          </button>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Testing Birdeye Trading View */}
-                    {/* <div className="mt-4 w-full">
-                      <iframe
-                        width="100%"
-                        height="600"
-                        src="https://birdeye.so/tv-widget/JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN?chain=solana&viewMode=pair&chartInterval=15&chartType=Candle&chartTimezone=Asia%2FCalcutta&chartLeftToolbar=show&theme=dark&cssCustomProperties=--tv-color-platform-background%3A%23ff0000&cssCustomProperties=--tv-color-pane-background%3A%23000000&chartOverrides=paneProperties.backgroundGradientStartColor%3Argba%280%2C+0%2C+0%2C+1%29&chartOverrides=paneProperties.backgroundGradientEndColor%3Argba%280%2C+0%2C+0%2C+1%29"
-                        frameBorder="0"
-                        allowFullScreen
+              {/* Avatar */}
+              {message.role === "assistant" ? (
+                <div className="flex-shrink-0">
+                  <Avatar className="w-8 h-8 ring-1 ring-primary/30 bg-primary/20 flex items-center justify-center transition-all duration-200 hover:ring-primary/40 hover:bg-primary/30">
+                    <div className="flex items-center gap-2">
+                      <Image
+                        src="/logo.svg"
+                        alt="BrainPower Logo"
+                        width={24}
+                        height={24}
                       />
-                    </div> */}
-                  </div>
+                    </div>
+                  </Avatar>
+                </div>
+              ) : (
+                <div className="flex-shrink-0">
+                  <Avatar className="w-8 h-8 ring-1 ring-border bg-background flex items-center justify-center transition-all duration-200 hover:ring-border/80 hover:bg-muted/50">
+                    <User className="w-5 h-5 text-foreground/80" />
+                  </Avatar>
+                </div>
+              )}
+
+              {/* Content */}
+              <div className="flex-1 min-w-0">
+                <div
+                  className={cn(
+                    "prose dark:prose-invert prose-p:mt-0 prose-p:mb-3 prose-p:leading-normal prose-p:text-[16px]",
+                    isLoading && "opacity-60"
+                  )}
+                >
+                  {/* Show tool results first */}
+                  {message.toolInvocations &&
+                    message.toolInvocations.length > 0 && (
+                      <div className="space-y-3 mb-4 not-prose">
+                        {message.toolInvocations.map((toolInvocation) =>
+                          renderToolInvocation(toolInvocation)
+                        )}
+                      </div>
+                    )}
+                  {/* Then show message content */}
+                  {message.content?.trim() && (
+                    <div className="relative">
+                      <ReactMarkdown
+                        components={{
+                          code({ className, children, ...props }) {
+                            const isInline = (props as { inline?: boolean })
+                              .inline;
+                            const match = /language-(\w+)/.exec(
+                              className || ""
+                            );
+                            return !isInline && match ? (
+                              <div
+                                key={nanoid()}
+                                className="relative group/code mt-4 mb-1"
+                              >
+                                <div className="absolute -top-4 left-0 right-0 h-6 bg-muted/50 backdrop-blur supports-[backdrop-filter]:bg-muted/30 rounded-t-lg flex items-center px-4">
+                                  <span className="text-xs font-medium text-foreground/70">
+                                    {match[1].toUpperCase()}
+                                  </span>
+                                </div>
+                                <div className="!bg-muted/30 dark:!bg-muted/20 !rounded-lg !rounded-tl-none !pt-4 text-sm !mt-0 !mb-0 whitespace-pre-wrap break-all">
+                                  <SyntaxHighlighter
+                                    style={vscDarkPlus}
+                                    language={match[1]}
+                                  >
+                                    {String(children).replace(/\n$/, "")}
+                                  </SyntaxHighlighter>
+                                </div>
+                              </div>
+                            ) : (
+                              <code
+                                key={nanoid()}
+                                {...props}
+                                className={cn(
+                                  "px-1.5 py-0.5 rounded-md text-[16px] break-all",
+                                  message.role === "assistant"
+                                    ? "bg-muted/40 dark:bg-muted/30"
+                                    : "bg-primary/10"
+                                )}
+                              >
+                                {children}
+                              </code>
+                            );
+                          },
+                          p({ children }) {
+                            return (
+                              <p
+                                key={nanoid()}
+                                className="mb-3 last:mb-0 break-words text-[16px] leading-relaxed"
+                              >
+                                {children}
+                              </p>
+                            );
+                          },
+                          ul({ children }) {
+                            return (
+                              <ul
+                                key={nanoid()}
+                                className="mb-3 last:mb-0 space-y-2 text-[16px] list-disc pl-4 marker:text-muted-foreground"
+                              >
+                                {children}
+                              </ul>
+                            );
+                          },
+                          ol({ children }) {
+                            return (
+                              <ol
+                                key={nanoid()}
+                                className="mb-3 last:mb-0 space-y-2 text-[16px] list-decimal pl-4 marker:text-muted-foreground"
+                              >
+                                {children}
+                              </ol>
+                            );
+                          },
+                        }}
+                      >
+                        {message.content}
+                      </ReactMarkdown>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
+            {message.content?.trim() && (
+              <div className="flex justify-end mt-2">
+                <button
+                  onClick={handleCopy}
+                  className="p-1.5 hover:bg-primary/10 rounded-md transition-colors"
+                  title="Copy message"
+                >
+                  {copied ? (
+                    <Check className="w-4 h-4 text-green-500" />
+                  ) : (
+                    <Copy className="w-4 h-4 text-muted-foreground hover:text-primary" />
+                  )}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}

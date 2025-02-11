@@ -411,7 +411,7 @@ export function PumpFunLaunchTool({ args, onSubmit }: PumpFunLaunchToolProps) {
                     height={128}
                     className="max-h-[140px] w-auto object-contain"
                   />
-                  <div className="absolute inset-0 bg-black/50 text-white flex flex-col gap-2 items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                  <div className="absolute inset-0 bg-background/50 text-white flex flex-col gap-2 items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
                     <p className="text-sm">Click or drop to replace</p>
                     {selectedImage && (
                       <Button

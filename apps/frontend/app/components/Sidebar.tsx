@@ -1,5 +1,4 @@
 import {
-  XCircle,
   Loader2,
   MessageSquarePlus,
   PanelLeftClose,
@@ -121,7 +120,7 @@ export default function Sidebar({
         </DialogContent>
       </Dialog>
 
-      <aside className="flex flex-col h-full bg-background border-r relative dark:border-r-white/10">
+      <aside className="flex flex-col h-full bg-background border-r relative dark:border-border">
         <div className={`p-4 ${isCollapsed ? "px-2" : ""}`}>
           <div
             className={`flex items-center gap-2 mb-4 ${
@@ -186,7 +185,9 @@ export default function Sidebar({
         </div>
 
         {/* Chat threads list */}
-        <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent pb-4">
+        <div
+          className={`flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent pb-4 ${isCollapsed ? "hidden md:hidden" : ""}`}
+        >
           {threads.length === 0 ? (
             !isCollapsed && (
               <div className="p-4 text-center text-muted-foreground">
@@ -209,7 +210,7 @@ export default function Sidebar({
                     onClick={() => onSelectThread(thread.threadId)}
                     className={`flex items-center p-2 cursor-pointer rounded-lg hover:bg-muted transition-all duration-200 ${
                       selectedThread === thread.threadId
-                        ? "bg-muted border"
+                        ? "bg-muted border-border"
                         : ""
                     } ${isCollapsed ? "justify-center" : "justify-between"}`}
                     title={isCollapsed ? formatThreadName(thread) : undefined}
@@ -231,7 +232,22 @@ export default function Sidebar({
                           {deletingThreadId === thread.threadId ? (
                             <Loader2 className="h-4 w-4 animate-spin" />
                           ) : (
-                            <XCircle className="h-4 w-4 transition-transform hover:scale-110" />
+                            <svg
+                              className="h-4 w-4 transition-transform hover:scale-110 fill-current text-destructive"
+                              viewBox="0 0 485 485"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <g>
+                                <g>
+                                  <rect
+                                    x="67.224"
+                                    width="350.535"
+                                    height="71.81"
+                                  />
+                                  <path d="M417.776,92.829H67.237V485h350.537V92.829H417.776z M165.402,431.447h-28.362V146.383h28.362V431.447z M256.689,431.447    h-28.363V146.383h28.363V431.447z M347.97,431.447h-28.361V146.383h28.361V431.447z" />
+                                </g>
+                              </g>
+                            </svg>
                           )}
                         </Button>
                       </>

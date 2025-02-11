@@ -9,7 +9,7 @@ function getRiskColor(score: number): string {
   if (score >= 8000) return "bg-green-500";
   if (score >= 6000) return "bg-yellow-500";
   if (score >= 4000) return "bg-orange-500";
-  return "bg-red-500";
+  return "bg-destructive";
 }
 
 function getRiskBadge(score: number) {
@@ -19,7 +19,10 @@ function getRiskBadge(score: number) {
     return { label: "Medium Risk", color: "bg-yellow-500/10 text-yellow-500" };
   if (score >= 4000)
     return { label: "High Risk", color: "bg-orange-500/10 text-orange-500" };
-  return { label: "Very High Risk", color: "bg-red-500/10 text-red-500" };
+  return {
+    label: "Very High Risk",
+    color: "bg-destructive/10 text-destructive",
+  };
 }
 
 export function RugcheckSuccess({ data }: RugcheckSuccessProps) {
@@ -59,7 +62,7 @@ export function RugcheckSuccess({ data }: RugcheckSuccessProps) {
             <span className="text-sm text-muted-foreground">Safety Score</span>
             <span className="text-sm font-medium">{score}</span>
           </div>
-          <div className="w-full h-2 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
+          <div className="w-full h-2 rounded-full bg-muted dark:bg-muted/50 overflow-hidden">
             <div
               className={`h-full rounded-full transition-all duration-500 ease-out ${getRiskColor(score)}`}
               style={{ width: `${(score / 10000) * 100}%` }}

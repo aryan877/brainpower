@@ -164,17 +164,6 @@ export function WalletInfo({
             </Card>
           </div>
           <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span>Status:</span>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="flex items-center justify-center w-6 h-6">
-                  <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>Connected</TooltipContent>
-            </Tooltip>
-          </div>
-          <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span>Balance:</span>
             <div className="flex items-center gap-2">
               <Card className="px-2 py-1">

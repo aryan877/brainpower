@@ -24,7 +24,7 @@ function AgentCard({
     <div
       className={`relative backdrop-blur-sm rounded-2xl p-6 overflow-hidden group transition-all duration-300 ${
         bgImageSrc
-          ? "bg-black/30 hover:bg-black/40"
+          ? "bg-background/30 hover:bg-background/40"
           : "bg-[#121212] hover:bg-[#121212]/90"
       } ${className}`}
     >
