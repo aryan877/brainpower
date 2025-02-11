@@ -118,17 +118,17 @@ export default function ChatMessage({
       const errorMessage = toolResult.error?.message;
 
       return (
-        <div key={toolCallId} className="flex items-center gap-3">
+        <div key={toolCallId} className="flex items-start gap-3 py-0.5">
           <XCircle
             className={cn(
-              "w-4 h-4 flex-shrink-0",
+              "w-4 h-4 flex-shrink-0 mt-[2px]",
               isError ? "text-[#ff4444]" : "text-[#ff4444]/90"
             )}
           />
           <div className="flex-1 min-w-0">
             <p
               className={cn(
-                "text-[0.9375rem]",
+                "text-[0.9375rem] leading-normal m-0",
                 isError ? "text-[#ff4444]" : "text-[#ff4444]/90"
               )}
             >
@@ -136,7 +136,7 @@ export default function ChatMessage({
                 (isError ? "Operation failed" : "Operation cancelled")}
             </p>
             {isError && errorMessage && (
-              <p className="text-[0.875rem] mt-1 text-[#ff4444]/80">
+              <p className="text-[0.875rem] mt-1 text-[#ff4444]/80 leading-normal m-0">
                 {errorMessage}
               </p>
             )}
@@ -237,7 +237,7 @@ export default function ChatMessage({
                     {/* Show tool results first */}
                     {message.toolInvocations &&
                       message.toolInvocations.length > 0 && (
-                        <div className="space-y-3 mb-4">
+                        <div className="space-y-3 mb-4 not-prose">
                           {message.toolInvocations.map((toolInvocation) =>
                             renderToolInvocation(toolInvocation)
                           )}
