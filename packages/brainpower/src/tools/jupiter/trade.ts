@@ -62,6 +62,11 @@ export async function trade(
       commitment: "processed",
     });
 
+    // Check if signature is empty or undefined
+    if (!signature) {
+      throw new Error("No transaction signature returned");
+    }
+
     // Determine token symbols
     const inputTokenSymbol = isNativeSol ? "SOL" : inputMint.toString();
     const outputTokenSymbol = outputMint.toString();

@@ -92,6 +92,20 @@ const tradeAction: Action = {
         input.slippageBps,
       );
 
+      // Check if transaction hash is empty or undefined
+      if (!transaction) {
+        return {
+          status: "error",
+          message: "Trade failed: No transaction hash returned",
+          data: {
+            transaction: "",
+            inputAmount: input.inputAmount,
+            inputToken: input.inputMint || "SOL",
+            outputToken: input.outputMint,
+          },
+        };
+      }
+
       return {
         status: "success",
         message:
