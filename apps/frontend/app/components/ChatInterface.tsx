@@ -1,46 +1,101 @@
 "use client";
 
 import { useChat } from "ai/react";
-import { useEffect, useRef, useState, FormEvent } from "react";
+import { useEffect, useRef, useState, FormEvent, useCallback } from "react";
 import React from "react";
-import {
-  AlertCircle,
-  RefreshCcw,
-  ArrowUpCircle,
-  StopCircle,
-} from "lucide-react";
 import { useClusterStore } from "../store/clusterStore";
-import { useThreadMessages, useSaveAllMessages } from "../hooks/chat";
+import {
+  useThreadMessages,
+  useSaveAllMessages,
+  useCreateThread,
+} from "../hooks/chat";
 import ChatMessage from "./ChatMessage";
 import { nanoid } from "nanoid";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Card } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
+import { useRouter } from "next/navigation";
+import { useLocalStorage } from "../hooks/useLocalStorage";
+import Image from "next/image";
+
+const SendIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    className="h-5 w-5"
+  >
+    <path
+      d="M12 20V4"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M5 11L12 4L19 11"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+const StopIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    className="h-5 w-5"
+  >
+    <path
+      d="M18 6L6 18"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M6 6L18 18"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+const ScrollDownIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    className="h-4 w-4"
+  >
+    <path
+      d="M6 9L12 15L18 9"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
 
 interface ChatInterfaceProps {
   threadId: string | null;
 }
 
 export default function ChatInterface({ threadId }: ChatInterfaceProps) {
+  const router = useRouter();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const [showScrollDown, setShowScrollDown] = useState(false);
   const { data: initialMessages = [] } = useThreadMessages(threadId);
   const { mutate: saveAllMessages } = useSaveAllMessages();
+  const { mutateAsync: createThread } = useCreateThread();
   const [isWaitingForResponse, setIsWaitingForResponse] = useState(false);
   const [hasActiveToolCall, setHasActiveToolCall] = useState(false);
-
-  const loadingMessages = [
-    "Maximizing brain gains...",
-    "Flexing neural networks...",
-    "Channeling galaxy brain...",
-    "Loading big brain energy...",
-    "Powering up the genius...",
-    "Brain.exe is processing...",
-    "Charging mental capacity...",
-    "IQ levels rising...",
-  ];
-
-  const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
 
   const {
     messages,
@@ -48,10 +103,7 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
     handleInputChange,
     handleSubmit,
     isLoading,
-    error,
-    stop,
     addToolResult,
-    reload,
   } = useChat({
     api: "/api/chat/message",
     id: threadId || undefined,
@@ -71,27 +123,9 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
     sendExtraMessageFields: true,
   });
 
-  // Handle failed tool calls
-  const handleFailedTools = (errorMessage: string, code: string) => {
-    const lastMessage = messages[messages.length - 1];
-    const pendingTools = lastMessage?.toolInvocations?.filter(
-      (tool) => tool.state === "call"
-    );
-
-    pendingTools?.forEach((tool) => {
-      addToolResult({
-        toolCallId: tool.toolCallId,
-        result: {
-          status: "error",
-          message: errorMessage,
-          error: {
-            code,
-            message: errorMessage,
-          },
-        },
-      });
-    });
-  };
+  // Add local storage hook for pending message
+  const [pendingMessage, setPendingMessage, removePendingMessage] =
+    useLocalStorage<string | null>("pendingMessage", null);
 
   // Check for active tool calls in any message
   useEffect(() => {
@@ -113,57 +147,191 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Rotate through loading messages
-  useEffect(() => {
-    if (isWaitingForResponse) {
-      const interval = setInterval(() => {
-        setLoadingMessageIndex((prev) => (prev + 1) % loadingMessages.length);
-      }, 2000);
-      return () => clearInterval(interval);
+  // Add scroll handler to check if we're at bottom
+  const handleScroll = useCallback(() => {
+    if (messagesContainerRef.current) {
+      const { scrollTop, scrollHeight, clientHeight } =
+        messagesContainerRef.current;
+      // Only show scroll button if there's actually scrollable content AND we're not at bottom
+      const hasScrollableContent = scrollHeight > clientHeight;
+      const isAtBottom =
+        Math.abs(scrollHeight - clientHeight - scrollTop) < 100;
+      setShowScrollDown(!isAtBottom && hasScrollableContent);
     }
-  }, [isWaitingForResponse, loadingMessages.length]);
+  }, []);
 
-  // Wrap handleSubmit to set waiting state
-  const wrappedHandleSubmit = (e: FormEvent<HTMLFormElement>) => {
-    setIsWaitingForResponse(true);
-    handleSubmit(e);
-  };
+  // Scroll to bottom function
+  const scrollToBottom = useCallback(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, []);
 
-  // Add handler for stopping
-  const handleStop = () => {
-    handleFailedTools("Operation stopped by user", "OPERATION_STOPPED");
-    setIsWaitingForResponse(false);
-    stop();
-  };
+  // Add scroll event listener
+  useEffect(() => {
+    const messagesContainer = messagesContainerRef.current;
+    if (messagesContainer) {
+      messagesContainer.addEventListener("scroll", handleScroll);
+      return () =>
+        messagesContainer.removeEventListener("scroll", handleScroll);
+    }
+  }, [handleScroll]);
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+  // Auto scroll to bottom on new messages if already at bottom
+  useEffect(() => {
+    if (!showScrollDown) {
+      scrollToBottom();
+    }
+  }, [messages, showScrollDown, scrollToBottom]);
+
+  // Modify wrappedHandleSubmit to handle storing message
+  const wrappedHandleSubmit = useCallback(
+    async (e: FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+
+      if (!threadId) {
+        try {
+          // Store the current input before creating thread
+          setPendingMessage(input);
+
+          // Create new thread using the mutation
+          const newThread = await createThread();
+
+          // Update the URL without full page reload
+          router.replace(`/chat?chatId=${newThread.threadId}`);
+
+          return;
+        } catch (error) {
+          console.error("Error creating thread:", error);
+          removePendingMessage();
+          return;
+        }
+      }
+
+      // Normal message submission flow
+      setIsWaitingForResponse(true);
+      handleSubmit(e);
+    },
+    [
+      threadId,
+      router,
+      handleSubmit,
+      createThread,
+      input,
+      setPendingMessage,
+      removePendingMessage,
+    ]
+  );
+
+  // Effect to send pending message when component loads with a threadId
+  useEffect(() => {
+    if (threadId && pendingMessage) {
+      // Set the input value to the pending message
+      handleInputChange({
+        target: { value: pendingMessage },
+      } as React.ChangeEvent<HTMLTextAreaElement>);
+
+      // Create a synthetic form event
+      const formEvent = new Event("submit", {
+        bubbles: true,
+        cancelable: true,
+      }) as unknown as FormEvent<HTMLFormElement>;
+
+      // Submit the message
+      wrappedHandleSubmit(formEvent);
+
+      // Clear the pending message
+      removePendingMessage();
+    }
+  }, [
+    threadId,
+    pendingMessage,
+    handleInputChange,
+    wrappedHandleSubmit,
+    removePendingMessage,
+  ]);
+
+  function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      if (input.trim()) {
-        const formEvent = new Event("submit", {
-          bubbles: true,
-          cancelable: true,
-        }) as unknown as FormEvent<HTMLFormElement>;
-        wrappedHandleSubmit(formEvent);
-      }
+      wrappedHandleSubmit(e as unknown as FormEvent<HTMLFormElement>);
     }
-  };
+  }
 
-  const handleRetry = () => {
-    handleFailedTools("Operation failed", "OPERATION_FAILED");
-    reload();
-  };
+  // Use a single input form component for both cases
+  const InputForm = (
+    <div className="bg-background mt-auto w-full max-w-3xl mx-auto relative">
+      {showScrollDown && messages.length > 0 && (
+        <div className="absolute -top-12 left-1/2 -translate-x-1/2">
+          <Button
+            size="icon"
+            variant="secondary"
+            onClick={scrollToBottom}
+            className="h-8 w-8 rounded-full shadow-md hover:shadow-lg transition-all"
+          >
+            <ScrollDownIcon />
+          </Button>
+        </div>
+      )}
+      <form onSubmit={wrappedHandleSubmit} className="px-4 py-3">
+        <div className="relative flex items-center">
+          <Textarea
+            value={input}
+            onChange={handleInputChange}
+            placeholder={
+              hasActiveToolCall
+                ? "Please complete/cancel action or wait for response..."
+                : "Type your message..."
+            }
+            rows={2}
+            className="resize-none pr-14 text-sm md:text-[15px] text-foreground dark:text-foreground placeholder:text-muted-foreground/70"
+            style={{ minHeight: "60px", maxHeight: "200px" }}
+            disabled={isLoading || hasActiveToolCall}
+            onKeyDown={handleKeyDown}
+          />
+          <div className="absolute right-3 flex items-center space-x-2">
+            {isLoading ? (
+              <Button
+                type="button"
+                size="icon"
+                variant="ghost"
+                onClick={() => window.location.reload()}
+                className="h-8 w-8 md:h-9 md:w-9 hover:bg-destructive/90 hover:text-destructive-foreground transition-colors"
+              >
+                <StopIcon />
+              </Button>
+            ) : (
+              <Button
+                type="submit"
+                size="icon"
+                disabled={isLoading || hasActiveToolCall || !input.trim()}
+                className="h-8 w-8 md:h-9 md:w-9 bg-primary hover:bg-primary/90 transition-colors"
+              >
+                <SendIcon />
+              </Button>
+            )}
+          </div>
+        </div>
+      </form>
+    </div>
+  );
 
   if (!threadId) {
     return (
-      <div className="flex h-full items-center justify-center p-4">
-        <div className="text-center max-w-md mx-auto">
-          <h2 className="text-xl md:text-2xl font-bold text-foreground mb-4">
-            Welcome to BrainPower
-          </h2>
-          <p className="text-sm md:text-base text-muted-foreground mb-8">
-            Start a new chat or select an existing one to begin
-          </p>
+      <div className="flex flex-col h-full">
+        <div className="flex-1 flex items-center justify-center p-4">
+          <div className="text-center w-full max-w-3xl mx-auto">
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <Image
+                src="/logo.svg"
+                alt="BrainPower Logo"
+                width={48}
+                height={48}
+              />
+            </div>
+            <p className="text-sm md:text-base text-muted-foreground mb-8">
+              Start a new chat by typing your message below
+            </p>
+            {InputForm}
+          </div>
         </div>
       </div>
     );
@@ -172,7 +340,10 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
   return (
     <div className="flex flex-col h-full">
       {/* Messages container */}
-      <div className="flex-1 overflow-y-auto brainpower-scrollbar divide-border/40">
+      <div
+        ref={messagesContainerRef}
+        className="flex-1 overflow-y-auto brainpower-scrollbar divide-border/40 relative"
+      >
         {messages.length === 0 ? (
           <div className="h-full flex items-center justify-center p-4">
             <div className="text-center max-w-md mx-auto space-y-2">
@@ -187,136 +358,29 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
           </div>
         ) : (
           <div className="space-y-0">
-            {messages.reduce((groups: React.ReactElement[], message, index) => {
-              const prevMessage = messages[index - 1];
-              const isNewGroup =
-                !prevMessage || prevMessage.role !== message.role;
-              const isFirstInGroup = isNewGroup;
-
-              if (isFirstInGroup) {
-                groups.push(
-                  <div
-                    key={`group-${message.role}-${index}`}
-                    className={cn(
-                      "relative",
-                      index !== 0 && "border-t-2 border-border/60 mt-3 pt-3"
-                    )}
-                  >
-                    <ChatMessage
-                      key={message.id}
-                      message={message}
-                      isLoading={
-                        isLoading &&
-                        messages.length > 0 &&
-                        message.id === messages[messages.length - 1].id &&
-                        message.role === "assistant"
-                      }
-                      isWaitingForResponse={isWaitingForResponse}
-                      addToolResult={addToolResult}
-                    />
-                  </div>
-                );
-              } else {
-                groups.push(
-                  <ChatMessage
-                    key={message.id}
-                    message={message}
-                    isLoading={
-                      isLoading &&
-                      messages.length > 0 &&
-                      message.id === messages[messages.length - 1].id &&
-                      message.role === "assistant"
-                    }
-                    isWaitingForResponse={isWaitingForResponse}
-                    addToolResult={addToolResult}
-                  />
-                );
-              }
-              return groups;
+            {messages.reduce((groups: React.ReactElement[], message) => {
+              return [
+                ...groups,
+                <ChatMessage
+                  key={message.id}
+                  message={message}
+                  isLoading={
+                    isLoading &&
+                    messages.length > 0 &&
+                    message.id === messages[messages.length - 1].id &&
+                    message.role === "assistant"
+                  }
+                  isWaitingForResponse={isWaitingForResponse}
+                  addToolResult={addToolResult}
+                />,
+              ];
             }, [])}
           </div>
         )}
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Error display */}
-      {error && (
-        <div className="mx-auto w-full max-w-3xl px-4">
-          <Card className="flex items-center gap-3 bg-muted/80 dark:bg-muted/60 border-none p-3 md:p-4 my-2">
-            <AlertCircle className="h-4 md:h-5 w-4 md:w-5 flex-shrink-0 text-[#ff4444]" />
-            <p className="flex-1 text-sm md:text-[15px] text-foreground break-words line-clamp-3">
-              {error.message}
-            </p>
-            <Button
-              onClick={handleRetry}
-              variant="outline"
-              size="sm"
-              className="flex-shrink-0 text-[#ff4444] hover:bg-[#ff4444]/20 border-[#ff4444]/30 hover:border-[#ff4444]/40"
-            >
-              <RefreshCcw className="h-3 w-3 md:h-4 md:w-4 mr-1.5" />
-              <span>Retry</span>
-            </Button>
-          </Card>
-        </div>
-      )}
-
-      {/* Braining indicator */}
-      {isWaitingForResponse && (
-        <div className="mx-auto w-full max-w-3xl px-4">
-          <div className="flex items-center gap-2 text-primary dark:text-primary/90 my-2">
-            <div className="animate-spin rounded-full h-4 w-4 md:h-5 md:w-5 border-2 border-primary border-t-transparent" />
-            <span className="text-sm md:text-base font-medium animate-pulse text-foreground dark:text-foreground">
-              {loadingMessages[loadingMessageIndex]}
-            </span>
-          </div>
-        </div>
-      )}
-
-      {/* Input form */}
-      <div className="border-t bg-background mt-auto">
-        <form
-          onSubmit={wrappedHandleSubmit}
-          className="max-w-3xl mx-auto px-4 py-3"
-        >
-          <div className="relative flex items-center">
-            <Textarea
-              value={input}
-              onChange={handleInputChange}
-              placeholder={
-                hasActiveToolCall
-                  ? "Please complete/cancel action or wait for response..."
-                  : "Type your message..."
-              }
-              rows={1}
-              className="resize-none pr-14 text-sm md:text-[15px] text-foreground dark:text-foreground placeholder:text-muted-foreground/70"
-              style={{ minHeight: "44px", maxHeight: "200px" }}
-              disabled={isLoading || hasActiveToolCall}
-              onKeyDown={handleKeyDown}
-            />
-            <div className="absolute right-3 flex items-center space-x-2">
-              <Button
-                type="submit"
-                size="icon"
-                disabled={isLoading || hasActiveToolCall || !input.trim()}
-                className="h-8 w-8 md:h-9 md:w-9 hover:-translate-y-0.5 active:translate-y-0"
-              >
-                <ArrowUpCircle className="h-4 w-4 md:h-5 md:w-5" />
-              </Button>
-              {isLoading && (
-                <Button
-                  type="button"
-                  size="icon"
-                  variant="default"
-                  onClick={handleStop}
-                  className="h-8 w-8 md:h-9 md:w-9 bg-primary hover:bg-primary/90 transition-all duration-200"
-                >
-                  <StopCircle className="h-3.5 w-3.5 md:h-4 md:w-4 text-white fill-current" />
-                </Button>
-              )}
-            </div>
-          </div>
-        </form>
-      </div>
+      {InputForm}
     </div>
   );
 }

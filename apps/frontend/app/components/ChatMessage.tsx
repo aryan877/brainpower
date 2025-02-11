@@ -207,14 +207,17 @@ export default function ChatMessage({
           <div className="max-w-3xl mx-auto px-4">
             <div
               className={cn(
-                "rounded-2xl",
-                message.role === "assistant"
-                  ? "bg-muted/30 dark:bg-muted/20 border-none"
-                  : "bg-muted/80 dark:bg-muted/60 border-none",
+                message.role === "user" &&
+                  "bg-muted/80 dark:bg-muted/60 rounded-2xl",
                 "transition-all duration-200"
               )}
             >
-              <div className="flex items-start gap-4 p-4">
+              <div
+                className={cn(
+                  "flex items-start gap-4",
+                  message.role === "user" ? "p-4" : "py-2 px-4"
+                )}
+              >
                 {/* Avatar */}
                 {message.role === "assistant" ? (
                   <div className="flex-shrink-0">
@@ -241,7 +244,7 @@ export default function ChatMessage({
                 <div className="flex-1 min-w-0">
                   <div
                     className={cn(
-                      "prose prose-base max-w-none break-words dark:prose-invert",
+                      "prose dark:prose-invert prose-p:mt-0 prose-p:mb-3 prose-p:leading-normal prose-p:text-[16px]",
                       isLoading && "opacity-60"
                     )}
                   >
@@ -256,7 +259,9 @@ export default function ChatMessage({
                       )}
                     {/* Then show message content */}
                     {message.content?.trim() && (
-                      <div className="relative">
+                      <div className="relative pr-8">
+                        {" "}
+                        {/* Added padding-right to prevent overlap */}
                         <ReactMarkdown
                           components={{
                             code({ className, children, ...props }) {
@@ -289,7 +294,7 @@ export default function ChatMessage({
                                   key={nanoid()}
                                   {...props}
                                   className={cn(
-                                    "px-1.5 py-0.5 rounded-md text-[15px] break-all",
+                                    "px-1.5 py-0.5 rounded-md text-[16px] break-all",
                                     message.role === "assistant"
                                       ? "bg-muted/40 dark:bg-muted/30"
                                       : "bg-primary/10"
@@ -303,7 +308,7 @@ export default function ChatMessage({
                               return (
                                 <p
                                   key={nanoid()}
-                                  className="mb-3 last:mb-0 break-words text-[15px] leading-relaxed"
+                                  className="mb-3 last:mb-0 break-words text-[16px] leading-relaxed"
                                 >
                                   {children}
                                 </p>
@@ -313,7 +318,7 @@ export default function ChatMessage({
                               return (
                                 <ul
                                   key={nanoid()}
-                                  className="mb-3 last:mb-0 space-y-2 text-[15px] list-disc pl-4 marker:text-muted-foreground"
+                                  className="mb-3 last:mb-0 space-y-2 text-[16px] list-disc pl-4 marker:text-muted-foreground"
                                 >
                                   {children}
                                 </ul>
@@ -323,7 +328,7 @@ export default function ChatMessage({
                               return (
                                 <ol
                                   key={nanoid()}
-                                  className="mb-3 last:mb-0 space-y-2 text-[15px] list-decimal pl-4 marker:text-muted-foreground"
+                                  className="mb-3 last:mb-0 space-y-2 text-[16px] list-decimal pl-4 marker:text-muted-foreground"
                                 >
                                   {children}
                                 </ol>

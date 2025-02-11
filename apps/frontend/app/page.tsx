@@ -1,20 +1,24 @@
 "use client";
 
 import { Suspense } from "react";
-import { useSearchParams } from "next/navigation";
-import ChatInterface from "./components/ChatInterface";
 import { AuthGuard } from "./components/AuthGuard";
-import { AppLayout } from "./components/AppLayout";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { usePrivy } from "@privy-io/react-auth";
 
 function HomeContent() {
-  const searchParams = useSearchParams();
-  const chatId = searchParams.get("chatId");
+  const router = useRouter();
+  const { authenticated } = usePrivy();
 
-  return (
-    <AppLayout selectedThread={chatId}>
-      <ChatInterface threadId={chatId} />
-    </AppLayout>
-  );
+  console.log(authenticated);
+
+  useEffect(() => {
+    if (authenticated) {
+      router.push("/chat");
+    }
+  }, [authenticated, router]);
+
+  return null;
 }
 
 export default function Home() {

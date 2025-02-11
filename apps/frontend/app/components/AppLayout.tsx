@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Sidebar from "./Sidebar";
-import { useCreateThread, useDeleteThread, chatKeys } from "../hooks/chat";
+import { useDeleteThread, chatKeys } from "../hooks/chat";
 import { ThreadPreview } from "../types";
 import { GetThreadsResponse } from "../types/api/chat";
 import Navbar from "./Navbar";
@@ -34,7 +34,7 @@ export function AppLayout({
   const router = useRouter();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const { mutateAsync: createThreadMutation } = useCreateThread();
+  // const { mutateAsync: createThreadMutation } = useCreateThread();
   const { mutateAsync: deleteThreadMutation } = useDeleteThread();
   const { user, logout } = usePrivy();
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
@@ -108,20 +108,24 @@ export function AppLayout({
     };
   }, [isSidebarOpen]);
 
+  // const createThread = async () => {
+  //   try {
+  //     const response = await createThreadMutation();
+  //     router.push(`/chat?chatId=${response.threadId}`);
+  //   } catch (error) {
+  //     console.error("Error creating thread:", error);
+  //   }
+  // };
+
   const createThread = async () => {
-    try {
-      const response = await createThreadMutation();
-      router.push(`/?chatId=${response.threadId}`);
-    } catch (error) {
-      console.error("Error creating thread:", error);
-    }
+    router.push("/chat");
   };
 
   const handleDeleteClick = async (thread: ThreadPreview) => {
     try {
       await deleteThreadMutation(thread.threadId);
       if (selectedThread === thread.threadId) {
-        router.push("/");
+        router.push("/chat");
       }
       // Refresh the threads list after deletion
       refetch();
@@ -131,7 +135,7 @@ export function AppLayout({
   };
 
   const handleSelectThread = (threadId: string) => {
-    router.push(`/?chatId=${threadId}`);
+    router.push(`/chat?chatId=${threadId}`);
   };
 
   const handleLoadMore = () => {
@@ -160,8 +164,8 @@ export function AppLayout({
           <p>Are you sure you want to log out?</p>
           {user?.wallet && (
             <p className="mt-2 text-sm">
-              Note: This will not disconnect your wallet. You will need to
-              reconnect to access your account again.
+              Note: Your embedded wallet will remain securely stored.
+              You&apos;ll just need to log back in to access your account again.
             </p>
           )}
         </div>
