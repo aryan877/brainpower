@@ -101,7 +101,7 @@ export function AgentsSection() {
         "Your one-stop solution for memecoin magic and token launches on Pump.fun.",
       imageSrc: "/landing/agents/pump-fun-agent.svg",
       imageAlt: "Pump Fun Agent Interface",
-      bgImageSrc: "/landing/agents/pump-fun-bg.svg",
+      bgImageSrc: "/landing/agents/pump-fun-bg.png",
       textBelow: true,
       className: "md:col-span-1 lg:col-span-2 h-[400px]",
     },
@@ -127,7 +127,7 @@ export function AgentsSection() {
         "Ensure your tokens always have the right flow and safety in the liquidity pools.",
       imageSrc: "/landing/agents/liquidity-agent.png",
       imageAlt: "Liquidity Agent Interface",
-      bgImageSrc: "/landing/agents/liquidity-agent-bg.svg",
+      bgImageSrc: "/landing/agents/liquidity-agent-bg.png",
       className: "h-[400px]",
     },
     {
