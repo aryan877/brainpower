@@ -3,7 +3,7 @@ import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { Message } from "../types";
 import { nanoid } from "nanoid";
-import { User, XCircle } from "lucide-react";
+import { User, XCircle, Copy, Check } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { ToolInvocation } from "ai";
@@ -20,6 +20,7 @@ import {
   SuccessResultsMap,
 } from "./tools/SuccessResults";
 import { ToolNames } from "./ToolNames";
+import { useState } from "react";
 
 interface ChatMessageProps {
   message: Message;
@@ -66,6 +67,16 @@ export default function ChatMessage({
   isLoading,
   addToolResult,
 }: ChatMessageProps) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    if (message.content) {
+      await navigator.clipboard.writeText(message.content);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1000);
+    }
+  };
+
   const toolNames =
     message.toolInvocations?.map((tool) => tool.toolName).filter(Boolean) || [];
 
@@ -245,82 +256,97 @@ export default function ChatMessage({
                       )}
                     {/* Then show message content */}
                     {message.content?.trim() && (
-                      <ReactMarkdown
-                        components={{
-                          code({ className, children, ...props }) {
-                            const isInline = (props as { inline?: boolean })
-                              .inline;
-                            const match = /language-(\w+)/.exec(
-                              className || ""
-                            );
-                            return !isInline && match ? (
-                              <div
-                                key={nanoid()}
-                                className="relative group/code mt-4 mb-1"
-                              >
-                                <div className="absolute -top-4 left-0 right-0 h-6 bg-muted/50 backdrop-blur supports-[backdrop-filter]:bg-muted/30 rounded-t-lg flex items-center px-4">
-                                  <span className="text-xs font-medium text-foreground/70">
-                                    {match[1].toUpperCase()}
-                                  </span>
+                      <div className="relative">
+                        <ReactMarkdown
+                          components={{
+                            code({ className, children, ...props }) {
+                              const isInline = (props as { inline?: boolean })
+                                .inline;
+                              const match = /language-(\w+)/.exec(
+                                className || ""
+                              );
+                              return !isInline && match ? (
+                                <div
+                                  key={nanoid()}
+                                  className="relative group/code mt-4 mb-1"
+                                >
+                                  <div className="absolute -top-4 left-0 right-0 h-6 bg-muted/50 backdrop-blur supports-[backdrop-filter]:bg-muted/30 rounded-t-lg flex items-center px-4">
+                                    <span className="text-xs font-medium text-foreground/70">
+                                      {match[1].toUpperCase()}
+                                    </span>
+                                  </div>
+                                  <div className="!bg-muted/30 dark:!bg-muted/20 !rounded-lg !rounded-tl-none !pt-4 text-sm !mt-0 !mb-0 whitespace-pre-wrap break-all">
+                                    <SyntaxHighlighter
+                                      style={vscDarkPlus}
+                                      language={match[1]}
+                                    >
+                                      {String(children).replace(/\n$/, "")}
+                                    </SyntaxHighlighter>
+                                  </div>
                                 </div>
-                                <div className="!bg-muted/30 dark:!bg-muted/20 !rounded-lg !rounded-tl-none !pt-4 text-sm !mt-0 !mb-0 whitespace-pre-wrap break-all">
-                                  <SyntaxHighlighter
-                                    style={vscDarkPlus}
-                                    language={match[1]}
-                                  >
-                                    {String(children).replace(/\n$/, "")}
-                                  </SyntaxHighlighter>
-                                </div>
-                              </div>
+                              ) : (
+                                <code
+                                  key={nanoid()}
+                                  {...props}
+                                  className={cn(
+                                    "px-1.5 py-0.5 rounded-md text-[15px] break-all",
+                                    message.role === "assistant"
+                                      ? "bg-muted/40 dark:bg-muted/30"
+                                      : "bg-primary/10"
+                                  )}
+                                >
+                                  {children}
+                                </code>
+                              );
+                            },
+                            p({ children }) {
+                              return (
+                                <p
+                                  key={nanoid()}
+                                  className="mb-3 last:mb-0 break-words text-[15px] leading-relaxed"
+                                >
+                                  {children}
+                                </p>
+                              );
+                            },
+                            ul({ children }) {
+                              return (
+                                <ul
+                                  key={nanoid()}
+                                  className="mb-3 last:mb-0 space-y-2 text-[15px] list-disc pl-4 marker:text-muted-foreground"
+                                >
+                                  {children}
+                                </ul>
+                              );
+                            },
+                            ol({ children }) {
+                              return (
+                                <ol
+                                  key={nanoid()}
+                                  className="mb-3 last:mb-0 space-y-2 text-[15px] list-decimal pl-4 marker:text-muted-foreground"
+                                >
+                                  {children}
+                                </ol>
+                              );
+                            },
+                          }}
+                        >
+                          {message.content}
+                        </ReactMarkdown>
+                        <div className="absolute bottom-0 right-0">
+                          <button
+                            onClick={handleCopy}
+                            className="p-1.5 hover:bg-primary/10 rounded-md transition-colors"
+                            title="Copy message"
+                          >
+                            {copied ? (
+                              <Check className="w-4 h-4 text-green-500" />
                             ) : (
-                              <code
-                                key={nanoid()}
-                                {...props}
-                                className={cn(
-                                  "px-1.5 py-0.5 rounded-md text-[15px] break-all",
-                                  message.role === "assistant"
-                                    ? "bg-muted/40 dark:bg-muted/30"
-                                    : "bg-primary/10"
-                                )}
-                              >
-                                {children}
-                              </code>
-                            );
-                          },
-                          p({ children }) {
-                            return (
-                              <p
-                                key={nanoid()}
-                                className="mb-3 last:mb-0 break-words text-[15px] leading-relaxed"
-                              >
-                                {children}
-                              </p>
-                            );
-                          },
-                          ul({ children }) {
-                            return (
-                              <ul
-                                key={nanoid()}
-                                className="mb-3 last:mb-0 space-y-2 text-[15px] list-disc pl-4 marker:text-muted-foreground"
-                              >
-                                {children}
-                              </ul>
-                            );
-                          },
-                          ol({ children }) {
-                            return (
-                              <ol
-                                key={nanoid()}
-                                className="mb-3 last:mb-0 space-y-2 text-[15px] list-decimal pl-4 marker:text-muted-foreground"
-                              >
-                                {children}
-                              </ol>
-                            );
-                          },
-                        }}
-                      >
-                        {message.content}
-                      </ReactMarkdown>
+                              <Copy className="w-4 h-4 text-muted-foreground hover:text-primary" />
+                            )}
+                          </button>
+                        </div>
+                      </div>
                     )}
 
                     {/* Testing Birdeye Trading View */}
