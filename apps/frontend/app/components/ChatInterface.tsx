@@ -342,11 +342,11 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
       {/* Messages container */}
       <div
         ref={messagesContainerRef}
-        className="flex-1 overflow-y-auto brainpower-scrollbar divide-border/40 relative"
+        className="flex-1 overflow-y-auto brainpower-scrollbar divide-border/40 relative px-4 sm:px-6 lg:px-0"
       >
         {messages.length === 0 ? (
           <div className="h-full flex items-center justify-center p-4">
-            <div className="text-center max-w-md mx-auto space-y-2">
+            <div className="text-center max-w-md mx-auto space-y-2 px-4 sm:px-6 lg:px-0">
               <h3 className="text-lg font-semibold text-foreground">
                 Start a New Conversation
               </h3>
@@ -361,7 +361,10 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
             {messages.reduce((groups: React.ReactElement[], message) => {
               return [
                 ...groups,
-                <div key={message.id} className="max-w-3xl mx-auto py-3">
+                <div
+                  key={message.id}
+                  className="max-w-3xl mx-auto py-3 px-0 sm:px-2 lg:px-4"
+                >
                   <ChatMessage
                     message={message}
                     isLoading={
