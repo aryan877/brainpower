@@ -9,6 +9,10 @@ import {
 const BASE_URL = "https://frontend-api.pump.fun";
 const TOTAL_SUPPLY = 1_000_000_000_000_000; // 1 billion with 6 decimals
 
+async function delay(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 async function getAllTrades(mint: string): Promise<PumpFunTrade[]> {
   try {
     const countResponse: AxiosResponse<number> = await axios.get(
@@ -20,19 +24,33 @@ async function getAllTrades(mint: string): Promise<PumpFunTrade[]> {
     const limit = 200;
     const totalCalls = Math.ceil(totalTrades / limit);
 
-    const promises: Promise<AxiosResponse<PumpFunTrade[]>>[] = [];
-    for (let i = 0; i < totalCalls; i++) {
-      const offset = i * limit;
-      promises.push(
-        axios.get<PumpFunTrade[]>(
-          `${BASE_URL}/trades/all/${mint}?limit=${limit}&offset=${offset}&minimumSize=0`,
-        ),
-      );
-    }
+    const batchSize = 2; // Process requests in batches of 2
+    const delayMs = 1000; // 1 second delay between batches
 
-    const responses: AxiosResponse<PumpFunTrade[]>[] =
-      await Promise.all(promises);
-    allTrades = responses.flatMap((response) => response.data);
+    for (let i = 0; i < totalCalls; i += batchSize) {
+      const batchPromises: Promise<AxiosResponse<PumpFunTrade[]>>[] = [];
+
+      // Create batch of promises
+      for (let j = 0; j < batchSize && i + j < totalCalls; j++) {
+        const offset = (i + j) * limit;
+        batchPromises.push(
+          axios.get<PumpFunTrade[]>(
+            `${BASE_URL}/trades/all/${mint}?limit=${limit}&offset=${offset}&minimumSize=0`,
+          ),
+        );
+      }
+
+      // Execute batch
+      const batchResponses = await Promise.all(batchPromises);
+      allTrades = allTrades.concat(
+        batchResponses.flatMap((response) => response.data),
+      );
+
+      // Add delay before next batch if not the last batch
+      if (i + batchSize < totalCalls) {
+        await delay(delayMs);
+      }
+    }
 
     return allTrades;
   } catch (error: any) {

@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { motion, AnimatePresence } from "framer-motion";
 import { BundleAnalysisResponse } from "@repo/brainpower-agent";
+import { useBundleAnalysis } from "../../../hooks/pumpfun";
 
 interface BundleAnalysisSuccessProps {
   data: BundleAnalysisResponse;
@@ -271,7 +272,10 @@ function BubbleMap({
   );
 }
 
-export function BundleAnalysisSuccess({ data }: BundleAnalysisSuccessProps) {
+export function BundleAnalysisSuccess({
+  data: initialData,
+}: BundleAnalysisSuccessProps) {
+  const { data = initialData } = useBundleAnalysis(initialData.mint);
   const [selectedBundle, setSelectedBundle] = useState<number | null>(null);
 
   if (!data?.bundles || data.bundles.length === 0) {
@@ -328,7 +332,10 @@ export function BundleAnalysisSuccess({ data }: BundleAnalysisSuccessProps) {
               className="space-y-4 pt-2"
             >
               <div className="flex items-center justify-between">
-                <h2 className="text-xl font-semibold text-primary">
+                <h2
+                  className="text-xl font-semibold"
+                  style={{ color: getCategoryColor(currentBundle.category) }}
+                >
                   Bundle Details #
                   {selectedBundle !== null ? selectedBundle + 1 : ""}
                 </h2>
