@@ -51,6 +51,57 @@ interface BubbleMapProps {
   selectedBundle: number | null;
 }
 
+interface CircularTextProps {
+  text: string;
+  size: number;
+  color: string;
+}
+
+function CircularText({ text, size, color }: CircularTextProps) {
+  // Add space between words and create repeated text with middots
+  const formattedText = text.replace(/([A-Z])/g, " $1").trim();
+  const repeatedText = Array(3).fill(`${formattedText} · `).join("").trim();
+  const characters = repeatedText.split("");
+  const angleStep = (2 * Math.PI) / characters.length;
+
+  return (
+    <div
+      className="absolute inset-0 pointer-events-none"
+      style={{
+        width: size,
+        height: size,
+        transform: "scale(1.12)",
+      }}
+    >
+      {characters.map((char, i) => {
+        const angle = i * angleStep;
+        const x = 50 + Math.cos(angle) * 49;
+        const y = 50 + Math.sin(angle) * 49;
+        const rotationAngle = (angle + Math.PI / 2) * (180 / Math.PI);
+
+        return (
+          <div
+            key={i}
+            className="absolute text-[9px] sm:text-[11px] font-bold"
+            style={{
+              left: `${x}%`,
+              top: `${y}%`,
+              transform: `translate(-50%, -50%) rotate(${rotationAngle}deg)`,
+              color: color,
+              opacity: 1,
+              transformOrigin: "center",
+              textShadow: `0 0 5px ${color}40`,
+              letterSpacing: "0.05em",
+            }}
+          >
+            {char}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 function BubbleMap({
   bundles,
   onSelectBundle,
@@ -74,8 +125,13 @@ function BubbleMap({
     const updateDimensions = () => {
       if (containerRef.current) {
         const width = containerRef.current.offsetWidth;
+        // Make bubbles smaller on mobile
+        const mobileBubbleSize = Math.min(width * 0.8, BUBBLE_BASE_SIZE);
+        const actualBubbleSize =
+          width < 640 ? mobileBubbleSize : BUBBLE_BASE_SIZE;
+
         // Ensure height is enough to fit bubbles comfortably
-        const minHeight = Math.max(500, BUBBLE_BASE_SIZE * 2.5);
+        const minHeight = Math.max(500, actualBubbleSize * 2.5);
         const height = Math.max(minHeight, window.innerHeight * 0.7);
         setDimensions({
           width,
@@ -109,24 +165,29 @@ function BubbleMap({
     setIsDragging(false);
   };
 
-  // Calculate bubble sizes with more consistency
+  // Calculate bubble sizes with more consistency and mobile responsiveness
   const maxSolAmount = Math.max(...bundles.map((b) => b.totalSolAmount));
 
   const getBubbleSize = (solAmount: number) => {
-    // Use a more subtle size variation
     const sizeRatio =
       MIN_SCALE_RATIO + (solAmount / maxSolAmount) * (1 - MIN_SCALE_RATIO);
-    return BUBBLE_BASE_SIZE * sizeRatio;
+    const baseSize =
+      dimensions.width < 640
+        ? Math.min(dimensions.width * 0.8, BUBBLE_BASE_SIZE)
+        : BUBBLE_BASE_SIZE;
+    return baseSize * sizeRatio;
   };
 
-  // Calculate positions with better spacing
+  // Calculate positions with better spacing and mobile responsiveness
   const positions = bundles.map((bundle, index) => {
     const size = getBubbleSize(bundle.totalSolAmount);
     const angle = (index / bundles.length) * 2 * Math.PI;
-    const baseRadius = Math.min(dimensions.width, dimensions.height) * 0.35;
+    const baseRadius =
+      Math.min(dimensions.width, dimensions.height) *
+      (dimensions.width < 640 ? 0.25 : 0.35);
     const radius = Math.max(
       baseRadius,
-      (BUBBLE_BASE_SIZE * bundles.length * SPACING_FACTOR) / (2 * Math.PI)
+      (size * bundles.length * SPACING_FACTOR) / (2 * Math.PI)
     );
 
     return {
@@ -207,7 +268,7 @@ function BubbleMap({
                 onMouseLeave={() => setHoveredBundle(null)}
               >
                 <motion.div
-                  className="rounded-full flex items-center justify-center relative overflow-hidden backdrop-blur-sm"
+                  className="rounded-full flex items-center justify-center relative overflow-visible backdrop-blur-sm"
                   style={{
                     width: size,
                     height: size,
@@ -220,6 +281,13 @@ function BubbleMap({
                         : "none",
                   }}
                 >
+                  <CircularText
+                    text={bundle.category
+                      .replace(/[🎯✅📉🔄\s]/g, "")
+                      .toUpperCase()}
+                    size={size}
+                    color={getCategoryColor(bundle.category)}
+                  />
                   {/* Content with better spacing */}
                   <div className="absolute inset-0 flex flex-col items-center justify-center p-6">
                     <div className="flex items-center justify-center w-8 h-8 mb-2">

@@ -207,7 +207,7 @@ export default function ChatMessage({
           <div className="relative">
             <div
               className={cn(
-                "flex items-start gap-4",
+                "flex flex-col sm:flex-row items-start gap-4 w-full overflow-hidden",
                 message.role === "user"
                   ? "bg-muted dark:bg-muted rounded-2xl p-4"
                   : "py-2 px-4"
@@ -215,7 +215,7 @@ export default function ChatMessage({
             >
               {/* Avatar */}
               {message.role === "assistant" ? (
-                <div className="flex-shrink-0">
+                <div className="flex-shrink-0 mb-3 sm:mb-0">
                   <Avatar className="w-8 h-8 ring-1 ring-primary/30 bg-primary/20 flex items-center justify-center transition-all duration-200 hover:ring-primary/40 hover:bg-primary/30">
                     <div className="flex items-center gap-2">
                       <Image
@@ -228,7 +228,7 @@ export default function ChatMessage({
                   </Avatar>
                 </div>
               ) : (
-                <div className="flex-shrink-0">
+                <div className="flex-shrink-0 mb-3 sm:mb-0">
                   <Avatar className="w-8 h-8 ring-1 ring-border bg-background flex items-center justify-center transition-all duration-200 hover:ring-border/80 hover:bg-muted/50">
                     <User className="w-5 h-5 text-foreground/80" />
                   </Avatar>
@@ -236,10 +236,10 @@ export default function ChatMessage({
               )}
 
               {/* Content */}
-              <div className="flex-1 min-w-0">
+              <div className="flex-1 min-w-0 w-full overflow-hidden">
                 <div
                   className={cn(
-                    "prose dark:prose-invert prose-p:mt-0 prose-p:mb-3 prose-p:leading-normal prose-p:text-[16px]",
+                    "prose dark:prose-invert prose-p:mt-0 prose-p:mb-3 prose-p:leading-normal prose-p:text-[16px] max-w-none overflow-hidden break-words whitespace-pre-wrap",
                     isLoading && "opacity-60"
                   )}
                 >

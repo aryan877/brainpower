@@ -129,7 +129,7 @@ function categorizeBundle(trades: PumpFunTrade[]): string {
   if (buyRatio === 1) return "🎯 Snipers";
   if (buyRatio > 0.7) return "✅ Regular Buyers";
   if (buyRatio < 0.3) return "📉 Sellers";
-  return "🔄 Mixed Activity";
+  return "🔄 Mixed";
 }
 
 export async function analyzePumpFunBundles(
