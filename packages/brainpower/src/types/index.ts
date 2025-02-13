@@ -322,3 +322,41 @@ export interface TweetSearchResult {
 }
 
 export type Interval = "_3Days" | "_7Days";
+
+// Pumpfun bundle analysis
+export interface PumpFunTrade {
+  slot: number;
+  user: string;
+  username?: string;
+  token_amount: number;
+  sol_amount: number;
+  is_buy: boolean;
+  signature: string;
+  timestamp: number;
+}
+
+export interface WalletSummary {
+  currentBalance: number;
+  totalBought: number;
+  totalSold: number;
+  username?: string;
+}
+
+export interface BundleAnalysis {
+  slot: number;
+  uniqueWallets: number;
+  trades: PumpFunTrade[];
+  totalTokenAmount: number;
+  totalSolAmount: number;
+  supplyPercentage: string;
+  holdingAmount: number;
+  holdingPercentage: string;
+  category: string;
+  walletSummaries: Record<string, WalletSummary>;
+}
+
+export interface BundleAnalysisResponse {
+  mint: string;
+  totalTrades: number;
+  bundles: BundleAnalysis[];
+}

@@ -20,11 +20,13 @@ import getAgentByTwitter from "./cookie3/getAgentByTwitter.js";
 import getAgentByContract from "./cookie3/getAgentByContract.js";
 import getTopAgents from "./cookie3/getTopAgents.js";
 import searchTweets from "./cookie3/searchTweets.js";
+import getBundleAnalysisPumpFunAction from "./pumpfun/getBundleAnalysisPumpfun.js";
 
 export { ACTION_NAMES };
 
 export const ACTIONS = {
   [ACTION_NAMES.LAUNCH_PUMPFUN_TOKEN]: launchPumpfunTokenAction,
+  [ACTION_NAMES.GET_BUNDLE_ANALYSIS_PUMPFUN]: getBundleAnalysisPumpFunAction,
   [ACTION_NAMES.GET_TOKEN_DATA_BY_TICKER]: tokenDataByTickerAction,
   [ACTION_NAMES.GET_TOKEN_DATA_BY_ADDRESS]: tokenDataByAddressAction,
   [ACTION_NAMES.JUPITER_SWAP]: tradeAction,

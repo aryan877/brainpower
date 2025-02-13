@@ -86,7 +86,7 @@ export function Footer() {
           <div className="absolute inset-x-0 bottom-0 h-[60%] bg-gradient-to-t from-black via-black/70 to-transparent" />
 
           {/* Overall dark overlay */}
-          <div className="absolute inset-0 bg-background/20" />
+          <div className="absolute inset-0 bg-black/20" />
         </div>
       </div>
 

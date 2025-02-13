@@ -108,6 +108,10 @@ const TOOL_DISPLAY_CONFIG: Record<
     icon: <MessageCircle className="w-3 h-3" />,
     label: "Search Tweets",
   },
+  [ACTION_NAMES.GET_BUNDLE_ANALYSIS_PUMPFUN]: {
+    icon: <Sparkles className="w-3 h-3" />,
+    label: "Bundle Analysis",
+  },
 };
 
 export function ToolNames({ toolNames, className }: ToolNamesProps) {
