@@ -66,7 +66,6 @@ function BubbleMap({
 
   // Constants for consistent sizing
   const BUBBLE_BASE_SIZE = 180;
-  const BUBBLE_PADDING = 24;
   const MIN_SCALE_RATIO = 0.85;
   const SPACING_FACTOR = 1.5;
 
@@ -146,6 +145,71 @@ function BubbleMap({
     };
   });
 
+  // Update the renderBubbleContent function
+  const renderBubbleContent = (
+    bundle: BundleAnalysisResponse["bundles"][0],
+    buyRatio: number,
+    size: number
+  ) => {
+    // Scale text and padding based on bubble size
+    const isSmall = size < 120;
+    const isTiny = size < 80;
+
+    return (
+      <div
+        className={`absolute inset-0 flex flex-col items-center justify-center gap-1`}
+        style={{
+          padding: isTiny ? "0.5rem" : isSmall ? "0.75rem" : "1.5rem",
+        }}
+      >
+        <span
+          className={`font-bold uppercase tracking-wide ${
+            isTiny ? "text-[8px]" : isSmall ? "text-[10px]" : "text-xs"
+          }`}
+          style={{ color: getCategoryColor(bundle.category) }}
+        >
+          {bundle.category.replace(/[^a-zA-Z]/g, "")}
+        </span>
+        <BundleTypeIcon category={bundle.category} buyRatio={buyRatio} />
+        <span
+          className={`font-bold ${
+            isTiny ? "text-sm" : isSmall ? "text-base" : "text-lg"
+          }`}
+        >
+          {bundle.totalSolAmount.toFixed(1)} SOL
+        </span>
+        <div className="flex gap-1">
+          <span
+            className={`bg-green-500/10 text-green-500 px-1.5 rounded-full ${
+              isTiny ? "text-[8px]" : isSmall ? "text-[10px]" : "text-xs"
+            }`}
+          >
+            {bundle.trades.filter((t) => t.is_buy).length}↑
+          </span>
+          {bundle.trades.filter((t) => !t.is_buy).length > 0 && (
+            <span
+              className={`bg-red-500/10 text-red-500 px-1.5 rounded-full ${
+                isTiny ? "text-[8px]" : isSmall ? "text-[10px]" : "text-xs"
+              }`}
+            >
+              {bundle.trades.filter((t) => !t.is_buy).length}↓
+            </span>
+          )}
+        </div>
+        {!isTiny && (
+          <span
+            className={`bg-black/20 text-muted-foreground px-1.5 rounded-full ${
+              isSmall ? "text-[10px]" : "text-xs"
+            }`}
+          >
+            {bundle.uniqueWallets}{" "}
+            {bundle.uniqueWallets === 1 ? "wallet" : "wallets"}
+          </span>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div
       className="w-full relative bg-gradient-to-br from-background/50 to-background rounded-xl overflow-hidden"
@@ -186,9 +250,9 @@ function BubbleMap({
         >
           {bundles.map((bundle, index) => {
             const { x, y, size } = positions[index];
-            const buyCount = bundle.trades.filter((t) => t.is_buy).length;
-            const sellCount = bundle.trades.filter((t) => !t.is_buy).length;
-            const buyRatio = buyCount / bundle.trades.length;
+            const buyRatio =
+              bundle.trades.filter((t) => t.is_buy).length /
+              bundle.trades.length;
             const isHovered = hoveredBundle === index;
             const isSelected = selectedBundle === index;
 
@@ -217,53 +281,23 @@ function BubbleMap({
                 onMouseLeave={() => setHoveredBundle(null)}
               >
                 <motion.div
-                  className="rounded-full flex items-center justify-center relative overflow-visible backdrop-blur-sm"
                   style={{
                     width: size,
                     height: size,
                     backgroundColor: `${getCategoryColor(bundle.category)}20`,
-                    padding: BUBBLE_PADDING,
                     border: `2px solid ${getCategoryColor(bundle.category)}`,
                     boxShadow:
                       selectedBundle === index
                         ? `0 0 30px ${getCategoryColor(bundle.category)}`
                         : "none",
+                    borderRadius: "50%",
+                    backdropFilter: "blur(8px)",
+                    position: "relative",
+                    overflow: "hidden",
                   }}
+                  className="flex items-center justify-center"
                 >
-                  {/* Content with better spacing */}
-                  <div className="absolute inset-0 flex flex-col items-center justify-center p-6">
-                    <span
-                      className="text-xs font-bold mb-2 tracking-wider opacity-80"
-                      style={{ color: getCategoryColor(bundle.category) }}
-                    >
-                      {bundle.category
-                        .replace(/[🎯✅📉🔄\s]/g, "")
-                        .toUpperCase()}
-                    </span>
-                    <div className="flex items-center justify-center w-8 h-8 mb-2">
-                      <BundleTypeIcon
-                        category={bundle.category}
-                        buyRatio={buyRatio}
-                      />
-                    </div>
-                    <span className="text-lg font-bold mb-2 whitespace-nowrap px-2">
-                      {bundle.totalSolAmount.toFixed(1)} SOL
-                    </span>
-                    <div className="flex items-center gap-4 mb-2">
-                      <span className="text-sm font-medium text-green-500 bg-green-500/10 px-2 py-0.5 rounded-full">
-                        {buyCount}↑
-                      </span>
-                      {sellCount > 0 && (
-                        <span className="text-sm font-medium text-red-500 bg-red-500/10 px-2 py-0.5 rounded-full">
-                          {sellCount}↓
-                        </span>
-                      )}
-                    </div>
-                    <span className="text-sm text-muted-foreground whitespace-nowrap px-3 py-1 rounded-full bg-background/40 backdrop-blur-sm">
-                      {bundle.uniqueWallets}{" "}
-                      {bundle.uniqueWallets === 1 ? "wallet" : "wallets"}
-                    </span>
-                  </div>
+                  {renderBubbleContent(bundle, buyRatio, size)}
                 </motion.div>
               </motion.div>
             );
@@ -367,7 +401,9 @@ export function BundleAnalysisSuccess({
                 <div className="px-4 py-3 border-b border-border/50">
                   <div className="flex items-baseline justify-between">
                     <div className="flex items-baseline gap-3">
-                      <h3 className="text-sm font-medium">Token Flow</h3>
+                      <h3 className="text-sm font-medium truncate">
+                        Token Flow
+                      </h3>
                       <span className="text-xs text-muted-foreground">
                         Slot {currentBundle.slot}
                       </span>
