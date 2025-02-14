@@ -239,14 +239,24 @@ export default function ChatMessage({
               <div className="flex-1 min-w-0 w-full overflow-hidden">
                 <div
                   className={cn(
-                    "prose dark:prose-invert prose-p:mt-0 prose-p:mb-3 prose-p:leading-normal prose-p:text-[16px] max-w-none overflow-hidden break-words whitespace-pre-wrap",
+                    "prose dark:prose-invert max-w-none overflow-hidden break-words",
+                    "prose-headings:mt-6 prose-headings:mb-4 prose-headings:font-semibold prose-headings:text-foreground",
+                    "prose-h1:text-3xl prose-h2:text-2xl prose-h3:text-xl prose-h4:text-lg",
+                    "prose-p:mt-3 prose-p:mb-3 prose-p:leading-7 prose-p:text-[15px]",
+                    "prose-ul:my-4 prose-ul:list-disc prose-ul:pl-6",
+                    "prose-ol:my-4 prose-ol:list-decimal prose-ol:pl-6",
+                    "prose-li:my-2 prose-li:text-[15px] prose-li:leading-7",
+                    "prose-pre:my-4 prose-pre:bg-muted/30 prose-pre:rounded-lg",
+                    "prose-code:text-[14px] prose-code:font-normal",
+                    "prose-blockquote:my-4 prose-blockquote:pl-4 prose-blockquote:border-l-2 prose-blockquote:border-muted-foreground/30 prose-blockquote:text-muted-foreground prose-blockquote:not-italic",
+                    "prose-hr:my-6 prose-hr:border-muted-foreground/20",
                     isLoading && "opacity-60"
                   )}
                 >
                   {/* Show tool results first */}
                   {message.toolInvocations &&
                     message.toolInvocations.length > 0 && (
-                      <div className="space-y-3 mb-4 not-prose">
+                      <div className="space-y-4 mb-4 not-prose">
                         {message.toolInvocations.map((toolInvocation) =>
                           renderToolInvocation(toolInvocation)
                         )}
@@ -266,17 +276,23 @@ export default function ChatMessage({
                             return !isInline && match ? (
                               <div
                                 key={nanoid()}
-                                className="relative group/code mt-4 mb-1"
+                                className="relative group/code mt-6 mb-4"
                               >
                                 <div className="absolute -top-4 left-0 right-0 h-6 bg-muted/50 backdrop-blur supports-[backdrop-filter]:bg-muted/30 rounded-t-lg flex items-center px-4">
                                   <span className="text-xs font-medium text-foreground/70">
                                     {match[1].toUpperCase()}
                                   </span>
                                 </div>
-                                <div className="!bg-muted/30 dark:!bg-muted/20 !rounded-lg !rounded-tl-none !pt-4 text-sm !mt-0 !mb-0 whitespace-pre-wrap break-all">
+                                <div className="!bg-muted/30 dark:!bg-muted/20 !rounded-lg !rounded-tl-none !pt-4 text-[14px] !mt-0 !mb-0 whitespace-pre-wrap break-all">
                                   <SyntaxHighlighter
                                     style={vscDarkPlus}
                                     language={match[1]}
+                                    customStyle={{
+                                      background: "transparent",
+                                      padding: "1rem",
+                                      margin: 0,
+                                      fontSize: "14px",
+                                    }}
                                   >
                                     {String(children).replace(/\n$/, "")}
                                   </SyntaxHighlighter>
@@ -287,7 +303,7 @@ export default function ChatMessage({
                                 key={nanoid()}
                                 {...props}
                                 className={cn(
-                                  "px-1.5 py-0.5 rounded-md text-[16px] break-all",
+                                  "px-1.5 py-0.5 rounded-md text-[14px] font-normal break-all",
                                   message.role === "assistant"
                                     ? "bg-muted/40 dark:bg-muted/30"
                                     : "bg-primary/10"
@@ -301,7 +317,7 @@ export default function ChatMessage({
                             return (
                               <p
                                 key={nanoid()}
-                                className="mb-3 last:mb-0 break-words text-[16px] leading-relaxed"
+                                className="my-3 break-words text-[15px] leading-7"
                               >
                                 {children}
                               </p>
@@ -311,7 +327,7 @@ export default function ChatMessage({
                             return (
                               <ul
                                 key={nanoid()}
-                                className="mb-3 last:mb-0 space-y-2 text-[16px] list-disc pl-4 marker:text-muted-foreground"
+                                className="my-4 space-y-2 text-[15px] list-disc pl-6 marker:text-muted-foreground"
                               >
                                 {children}
                               </ul>
@@ -321,10 +337,28 @@ export default function ChatMessage({
                             return (
                               <ol
                                 key={nanoid()}
-                                className="mb-3 last:mb-0 space-y-2 text-[16px] list-decimal pl-4 marker:text-muted-foreground"
+                                className="my-4 space-y-2 text-[15px] list-decimal pl-6 marker:text-muted-foreground"
                               >
                                 {children}
                               </ol>
+                            );
+                          },
+                          blockquote({ children }) {
+                            return (
+                              <blockquote
+                                key={nanoid()}
+                                className="my-4 pl-4 border-l-2 border-muted-foreground/30 text-muted-foreground"
+                              >
+                                {children}
+                              </blockquote>
+                            );
+                          },
+                          hr() {
+                            return (
+                              <hr
+                                key={nanoid()}
+                                className="my-6 border-muted-foreground/20"
+                              />
                             );
                           },
                         }}

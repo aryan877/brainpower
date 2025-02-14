@@ -51,57 +51,6 @@ interface BubbleMapProps {
   selectedBundle: number | null;
 }
 
-interface CircularTextProps {
-  text: string;
-  size: number;
-  color: string;
-}
-
-function CircularText({ text, size, color }: CircularTextProps) {
-  // Add space between words and create repeated text with middots
-  const formattedText = text.replace(/([A-Z])/g, " $1").trim();
-  const repeatedText = Array(3).fill(`${formattedText} · `).join("").trim();
-  const characters = repeatedText.split("");
-  const angleStep = (2 * Math.PI) / characters.length;
-
-  return (
-    <div
-      className="absolute inset-0 pointer-events-none"
-      style={{
-        width: size,
-        height: size,
-        transform: "scale(1.12)",
-      }}
-    >
-      {characters.map((char, i) => {
-        const angle = i * angleStep;
-        const x = 50 + Math.cos(angle) * 49;
-        const y = 50 + Math.sin(angle) * 49;
-        const rotationAngle = (angle + Math.PI / 2) * (180 / Math.PI);
-
-        return (
-          <div
-            key={i}
-            className="absolute text-[9px] sm:text-[11px] font-bold"
-            style={{
-              left: `${x}%`,
-              top: `${y}%`,
-              transform: `translate(-50%, -50%) rotate(${rotationAngle}deg)`,
-              color: color,
-              opacity: 1,
-              transformOrigin: "center",
-              textShadow: `0 0 5px ${color}40`,
-              letterSpacing: "0.05em",
-            }}
-          >
-            {char}
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
 function BubbleMap({
   bundles,
   onSelectBundle,
@@ -281,15 +230,16 @@ function BubbleMap({
                         : "none",
                   }}
                 >
-                  <CircularText
-                    text={bundle.category
-                      .replace(/[🎯✅📉🔄\s]/g, "")
-                      .toUpperCase()}
-                    size={size}
-                    color={getCategoryColor(bundle.category)}
-                  />
                   {/* Content with better spacing */}
                   <div className="absolute inset-0 flex flex-col items-center justify-center p-6">
+                    <span
+                      className="text-xs font-bold mb-2 tracking-wider opacity-80"
+                      style={{ color: getCategoryColor(bundle.category) }}
+                    >
+                      {bundle.category
+                        .replace(/[🎯✅📉🔄\s]/g, "")
+                        .toUpperCase()}
+                    </span>
                     <div className="flex items-center justify-center w-8 h-8 mb-2">
                       <BundleTypeIcon
                         category={bundle.category}
