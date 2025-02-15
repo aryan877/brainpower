@@ -12,6 +12,7 @@ import {
   TweetSearchResult,
   AgentsPagedResponse,
   BundleAnalysisResponse,
+  TrendingTokensResponse,
 } from "@repo/brainpower-agent";
 import { PumpFunSuccess } from "./success/PumpFunSuccess";
 import { TokenAddressSuccess } from "./success/TokenAddressSuccess";
@@ -25,6 +26,7 @@ import { ConfirmationSuccess } from "./success/ConfirmationSuccess";
 import { AgentDetailsSuccess } from "./success/AgentDetailsSuccess";
 import { TweetSearchSuccess } from "./success/TweetSearchSuccess";
 import { BundleAnalysisSuccess } from "./success/BundleAnalysisSuccess";
+import { TrendingTokensSuccess } from "./success/TrendingTokensSuccess";
 
 // Define a mapping of tool names to their success result types
 export type SuccessResultsMap = {
@@ -43,6 +45,8 @@ export type SuccessResultsMap = {
   [ACTION_NAMES.GET_AGENT_BY_CONTRACT]: AgentDetails;
   [ACTION_NAMES.GET_TOP_AGENTS]: AgentsPagedResponse;
   [ACTION_NAMES.SEARCH_TWEETS]: TweetSearchResult[];
+  // Coingecko Success Results
+  [ACTION_NAMES.GET_COINGECKO_TRENDING_TOKENS]: TrendingTokensResponse;
 };
 
 // Registry of tools that have success components
@@ -62,6 +66,8 @@ export const SUCCESS_COMPONENTS_REGISTRY = {
   [ACTION_NAMES.GET_AGENT_BY_CONTRACT]: true,
   [ACTION_NAMES.GET_TOP_AGENTS]: true,
   [ACTION_NAMES.SEARCH_TWEETS]: true,
+  // Coingecko Components
+  [ACTION_NAMES.GET_COINGECKO_TRENDING_TOKENS]: true,
 } as const;
 
 // Type guard to check if a tool has success results
@@ -81,6 +87,8 @@ export function SuccessResults<T extends keyof SuccessResultsMap>({
   data,
 }: SuccessResultsProps<T>) {
   switch (toolName) {
+    case ACTION_NAMES.GET_COINGECKO_TRENDING_TOKENS:
+      return <TrendingTokensSuccess data={data as TrendingTokensResponse} />;
     case ACTION_NAMES.LAUNCH_PUMPFUN_TOKEN:
       return <PumpFunSuccess data={data as PumpfunLaunchResponse} />;
     case ACTION_NAMES.GET_BUNDLE_ANALYSIS_PUMPFUN:

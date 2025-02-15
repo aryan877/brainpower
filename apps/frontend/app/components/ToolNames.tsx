@@ -19,6 +19,8 @@ import {
   Twitter,
   TrendingUp,
   MessageCircle,
+  CandlestickChart,
+  Flame,
 } from "lucide-react";
 import React from "react";
 
@@ -111,6 +113,15 @@ const TOOL_DISPLAY_CONFIG: Record<
   [ACTION_NAMES.GET_BUNDLE_ANALYSIS_PUMPFUN]: {
     icon: <Sparkles className="w-3 h-3" />,
     label: "Bundle Analysis",
+  },
+  // Coingecko Tool Names
+  [ACTION_NAMES.GET_COINGECKO_TOKEN_PRICE]: {
+    icon: <CandlestickChart className="w-3 h-3" />,
+    label: "Token Price",
+  },
+  [ACTION_NAMES.GET_COINGECKO_TRENDING_TOKENS]: {
+    icon: <Flame className="w-3 h-3" />,
+    label: "Trending Tokens",
   },
 };
 

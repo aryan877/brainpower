@@ -360,3 +360,21 @@ export interface BundleAnalysisResponse {
   totalTrades: number;
   bundles: BundleAnalysis[];
 }
+
+// Coingecko Types
+export interface TrendingToken {
+  id: string;
+  name: string;
+  symbol: string;
+  marketCapRank: number;
+  thumb: string;
+  price: number;
+  priceChange24h: number;
+  marketCap: string;
+  volume24h: string;
+  description?: string;
+}
+
+export interface TrendingTokensResponse {
+  tokens: TrendingToken[];
+}

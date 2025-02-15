@@ -21,6 +21,7 @@ import getAgentByContract from "./cookie3/getAgentByContract.js";
 import getTopAgents from "./cookie3/getTopAgents.js";
 import searchTweets from "./cookie3/searchTweets.js";
 import getBundleAnalysisPumpFunAction from "./pumpfun/getBundleAnalysisPumpfun.js";
+import { tokenPriceAction, trendingTokensAction } from "./coingecko/index.js";
 
 export { ACTION_NAMES };
 
@@ -46,6 +47,9 @@ export const ACTIONS = {
   [ACTION_NAMES.GET_AGENT_BY_CONTRACT]: getAgentByContract,
   [ACTION_NAMES.GET_TOP_AGENTS]: getTopAgents,
   [ACTION_NAMES.SEARCH_TWEETS]: searchTweets,
+  // Coingecko Actions
+  [ACTION_NAMES.GET_COINGECKO_TOKEN_PRICE]: tokenPriceAction,
+  [ACTION_NAMES.GET_COINGECKO_TRENDING_TOKENS]: trendingTokensAction,
 };
 
 export type { Action, ActionExample, Handler } from "../types/action.js";

@@ -1,4 +1,10 @@
-import { Target, TrendingUp, TrendingDown, ExternalLink } from "lucide-react";
+import {
+  Target,
+  TrendingUp,
+  TrendingDown,
+  ExternalLink,
+  BarChart3,
+} from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { motion, AnimatePresence } from "framer-motion";
@@ -73,18 +79,12 @@ function BubbleMap({
     const updateDimensions = () => {
       if (containerRef.current) {
         const width = containerRef.current.offsetWidth;
-        // Make bubbles smaller on mobile
         const mobileBubbleSize = Math.min(width * 0.8, BUBBLE_BASE_SIZE);
         const actualBubbleSize =
           width < 640 ? mobileBubbleSize : BUBBLE_BASE_SIZE;
-
-        // Ensure height is enough to fit bubbles comfortably
         const minHeight = Math.max(500, actualBubbleSize * 2.5);
         const height = Math.max(minHeight, window.innerHeight * 0.7);
-        setDimensions({
-          width,
-          height,
-        });
+        setDimensions({ width, height });
       }
     };
 
@@ -93,7 +93,7 @@ function BubbleMap({
     return () => window.removeEventListener("resize", updateDimensions);
   }, []);
 
-  // Handle touch/mouse interactions
+  // Enhanced touch/mouse interactions
   const handleDragStart = (e: React.MouseEvent | React.TouchEvent) => {
     setIsDragging(true);
     const pos = "touches" in e ? e.touches[0] : e;
@@ -113,9 +113,8 @@ function BubbleMap({
     setIsDragging(false);
   };
 
-  // Calculate bubble sizes with more consistency and mobile responsiveness
+  // Calculate bubble sizes with improved consistency
   const maxSolAmount = Math.max(...bundles.map((b) => b.totalSolAmount));
-
   const getBubbleSize = (solAmount: number) => {
     const sizeRatio =
       MIN_SCALE_RATIO + (solAmount / maxSolAmount) * (1 - MIN_SCALE_RATIO);
@@ -126,7 +125,7 @@ function BubbleMap({
     return baseSize * sizeRatio;
   };
 
-  // Calculate positions with better spacing and mobile responsiveness
+  // Enhanced position calculation
   const positions = bundles.map((bundle, index) => {
     const size = getBubbleSize(bundle.totalSolAmount);
     const angle = (index / bundles.length) * 2 * Math.PI;
@@ -145,22 +144,22 @@ function BubbleMap({
     };
   });
 
-  // Update the renderBubbleContent function
+  // Enhanced bubble content rendering
   const renderBubbleContent = (
     bundle: BundleAnalysisResponse["bundles"][0],
     buyRatio: number,
     size: number
   ) => {
-    // Scale text and padding based on bubble size
     const isSmall = size < 120;
     const isTiny = size < 80;
 
     return (
-      <div
-        className={`absolute inset-0 flex flex-col items-center justify-center gap-1`}
-        style={{
-          padding: isTiny ? "0.5rem" : isSmall ? "0.75rem" : "1.5rem",
-        }}
+      <motion.div
+        className="absolute inset-0 flex flex-col items-center justify-center gap-1"
+        style={{ padding: isTiny ? "0.5rem" : isSmall ? "0.75rem" : "1.5rem" }}
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.3, delay: 0.1 }}
       >
         <span
           className={`font-bold uppercase tracking-wide ${
@@ -170,7 +169,12 @@ function BubbleMap({
         >
           {bundle.category.replace(/[^a-zA-Z]/g, "")}
         </span>
-        <BundleTypeIcon category={bundle.category} buyRatio={buyRatio} />
+        <motion.div
+          animate={{ rotate: [0, 5, 0] }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+        >
+          <BundleTypeIcon category={bundle.category} buyRatio={buyRatio} />
+        </motion.div>
         <span
           className={`font-bold ${
             isTiny ? "text-sm" : isSmall ? "text-base" : "text-lg"
@@ -179,34 +183,39 @@ function BubbleMap({
           {bundle.totalSolAmount.toFixed(1)} SOL
         </span>
         <div className="flex gap-1">
-          <span
+          <motion.span
             className={`bg-green-500/10 text-green-500 px-1.5 rounded-full ${
               isTiny ? "text-[8px]" : isSmall ? "text-[10px]" : "text-xs"
             }`}
+            whileHover={{ scale: 1.1 }}
           >
             {bundle.trades.filter((t) => t.is_buy).length}↑
-          </span>
+          </motion.span>
           {bundle.trades.filter((t) => !t.is_buy).length > 0 && (
-            <span
+            <motion.span
               className={`bg-red-500/10 text-red-500 px-1.5 rounded-full ${
                 isTiny ? "text-[8px]" : isSmall ? "text-[10px]" : "text-xs"
               }`}
+              whileHover={{ scale: 1.1 }}
             >
               {bundle.trades.filter((t) => !t.is_buy).length}↓
-            </span>
+            </motion.span>
           )}
         </div>
         {!isTiny && (
-          <span
-            className={`bg-black/20 text-muted-foreground px-1.5 rounded-full ${
+          <motion.span
+            className={`bg-primary/10 text-primary px-1.5 rounded-full ${
               isSmall ? "text-[10px]" : "text-xs"
             }`}
+            initial={{ opacity: 0, y: 5 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
           >
             {bundle.uniqueWallets}{" "}
             {bundle.uniqueWallets === 1 ? "wallet" : "wallets"}
-          </span>
+          </motion.span>
         )}
-      </div>
+      </motion.div>
     );
   };
 
@@ -217,7 +226,7 @@ function BubbleMap({
     >
       <div
         ref={containerRef}
-        className="absolute inset-0 touch-none outline-none"
+        className="absolute inset-0 touch-none outline-none cursor-grab active:cursor-grabbing"
         tabIndex={0}
         onMouseDown={handleDragStart}
         onMouseMove={handleDragMove}
@@ -227,26 +236,26 @@ function BubbleMap({
         onTouchMove={handleDragMove}
         onTouchEnd={handleDragEnd}
       >
-        {/* Grid background */}
-        <div
+        {/* Enhanced grid background */}
+        <motion.div
           className="absolute inset-0 grid grid-cols-12 grid-rows-6 gap-4 opacity-5"
-          style={{
+          animate={{
             transform: `translate(${position.x * 0.15}px, ${position.y * 0.15}px) scale(1.1)`,
-            transition: "transform 0.1s ease-out",
           }}
+          transition={{ type: "spring", damping: 20 }}
         >
           {Array.from({ length: 84 }).map((_, i) => (
             <div key={i} className="border border-primary/20 rounded-sm" />
           ))}
-        </div>
+        </motion.div>
 
-        {/* Bubbles container */}
+        {/* Enhanced bubbles container */}
         <motion.div
           className="absolute inset-0"
-          style={{
+          animate={{
             transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
-            transformOrigin: "center center",
           }}
+          transition={{ type: "spring", damping: 20 }}
         >
           {bundles.map((bundle, index) => {
             const { x, y, size } = positions[index];
@@ -259,23 +268,22 @@ function BubbleMap({
             return (
               <motion.div
                 key={bundle.slot}
-                initial={{ scale: 1 }}
-                animate={{ scale: isHovered || isSelected ? 1.1 : 1 }}
-                transition={{ duration: 0.3, ease: "easeOut" }}
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{
+                  scale: isHovered || isSelected ? 1.1 : 1,
+                  opacity: 1,
+                }}
+                transition={{
+                  duration: 0.3,
+                  delay: index * 0.1,
+                  type: "spring",
+                  damping: 15,
+                }}
                 className="absolute transform -translate-x-1/2 -translate-y-1/2 cursor-pointer"
                 style={{ left: x, top: y }}
                 onClick={(e) => {
                   e.stopPropagation();
                   onSelectBundle(index);
-                  if (containerRef.current) {
-                    containerRef.current.blur();
-                    containerRef.current.tabIndex = -1;
-                    setTimeout(() => {
-                      if (containerRef.current) {
-                        containerRef.current.tabIndex = 0;
-                      }
-                    }, 100);
-                  }
                 }}
                 onMouseEnter={() => setHoveredBundle(index)}
                 onMouseLeave={() => setHoveredBundle(null)}
@@ -292,11 +300,23 @@ function BubbleMap({
                         : "none",
                     borderRadius: "50%",
                     backdropFilter: "blur(8px)",
-                    position: "relative",
-                    overflow: "hidden",
                   }}
-                  className="flex items-center justify-center"
+                  className="relative overflow-hidden group"
+                  whileHover={{
+                    boxShadow: `0 0 30px ${getCategoryColor(bundle.category)}50`,
+                  }}
                 >
+                  {/* Bubble glow effect */}
+                  <div
+                    className="absolute inset-0 opacity-50"
+                    style={{
+                      background: `radial-gradient(circle at 50% 50%, ${getCategoryColor(
+                        bundle.category
+                      )}20, transparent 70%)`,
+                    }}
+                  />
+
+                  {/* Bubble content */}
                   {renderBubbleContent(bundle, buyRatio, size)}
                 </motion.div>
               </motion.div>
@@ -304,20 +324,24 @@ function BubbleMap({
           })}
         </motion.div>
 
-        {/* Zoom controls */}
+        {/* Enhanced zoom controls */}
         <div className="absolute bottom-4 right-4 flex gap-2">
-          <button
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
             onClick={() => setScale(Math.min(scale + 0.2, 3))}
-            className="w-10 h-10 rounded-full bg-background/90 backdrop-blur-md border border-border/50 flex items-center justify-center text-primary hover:bg-background transition-colors shadow-lg"
+            className="w-10 h-10 rounded-full bg-background/90 backdrop-blur-md border border-primary/20 flex items-center justify-center text-primary hover:bg-background transition-colors shadow-lg"
           >
             +
-          </button>
-          <button
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
             onClick={() => setScale(Math.max(scale - 0.2, 0.5))}
-            className="w-10 h-10 rounded-full bg-background/90 backdrop-blur-md border border-border/50 flex items-center justify-center text-primary hover:bg-background transition-colors shadow-lg"
+            className="w-10 h-10 rounded-full bg-background/90 backdrop-blur-md border border-primary/20 flex items-center justify-center text-primary hover:bg-background transition-colors shadow-lg"
           >
             -
-          </button>
+          </motion.button>
         </div>
       </div>
     </div>
@@ -332,7 +356,7 @@ export function BundleAnalysisSuccess({
 
   if (!data?.bundles || data.bundles.length === 0) {
     return (
-      <Card className="bg-gradient-to-br from-background to-background border-border">
+      <Card className="w-full max-w-full overflow-hidden bg-gradient-to-br from-primary/5 via-background to-background border-none shadow-xl">
         <CardContent className="pt-6">
           <p className="text-sm text-muted-foreground">
             No trading bundles were detected.
@@ -347,11 +371,27 @@ export function BundleAnalysisSuccess({
     selectedBundle !== null ? topBundles[selectedBundle] : null;
 
   return (
-    <Card className="bg-gradient-to-br from-background to-background border-border">
+    <Card className="w-full max-w-full overflow-hidden bg-gradient-to-br from-primary/5 via-background to-background border-none shadow-xl">
       <CardContent className="pt-6 space-y-6">
-        {/* Disclaimer */}
-        <div className="p-3 rounded-lg bg-card/5 border border-border/50">
-          <p className="text-xs text-muted-foreground">
+        {/* Enhanced Header */}
+        <div className="flex items-center gap-4">
+          <div className="relative flex-shrink-0 flex items-center p-3 bg-primary/10 rounded-xl">
+            <BarChart3 className="w-6 h-6 text-primary" />
+          </div>
+          <div className="flex-1">
+            <h3 className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+              Trading Analysis
+            </h3>
+            <p className="text-sm text-muted-foreground mt-1">
+              Analyzing {data.totalTrades} trades across {topBundles.length}{" "}
+              major trading bundles
+            </p>
+          </div>
+        </div>
+
+        {/* Disclaimer with enhanced styling */}
+        <div className="p-4 rounded-xl bg-primary/5 border border-primary/10 backdrop-blur-sm">
+          <p className="text-sm text-muted-foreground">
             Note: This analysis only includes trades from the bonding curve
             contract on Pump.fun. Post-graduation trading data is not included.
           </p>
@@ -360,48 +400,76 @@ export function BundleAnalysisSuccess({
         {/* Bundle Overview */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-bold">Top 5 Bundles</h3>
-            <span className="text-sm text-muted-foreground">
-              {data.totalTrades} total trades
-            </span>
+            <div className="flex items-baseline gap-3">
+              <h3 className="text-lg font-bold bg-gradient-to-r from-primary/90 to-primary/70 bg-clip-text text-transparent">
+                Trading Bundles
+              </h3>
+              <span className="text-sm px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+                Top {topBundles.length}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+              <span className="text-sm text-muted-foreground">
+                Live Analysis
+              </span>
+            </div>
           </div>
 
-          {/* Bubble Map Visualization */}
-          <BubbleMap
-            bundles={topBundles}
-            onSelectBundle={setSelectedBundle}
-            selectedBundle={selectedBundle}
-          />
+          {/* Enhanced Bubble Map Container */}
+          <div className="relative rounded-xl overflow-hidden border border-primary/10 bg-gradient-to-br from-background/50 to-background/90 backdrop-blur-sm">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(120,119,198,0.1),rgba(255,255,255,0))]" />
+            <BubbleMap
+              bundles={topBundles}
+              onSelectBundle={setSelectedBundle}
+              selectedBundle={selectedBundle}
+            />
+          </div>
         </div>
 
         {/* Bundle Details Panel */}
-        <AnimatePresence>
+        <AnimatePresence mode="wait">
           {currentBundle && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 20 }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
               className="space-y-4 pt-2"
             >
               <div className="flex items-center justify-between">
-                <h2
-                  className="text-xl font-semibold"
-                  style={{ color: getCategoryColor(currentBundle.category) }}
-                >
-                  Bundle Details #
-                  {selectedBundle !== null ? selectedBundle + 1 : ""}
-                </h2>
-                <span className="text-sm text-muted-foreground">
-                  Slot {currentBundle.slot}
-                </span>
+                <div className="flex items-baseline gap-3">
+                  <h2 className="text-xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                    Bundle #{selectedBundle !== null ? selectedBundle + 1 : ""}
+                  </h2>
+                  <span
+                    className="text-sm px-2 py-0.5 rounded-full"
+                    style={{
+                      backgroundColor: `${getCategoryColor(currentBundle.category)}20`,
+                      color: getCategoryColor(currentBundle.category),
+                    }}
+                  >
+                    {currentBundle.category}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+                    Slot {currentBundle.slot}
+                  </span>
+                </div>
               </div>
 
-              {/* Token Flow */}
-              <div className="rounded-lg border border-border/50 overflow-hidden bg-card/5">
-                <div className="px-4 py-3 border-b border-border/50">
+              {/* Token Flow Card */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2, delay: 0.1 }}
+                className="rounded-xl border border-primary/10 overflow-hidden bg-gradient-to-br from-background/50 to-background/90 backdrop-blur-sm"
+              >
+                <div className="px-4 py-3 border-b border-primary/10 bg-primary/5">
                   <div className="flex items-baseline justify-between">
                     <div className="flex items-baseline gap-3">
-                      <h3 className="text-sm font-medium truncate">
+                      <h3 className="text-sm font-medium text-primary">
                         Token Flow
                       </h3>
                       <span className="text-xs text-muted-foreground">
@@ -414,10 +482,13 @@ export function BundleAnalysisSuccess({
                   </div>
                 </div>
                 <div className="px-4 py-3 space-y-3">
-                  <div className="flex items-baseline justify-between">
-                    <span className="text-sm text-green-500">Buys</span>
+                  <div className="flex items-baseline justify-between group">
+                    <span className="text-sm text-green-500 flex items-center gap-2">
+                      <div className="h-1.5 w-1.5 rounded-full bg-green-500" />
+                      Buys
+                    </span>
                     <div className="text-right">
-                      <div className="text-sm font-medium text-green-500">
+                      <div className="text-sm font-medium text-green-500 group-hover:scale-105 transition-transform">
                         +
                         {formatAmount(
                           currentBundle.trades
@@ -437,10 +508,13 @@ export function BundleAnalysisSuccess({
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-baseline justify-between">
-                    <span className="text-sm text-red-500">Sells</span>
+                  <div className="flex items-baseline justify-between group">
+                    <span className="text-sm text-red-500 flex items-center gap-2">
+                      <div className="h-1.5 w-1.5 rounded-full bg-red-500" />
+                      Sells
+                    </span>
                     <div className="text-right">
-                      <div className="text-sm font-medium text-red-500">
+                      <div className="text-sm font-medium text-red-500 group-hover:scale-105 transition-transform">
                         -
                         {formatAmount(
                           currentBundle.trades
@@ -460,10 +534,13 @@ export function BundleAnalysisSuccess({
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-baseline justify-between pt-2 border-t border-border/50">
-                    <span className="text-sm">Net Flow</span>
+                  <div className="flex items-baseline justify-between pt-2 border-t border-primary/10 group">
+                    <span className="text-sm flex items-center gap-2">
+                      <div className="h-1.5 w-1.5 rounded-full bg-primary" />
+                      Net Flow
+                    </span>
                     <div className="text-right">
-                      <div className="text-sm font-medium">
+                      <div className="text-sm font-medium group-hover:scale-105 transition-transform">
                         {formatAmount(
                           currentBundle.trades.reduce(
                             (sum, t) =>
@@ -489,7 +566,7 @@ export function BundleAnalysisSuccess({
                     </div>
                   </div>
                 </div>
-              </div>
+              </motion.div>
 
               {/* Trade History */}
               <div className="rounded-lg border border-border/50 overflow-hidden bg-card/5">
