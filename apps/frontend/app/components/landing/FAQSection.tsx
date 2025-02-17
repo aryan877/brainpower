@@ -19,7 +19,7 @@ export function FAQSection() {
         "Just talk to it like you’d chat with a friend. Whether you're looking to launch a token, swap tokens, stake, or search for tweets, our AI understands you and gets things done—no BS.",
     },
     {
-      question: "Wen Launch?",
+      question: "wen launch?",
       answer:
         "Mark your calendar! We’re dropping our token on Pump.fun in February 2025.",
     },
