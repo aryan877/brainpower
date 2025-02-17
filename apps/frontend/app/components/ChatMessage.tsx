@@ -207,15 +207,15 @@ export default function ChatMessage({
           <div className="relative">
             <div
               className={cn(
-                "flex flex-col sm:flex-row items-start gap-4 w-full overflow-hidden",
+                "flex w-full relative",
                 message.role === "user"
                   ? "bg-muted dark:bg-muted rounded-2xl p-4"
                   : "py-2 px-4"
               )}
             >
               {/* Avatar */}
-              {message.role === "assistant" ? (
-                <div className="flex-shrink-0 mt-1">
+              <div className="flex-none mr-4">
+                {message.role === "assistant" ? (
                   <Avatar className="w-8 h-8 ring-1 ring-primary/30 bg-primary/20 flex items-center justify-center transition-all duration-200 hover:ring-primary/40 hover:bg-primary/30">
                     <div className="flex items-center gap-2">
                       <Image
@@ -226,30 +226,30 @@ export default function ChatMessage({
                       />
                     </div>
                   </Avatar>
-                </div>
-              ) : (
-                <div className="flex-shrink-0 mt-1">
+                ) : (
                   <Avatar className="w-8 h-8 ring-1 ring-border bg-background flex items-center justify-center transition-all duration-200 hover:ring-border/80 hover:bg-muted/50">
                     <User className="w-5 h-5 text-foreground/80" />
                   </Avatar>
-                </div>
-              )}
+                )}
+              </div>
 
               {/* Content */}
-              <div className="flex-1 min-w-0 w-full overflow-hidden">
+              <div className="flex-1 min-w-0 pt-0.5">
                 <div
                   className={cn(
                     "prose dark:prose-invert max-w-none overflow-hidden break-words",
                     "prose-headings:mt-6 prose-headings:mb-4 prose-headings:font-semibold prose-headings:text-foreground",
                     "prose-h1:text-3xl prose-h2:text-2xl prose-h3:text-xl prose-h4:text-lg",
-                    "prose-p:mt-3 prose-p:mb-3 prose-p:leading-7 prose-p:text-[15px]",
-                    "prose-ul:my-4 prose-ul:list-disc prose-ul:pl-6",
-                    "prose-ol:my-4 prose-ol:list-decimal prose-ol:pl-6",
+                    "prose-p:mt-0 prose-p:mb-3 prose-p:leading-7 prose-p:text-[15px] prose-p:text-foreground/90 first:prose-p:mt-0",
+                    "prose-ul:my-4 prose-ul:list-disc prose-ul:pl-6 prose-ul:text-foreground/90",
+                    "prose-ol:my-4 prose-ol:list-decimal prose-ol:pl-6 prose-ol:text-foreground/90",
                     "prose-li:my-2 prose-li:text-[15px] prose-li:leading-7",
-                    "prose-pre:my-4 prose-pre:bg-muted/30 prose-pre:rounded-lg",
-                    "prose-code:text-[14px] prose-code:font-normal",
+                    "prose-pre:my-4 prose-pre:bg-muted/30 prose-pre:rounded-lg prose-pre:overflow-x-auto",
+                    "prose-code:text-[14px] prose-code:font-normal prose-code:text-foreground/90",
                     "prose-blockquote:my-4 prose-blockquote:pl-4 prose-blockquote:border-l-2 prose-blockquote:border-muted-foreground/30 prose-blockquote:text-muted-foreground prose-blockquote:not-italic",
                     "prose-hr:my-6 prose-hr:border-muted-foreground/20",
+                    "prose-strong:font-semibold prose-strong:text-foreground",
+                    "prose-a:text-primary prose-a:no-underline hover:prose-a:underline",
                     isLoading && "opacity-60"
                   )}
                 >

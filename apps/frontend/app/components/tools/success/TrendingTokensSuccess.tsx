@@ -61,29 +61,29 @@ export function TrendingTokensSuccess({ data }: TrendingTokensSuccessProps) {
       </CardHeader>
 
       <CardContent>
-        <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {data.tokens?.map((token) => (
             <div
               key={token.id}
               className="group relative bg-card hover:bg-card/90 rounded-xl border border-border/50 overflow-hidden transition-all duration-200 hover:shadow-lg"
             >
               {/* Main Content */}
-              <div className="p-6">
+              <div className="p-4 sm:p-6">
                 {/* Token Header */}
-                <div className="flex items-start gap-4 mb-6">
-                  <div className="relative w-12 h-12 flex-shrink-0">
+                <div className="flex items-start gap-3 mb-4 sm:mb-6">
+                  <div className="relative w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0">
                     <Image
                       src={token.thumb}
                       alt={token.name}
                       width={48}
                       height={48}
-                      className="rounded-xl ring-2 ring-border/50"
+                      className="rounded-xl ring-2 ring-border/50 w-full h-full"
                     />
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex flex-col gap-1">
+                  <div className="flex-1 min-w-0 flex items-start justify-between gap-2">
+                    <div className="flex flex-col gap-1 min-w-0 max-w-[calc(100%-80px)]">
                       <div className="flex items-center gap-2">
-                        <h4 className="font-bold text-xl text-foreground truncate">
+                        <h4 className="font-bold text-lg sm:text-xl text-foreground truncate">
                           {token.name}
                         </h4>
                         <a
@@ -99,23 +99,23 @@ export function TrendingTokensSuccess({ data }: TrendingTokensSuccessProps) {
                         {token.symbol.toUpperCase()}
                       </span>
                     </div>
-                  </div>
-                  {token.marketCapRank > 0 && (
-                    <div className="flex-shrink-0 bg-primary/5 px-3 py-1.5 rounded-lg">
-                      <span className="text-xs font-medium text-primary">
-                        RANK
-                      </span>
-                      <div className="text-lg font-bold text-primary">
-                        #{token.marketCapRank}
+                    {token.marketCapRank > 0 && (
+                      <div className="flex-shrink-0 bg-primary/5 px-2 sm:px-3 py-1.5 rounded-lg">
+                        <span className="text-xs font-medium text-primary">
+                          RANK
+                        </span>
+                        <div className="text-base sm:text-lg font-bold text-primary">
+                          #{token.marketCapRank}
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
 
                 {/* Price Section */}
-                <div className="mb-6">
-                  <div className="flex items-baseline gap-3">
-                    <span className="text-2xl font-bold">
+                <div className="mb-4 sm:mb-6">
+                  <div className="flex flex-wrap items-baseline gap-2 sm:gap-3">
+                    <span className="text-xl sm:text-2xl font-bold">
                       $
                       {Number(token.price).toLocaleString(undefined, {
                         minimumFractionDigits: 2,
@@ -123,7 +123,7 @@ export function TrendingTokensSuccess({ data }: TrendingTokensSuccessProps) {
                       })}
                     </span>
                     <span
-                      className={`flex items-center gap-1 px-3 py-1 rounded-lg text-sm font-bold ${
+                      className={`flex items-center gap-1 px-2 sm:px-3 py-1 rounded-lg text-sm font-bold ${
                         token.priceChange24h >= 0
                           ? "text-green-500 bg-green-500/10"
                           : "text-red-500 bg-red-500/10"
@@ -145,13 +145,13 @@ export function TrendingTokensSuccess({ data }: TrendingTokensSuccessProps) {
                 </div>
 
                 {/* Token Stats */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-muted/30 rounded-lg p-3 space-y-1">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-muted/30 rounded-lg p-2 sm:p-3 space-y-1">
                     <div className="text-xs text-muted-foreground font-medium">
                       Market Cap
                     </div>
                     <div
-                      className="font-bold text-base truncate"
+                      className="font-bold text-sm sm:text-base truncate"
                       title={token.marketCap}
                     >
                       {formatNumber(
@@ -159,12 +159,12 @@ export function TrendingTokensSuccess({ data }: TrendingTokensSuccessProps) {
                       )}
                     </div>
                   </div>
-                  <div className="bg-muted/30 rounded-lg p-3 space-y-1">
+                  <div className="bg-muted/30 rounded-lg p-2 sm:p-3 space-y-1">
                     <div className="text-xs text-muted-foreground font-medium">
                       24h Volume
                     </div>
                     <div
-                      className="font-bold text-base truncate"
+                      className="font-bold text-sm sm:text-base truncate"
                       title={token.volume24h}
                     >
                       {formatNumber(
