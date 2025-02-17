@@ -182,7 +182,7 @@ export function HeroSection({ onLogin }: HeroSectionProps) {
 
       <div className="relative">
         <motion.div
-          className="absolute -inset-[1px] rounded-lg"
+          className="absolute -inset-[1px] rounded-md"
           style={{
             background:
               "linear-gradient(90deg, transparent, rgba(239, 68, 68, 0.8), transparent)",
@@ -201,9 +201,9 @@ export function HeroSection({ onLogin }: HeroSectionProps) {
           onClick={onLogin}
           size="lg"
           variant="outline"
-          className="!bg-[#121212] border-none hover:!bg-[#121212]/90 transition-all duration-300 px-8 py-6 text-lg font-medium tracking-wide relative z-10 min-w-[200px] rounded-lg"
+          className="!bg-[#121212] border-none hover:!bg-[#121212]/90 transition-all duration-300 px-8 py-6 text-lg font-medium tracking-wide relative z-10 min-w-[200px] rounded-md"
         >
-          Chat with Agent
+          Start Chatting
         </Button>
       </div>
 
@@ -215,11 +215,11 @@ export function HeroSection({ onLogin }: HeroSectionProps) {
             alt="BrainPower App Preview"
             width={1200}
             height={675}
-            className="w-full h-auto rounded-xl bg-transparent"
+            className="w-full h-auto rounded-md bg-transparent"
             priority
           />
           {/* Add gradient overlay directly on the image container */}
-          <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black via-black/80 to-transparent rounded-xl" />
+          <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black via-black/80 to-transparent rounded-md" />
         </div>
       </div>
     </div>

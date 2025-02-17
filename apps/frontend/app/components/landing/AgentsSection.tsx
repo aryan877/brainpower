@@ -22,13 +22,13 @@ function AgentCard({
 }: AgentCardProps) {
   return (
     <div
-      className={`relative backdrop-blur-sm rounded-2xl p-6 overflow-hidden group transition-all duration-300 ${
+      className={`relative backdrop-blur-sm  rounded-md p-6 overflow-hidden group transition-all duration-300 ${
         bgImageSrc
           ? "bg-black/30 hover:bg-black/40"
           : "bg-[#121212] hover:bg-[#121212]/90"
       } ${className}`}
     >
-      <div className="absolute inset-0 rounded-2xl border border-white/10 pointer-events-none z-[5]" />
+      <div className="absolute inset-0  rounded-md border border-white/10 pointer-events-none z-[5]" />
 
       {bgImageSrc ? (
         <>
@@ -55,10 +55,10 @@ function AgentCard({
                   alt={imageAlt}
                   width={600}
                   height={400}
-                  className="w-full h-auto rounded-lg"
+                  className="w-full h-auto rounded-md"
                 />
                 {title === "Staking Agent" && (
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent rounded-lg" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent rounded-md" />
                 )}
               </div>
             )}

@@ -8,7 +8,7 @@ interface FeatureCardProps {
 }
 function FeatureCard({ title, description, containerSrc }: FeatureCardProps) {
   return (
-    <div className="relative rounded-2xl p-3 pb-5 overflow-hidden group transition-all duration-500 border border-white/10 bg-[#0A0A0A] hover:bg-[#070707]">
+    <div className="relative  rounded-md p-3 pb-5 overflow-hidden group transition-all duration-500 border border-white/10 bg-[#0A0A0A] hover:bg-[#070707]">
       <div
         className="absolute inset-0 bg-gradient-to-br from-white/[0.08] via-transparent to-transparent transition-all duration-500"
         style={{
@@ -24,7 +24,7 @@ function FeatureCard({ title, description, containerSrc }: FeatureCardProps) {
             "inset 0 2px 60px rgba(255, 255, 255, 0.1), inset 0 -80px 80px rgba(0, 0, 0, 0.9)",
         }}
       />
-      <div className="relative w-full mb-3 overflow-hidden rounded-2xl group-hover:-translate-y-1 transition-transform duration-500">
+      <div className="relative w-full mb-3 overflow-hidden  rounded-md group-hover:-translate-y-1 transition-transform duration-500">
         <Image
           src={containerSrc}
           alt={title}

@@ -209,7 +209,7 @@ export default function ChatMessage({
               className={cn(
                 "flex w-full relative",
                 message.role === "user"
-                  ? "bg-muted dark:bg-muted rounded-2xl p-4"
+                  ? "bg-muted dark:bg-muted  rounded-md p-4"
                   : "py-2 px-4"
               )}
             >

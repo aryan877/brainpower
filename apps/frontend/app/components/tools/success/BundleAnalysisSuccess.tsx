@@ -221,7 +221,7 @@ function BubbleMap({
 
   return (
     <div
-      className="w-full relative bg-gradient-to-br from-background/50 to-background rounded-xl overflow-hidden"
+      className="w-full relative bg-gradient-to-br from-background/50 to-background rounded-md overflow-hidden"
       style={{ height: dimensions.height }}
     >
       <div
@@ -375,7 +375,7 @@ export function BundleAnalysisSuccess({
       <CardContent className="pt-6 space-y-6">
         {/* Enhanced Header */}
         <div className="flex items-center gap-4">
-          <div className="relative flex-shrink-0 flex items-center p-3 bg-primary/10 rounded-xl">
+          <div className="relative flex-shrink-0 flex items-center p-3 bg-primary/10 rounded-md">
             <BarChart3 className="w-6 h-6 text-primary" />
           </div>
           <div className="flex-1">
@@ -390,7 +390,7 @@ export function BundleAnalysisSuccess({
         </div>
 
         {/* Disclaimer with enhanced styling */}
-        <div className="p-4 rounded-xl bg-primary/5 border border-primary/10 backdrop-blur-sm">
+        <div className="p-4 rounded-md bg-primary/5 border border-primary/10 backdrop-blur-sm">
           <p className="text-sm text-muted-foreground">
             Note: This analysis only includes trades from the bonding curve
             contract on Pump.fun. Post-graduation trading data is not included.
@@ -417,7 +417,7 @@ export function BundleAnalysisSuccess({
           </div>
 
           {/* Enhanced Bubble Map Container */}
-          <div className="relative rounded-xl overflow-hidden border border-primary/10 bg-gradient-to-br from-background/50 to-background/90 backdrop-blur-sm">
+          <div className="relative rounded-md overflow-hidden border border-primary/10 bg-gradient-to-br from-background/50 to-background/90 backdrop-blur-sm">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(120,119,198,0.1),rgba(255,255,255,0))]" />
             <BubbleMap
               bundles={topBundles}
@@ -464,7 +464,7 @@ export function BundleAnalysisSuccess({
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.2, delay: 0.1 }}
-                className="rounded-xl border border-primary/10 overflow-hidden bg-gradient-to-br from-background/50 to-background/90 backdrop-blur-sm"
+                className="rounded-md border border-primary/10 overflow-hidden bg-gradient-to-br from-background/50 to-background/90 backdrop-blur-sm"
               >
                 <div className="px-4 py-3 border-b border-primary/10 bg-primary/5">
                   <div className="flex items-baseline justify-between">

@@ -26,7 +26,7 @@ export function TokenHoldersSuccess({ data }: TokenHoldersSuccessProps) {
   return (
     <Card>
       <CardHeader className="flex items-center gap-3">
-        <div className="p-2 bg-muted rounded-lg flex items-center justify-center">
+        <div className="p-2 bg-muted rounded-md flex items-center justify-center">
           <Users className="w-5 h-5 text-muted-foreground" />
         </div>
         <h3 className="text-xl font-bold leading-none text-foreground">

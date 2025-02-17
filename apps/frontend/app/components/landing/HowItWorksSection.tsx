@@ -9,7 +9,7 @@ interface StepProps {
 
 function Step({ number, description, imageSrc }: StepProps) {
   return (
-    <div className="relative backdrop-blur-sm rounded-2xl p-6 pb-8 overflow-hidden group transition-all duration-300 border border-white/10 bg-[#0B0B0D] hover:bg-[#0B0B0D]/90">
+    <div className="relative backdrop-blur-sm  rounded-md p-6 pb-8 overflow-hidden group transition-all duration-300 border border-white/10 bg-[#0B0B0D] hover:bg-[#0B0B0D]/90">
       <div className="flex items-center gap-2 mb-4">
         <Image
           src={imageSrc}

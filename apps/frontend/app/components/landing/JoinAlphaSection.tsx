@@ -69,7 +69,7 @@ export function JoinAlphaSection({ onLogin }: { onLogin: () => void }) {
             variant="outline"
             className="!bg-[#121212] border-destructive hover:!bg-[#121212]/90 transition-colors shadow-[0_4px_20px_-1px] shadow-destructive/40 px-8 py-6 text-lg"
           >
-            Chat with Agent
+            Start Chatting
           </Button>
         </div>
       </div>

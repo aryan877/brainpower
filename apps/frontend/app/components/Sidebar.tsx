@@ -208,7 +208,7 @@ export default function Sidebar({
                   <li
                     key={thread.threadId}
                     onClick={() => onSelectThread(thread.threadId)}
-                    className={`flex items-center p-2 cursor-pointer rounded-lg hover:bg-muted transition-all duration-200 ${
+                    className={`flex items-center p-2 cursor-pointer rounded-md hover:bg-muted transition-all duration-200 ${
                       selectedThread === thread.threadId
                         ? "bg-muted border-border"
                         : ""

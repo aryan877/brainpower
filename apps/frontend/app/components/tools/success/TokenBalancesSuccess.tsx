@@ -12,7 +12,7 @@ export function TokenBalancesSuccess({ data }: TokenBalancesSuccessProps) {
     <Card className="bg-gradient-to-br from-primary/5 to-background w-full max-w-full">
       <CardHeader className="pb-2">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+          <div className="p-2.5 bg-primary/10 rounded-md flex items-center justify-center flex-shrink-0">
             <Coins className="w-5 h-5 text-primary" />
           </div>
           <div className="flex-1 min-w-0">
@@ -28,7 +28,7 @@ export function TokenBalancesSuccess({ data }: TokenBalancesSuccessProps) {
         {data.tokens.map((token) => (
           <div
             key={token.tokenAddress}
-            className="flex flex-col gap-2 p-3 bg-background/50 rounded-lg hover:bg-background/70 transition-colors"
+            className="flex flex-col gap-2 p-3 bg-background/50 rounded-md hover:bg-background/70 transition-colors"
           >
             <div className="flex items-center justify-between">
               <div className="flex flex-col">

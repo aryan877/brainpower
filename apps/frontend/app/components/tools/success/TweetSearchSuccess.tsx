@@ -22,7 +22,7 @@ export function TweetSearchSuccess({ data }: TweetSearchSuccessProps) {
       </div>
       <div className="space-y-3">
         {data.map((tweet, index) => (
-          <div key={index} className="p-4 rounded-lg border bg-card">
+          <div key={index} className="p-4 rounded-md border bg-card">
             {/* Tweet Header */}
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">

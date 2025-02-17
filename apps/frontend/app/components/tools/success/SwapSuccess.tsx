@@ -20,7 +20,7 @@ interface InfoItemProps {
 
 function InfoItem({ label, children }: InfoItemProps) {
   return (
-    <div className="flex flex-col md:flex-row items-start md:items-center justify-between p-3 bg-background/50 rounded-lg hover:bg-background/70 transition-colors gap-2">
+    <div className="flex flex-col md:flex-row items-start md:items-center justify-between p-3 bg-background/50 rounded-md hover:bg-background/70 transition-colors gap-2">
       <span className="text-muted-foreground text-sm whitespace-nowrap">
         {label}
       </span>
@@ -34,7 +34,7 @@ export function SwapSuccess({ data }: SwapSuccessProps) {
     <Card className="bg-gradient-to-br from-primary/5 to-background w-full max-w-full">
       <CardHeader className="pb-2">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+          <div className="p-2.5 bg-primary/10 rounded-md flex items-center justify-center flex-shrink-0">
             <ArrowRightLeft className="w-5 h-5 text-primary" />
           </div>
           <div className="flex-1 min-w-0">
@@ -56,7 +56,7 @@ export function SwapSuccess({ data }: SwapSuccessProps) {
           </div>
         </InfoItem>
 
-        <div className="flex flex-col gap-4 p-3 bg-background/50 rounded-lg">
+        <div className="flex flex-col gap-4 p-3 bg-background/50 rounded-md">
           <div className="flex flex-col w-full gap-2">
             <div className="text-sm text-muted-foreground">From</div>
             <div className="flex flex-col w-full gap-2">

@@ -84,7 +84,7 @@ export function RugcheckSuccess({ data }: RugcheckSuccessProps) {
               {warnRisks.map((risk, index) => (
                 <div
                   key={index}
-                  className="p-3 rounded-lg border bg-yellow-500/5 border-yellow-500/20"
+                  className="p-3 rounded-md border bg-yellow-500/5 border-yellow-500/20"
                 >
                   <div className="flex items-center justify-between">
                     <div className="font-medium text-sm text-yellow-500">
@@ -119,7 +119,7 @@ export function RugcheckSuccess({ data }: RugcheckSuccessProps) {
               {lowRisks.map((risk, index) => (
                 <div
                   key={index}
-                  className="p-3 rounded-lg border bg-green-500/5 border-green-500/20"
+                  className="p-3 rounded-md border bg-green-500/5 border-green-500/20"
                 >
                   <div className="flex items-center justify-between">
                     <div className="font-medium text-sm text-green-500">

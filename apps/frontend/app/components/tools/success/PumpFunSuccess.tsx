@@ -85,7 +85,7 @@ interface InfoItemProps {
 
 function InfoItem({ label, value, isCode, link }: InfoItemProps) {
   return (
-    <div className="flex flex-col md:flex-row items-start md:items-center justify-between p-3 bg-background/50 rounded-lg hover:bg-background/70 transition-colors gap-2">
+    <div className="flex flex-col md:flex-row items-start md:items-center justify-between p-3 bg-background/50 rounded-md hover:bg-background/70 transition-colors gap-2">
       <span className="text-muted-foreground text-sm">{label}</span>
       {link ? (
         <a

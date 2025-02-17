@@ -91,7 +91,7 @@ function AgentCard({ agent }: { agent: AgentDetails }) {
   const hasSolanaContracts = agent.contracts.length > 0;
 
   return (
-    <div className="w-full border rounded-lg bg-card overflow-hidden transition-all duration-200 hover:shadow-sm">
+    <div className="w-full border rounded-md bg-card overflow-hidden transition-all duration-200 hover:shadow-sm">
       {/* Header - Always Visible */}
       <div
         onClick={() => setIsExpanded(!isExpanded)}
@@ -255,7 +255,7 @@ function AgentCard({ agent }: { agent: AgentDetails }) {
               {/* Market Metrics */}
               <div className="space-y-4">
                 <h4 className="text-sm font-semibold">Market Metrics</h4>
-                <div className="grid gap-y-4 bg-background/80 rounded-lg p-4">
+                <div className="grid gap-y-4 bg-background/80 rounded-md p-4">
                   <MetricItem
                     label="24h Volume"
                     value={agent.volume24Hours}
@@ -284,7 +284,7 @@ function AgentCard({ agent }: { agent: AgentDetails }) {
               {/* Social Metrics */}
               <div className="space-y-4">
                 <h4 className="text-sm font-semibold">Social Metrics</h4>
-                <div className="grid gap-y-4 bg-background/80 rounded-lg p-4">
+                <div className="grid gap-y-4 bg-background/80 rounded-md p-4">
                   <MetricItem
                     label="Avg Engagements"
                     value={agent.averageEngagementsCount}
@@ -343,7 +343,7 @@ function AgentCard({ agent }: { agent: AgentDetails }) {
                       href={tweet.tweetUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="block rounded-lg bg-background/80 hover:bg-accent/50 transition-colors overflow-hidden"
+                      className="block rounded-md bg-background/80 hover:bg-accent/50 transition-colors overflow-hidden"
                     >
                       <div className="px-4 py-3">
                         <div className="flex items-center gap-2 mb-2">

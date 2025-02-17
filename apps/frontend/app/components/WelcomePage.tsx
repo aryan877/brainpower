@@ -110,7 +110,7 @@ export function WelcomePage({ onLogin }: { onLogin: () => void }) {
               variant="outline"
               className="!bg-black/60 border-white/10 hover:!bg-black/40 text-white hover:text-white transition-colors"
             >
-              Chat with Agent
+              Start Chatting
             </Button>
           </div>
 
@@ -150,7 +150,7 @@ export function WelcomePage({ onLogin }: { onLogin: () => void }) {
                 : "!bg-black/60 hover:!bg-black/40 scale-100 text-base"
             }`}
           >
-            Chat with Agent
+            Start Chatting
           </Button>
         </nav>
       </div>

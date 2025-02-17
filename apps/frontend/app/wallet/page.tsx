@@ -155,7 +155,7 @@ function TransactionList({
 
   return (
     <div className="space-y-4">
-      <div className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-lg border border-border/50">
+      <div className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-md border border-border/50">
         <div className="flex items-center gap-2">
           <FileIcon className="h-4 w-4" />
           <span>
@@ -275,9 +275,9 @@ function AssetCard({ asset }: { asset: Asset }) {
 
   return (
     <>
-      <div className="p-4 rounded-lg border hover:bg-muted/50 transition-colors">
+      <div className="p-4 rounded-md border hover:bg-muted/50 transition-colors">
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-lg overflow-hidden bg-muted flex-shrink-0 flex items-center justify-center">
+          <div className="w-12 h-12 rounded-md overflow-hidden bg-muted flex-shrink-0 flex items-center justify-center">
             {imageUrl && !imageError ? (
               <Image
                 src={imageUrl}
@@ -414,7 +414,7 @@ function AssetList({
     return (
       <div className="space-y-2">
         {[...Array(3)].map((_, i) => (
-          <div key={i} className="h-16 bg-muted animate-pulse rounded-lg" />
+          <div key={i} className="h-16 bg-muted animate-pulse rounded-md" />
         ))}
       </div>
     );

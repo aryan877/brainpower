@@ -394,7 +394,7 @@ export function PumpFunLaunchTool({ args, onSubmit }: PumpFunLaunchToolProps) {
               onDrop={handleDrop}
               onClick={() => document.getElementById("image-upload")?.click()}
               className={cn(
-                "flex flex-col items-center justify-center w-full h-[160px] border-2 border-dashed rounded-lg cursor-pointer transition-all duration-200",
+                "flex flex-col items-center justify-center w-full h-[160px] border-2 border-dashed rounded-md cursor-pointer transition-all duration-200",
                 isDragging
                   ? "border-primary bg-primary/5 scale-[1.02]"
                   : "border-primary/20",

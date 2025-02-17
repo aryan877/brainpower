@@ -22,10 +22,10 @@ const formatNumber = (num: number) => {
 export function TrendingTokensSuccess({ data }: TrendingTokensSuccessProps) {
   if (!data || !data.tokens || data.tokens.length === 0) {
     return (
-      <Card className="w-full max-w-full overflow-hidden bg-gradient-to-br from-primary/5 via-background to-background border-none shadow-xl">
+      <Card className="w-full max-w-full overflow-hidden bg-gradient-to-br from-primary/5 via-background to-background border-none">
         <CardHeader className="pb-4">
           <div className="flex items-center gap-4">
-            <div className="relative flex-shrink-0 flex items-center p-3 bg-primary/10 rounded-xl">
+            <div className="relative flex-shrink-0 flex items-center p-3 bg-primary/10 rounded-md">
               <TrendingUp className="w-6 h-6 text-primary" />
             </div>
             <div className="flex-1">
@@ -43,10 +43,10 @@ export function TrendingTokensSuccess({ data }: TrendingTokensSuccessProps) {
   }
 
   return (
-    <Card className="w-full max-w-full overflow-hidden bg-gradient-to-br from-primary/5 via-background to-background border-none shadow-xl">
+    <Card className="w-full max-w-full overflow-hidden bg-gradient-to-br from-primary/5 via-background to-background border-none">
       <CardHeader className="pb-4">
         <div className="flex items-center gap-4">
-          <div className="relative flex-shrink-0 flex items-center p-3 bg-primary/10 rounded-xl">
+          <div className="relative flex-shrink-0 flex items-center p-3 bg-primary/10 rounded-md">
             <TrendingUp className="w-6 h-6 text-primary" />
           </div>
           <div className="flex-1">
@@ -65,7 +65,7 @@ export function TrendingTokensSuccess({ data }: TrendingTokensSuccessProps) {
           {data.tokens?.map((token) => (
             <div
               key={token.id}
-              className="group relative bg-card hover:bg-card/90 rounded-xl border border-border/50 overflow-hidden transition-all duration-200 hover:shadow-lg"
+              className="group relative bg-card hover:bg-card/90 rounded-md border border-border/50 overflow-hidden transition-all duration-200 hover:shadow-lg"
             >
               {/* Main Content */}
               <div className="p-4 sm:p-6">
@@ -77,7 +77,7 @@ export function TrendingTokensSuccess({ data }: TrendingTokensSuccessProps) {
                       alt={token.name}
                       width={48}
                       height={48}
-                      className="rounded-xl ring-2 ring-border/50 w-full h-full"
+                      className="rounded-md ring-2 ring-border/50 w-full h-full"
                     />
                   </div>
                   <div className="flex-1 min-w-0 flex items-start justify-between gap-2">
@@ -100,7 +100,7 @@ export function TrendingTokensSuccess({ data }: TrendingTokensSuccessProps) {
                       </span>
                     </div>
                     {token.marketCapRank > 0 && (
-                      <div className="flex-shrink-0 bg-primary/5 px-2 sm:px-3 py-1.5 rounded-lg">
+                      <div className="flex-shrink-0 bg-primary/5 px-2 sm:px-3 py-1.5 rounded-md">
                         <span className="text-xs font-medium text-primary">
                           RANK
                         </span>
@@ -123,7 +123,7 @@ export function TrendingTokensSuccess({ data }: TrendingTokensSuccessProps) {
                       })}
                     </span>
                     <span
-                      className={`flex items-center gap-1 px-2 sm:px-3 py-1 rounded-lg text-sm font-bold ${
+                      className={`flex items-center gap-1 px-2 sm:px-3 py-1 rounded-md text-sm font-bold ${
                         token.priceChange24h >= 0
                           ? "text-green-500 bg-green-500/10"
                           : "text-red-500 bg-red-500/10"
@@ -146,7 +146,7 @@ export function TrendingTokensSuccess({ data }: TrendingTokensSuccessProps) {
 
                 {/* Token Stats */}
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-muted/30 rounded-lg p-2 sm:p-3 space-y-1">
+                  <div className="bg-muted/30 rounded-md p-2 sm:p-3 space-y-1">
                     <div className="text-xs text-muted-foreground font-medium">
                       Market Cap
                     </div>
@@ -159,7 +159,7 @@ export function TrendingTokensSuccess({ data }: TrendingTokensSuccessProps) {
                       )}
                     </div>
                   </div>
-                  <div className="bg-muted/30 rounded-lg p-2 sm:p-3 space-y-1">
+                  <div className="bg-muted/30 rounded-md p-2 sm:p-3 space-y-1">
                     <div className="text-xs text-muted-foreground font-medium">
                       24h Volume
                     </div>

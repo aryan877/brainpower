@@ -66,7 +66,7 @@ export function ConfirmationTool({ args, onSubmit }: ConfirmationToolProps) {
             </Button>
           </div>
 
-          <div className="w-full px-4 py-3 bg-background/50 rounded-lg border border-border/50">
+          <div className="w-full px-4 py-3 bg-background/50 rounded-md border border-border/50">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <AlertCircle className="w-4 h-4 flex-shrink-0 text-primary/70" />
               <span>
