@@ -1,12 +1,11 @@
 "use client";
 
 import { usePrivy } from "@privy-io/react-auth";
-import { ReactNode } from "react";
 import { motion } from "framer-motion";
-import Image from "next/image";
-import { WelcomePage } from "./WelcomePage";
 import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
+import Image from "next/image";
+import { ReactNode, useEffect, useState } from "react";
+import { WelcomePage } from "./WelcomePage";
 
 export function AuthGuard({ children }: { children: ReactNode }) {
   const { ready, authenticated, login } = usePrivy();

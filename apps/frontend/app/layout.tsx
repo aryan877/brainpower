@@ -1,11 +1,11 @@
-import "./globals.css";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { Montserrat, Plus_Jakarta_Sans } from "next/font/google";
 import { NotificationContainer } from "./components/NotificationContainer";
+import "./globals.css";
 import { PrivyProvider } from "./providers/PrivyProvider";
 import { ReactQueryProvider } from "./providers/ReactQueryProvider";
 import { ThemeProvider } from "./providers/ThemeProvider";
 import { WalletProvider } from "./providers/WalletProvider";
-import { TooltipProvider } from "@/components/ui/tooltip";
 
 const montserrat = Montserrat({
   subsets: ["latin"],

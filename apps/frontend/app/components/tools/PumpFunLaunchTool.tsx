@@ -1,27 +1,27 @@
-import { useState } from "react";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, Upload, Rocket, X, Wand2, Info } from "lucide-react";
-import Image from "next/image";
-import { LaunchPumpfunTokenInput } from "@repo/brainpower-agent";
-import { PumpFunLaunchToolResult } from "../../types/tools";
 import { Textarea } from "@/components/ui/textarea";
-import { VersionedTransaction, Keypair } from "@solana/web3.js";
-import { useWallet } from "../../hooks/wallet";
-import { cn } from "@/lib/utils";
-import { useNotificationStore } from "../../store/notificationStore";
-import { ipfsClient } from "../../clients/ipfs";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { useImageGeneration } from "../../hooks/useImageGeneration";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { LaunchPumpfunTokenInput } from "@repo/brainpower-agent";
+import { Keypair, VersionedTransaction } from "@solana/web3.js";
+import { Info, Loader2, Rocket, Upload, Wand2, X } from "lucide-react";
+import Image from "next/image";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+import { ipfsClient } from "../../clients/ipfs";
+import { useImageGeneration } from "../../hooks/useImageGeneration";
+import { useWallet } from "../../hooks/wallet";
+import { useNotificationStore } from "../../store/notificationStore";
+import { PumpFunLaunchToolResult } from "../../types/tools";
 
 const formSchema = z.object({
   tokenName: z.string().min(1, "Token name is required"),

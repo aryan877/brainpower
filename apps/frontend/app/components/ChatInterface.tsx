@@ -1,22 +1,27 @@
 "use client";
 
-import { useChat } from "ai/react";
-import { useEffect, useRef, useState, FormEvent, useCallback } from "react";
-import React from "react";
-import { useClusterStore } from "../store/clusterStore";
-import {
-  useThreadMessages,
-  useSaveAllMessages,
-  useCreateThread,
-} from "../hooks/chat";
-import ChatMessage from "./ChatMessage";
-import { nanoid } from "nanoid";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { useRouter } from "next/navigation";
-import { useLocalStorage } from "../hooks/useLocalStorage";
-import Image from "next/image";
 import { cn } from "@/lib/utils";
+import { useChat } from "ai/react";
+import { nanoid } from "nanoid";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import React, {
+  FormEvent,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import {
+  useCreateThread,
+  useSaveAllMessages,
+  useThreadMessages,
+} from "../hooks/chat";
+import { useLocalStorage } from "../hooks/useLocalStorage";
+import { useClusterStore } from "../store/clusterStore";
+import ChatMessage from "./ChatMessage";
 
 const SendIcon = () => (
   <svg
