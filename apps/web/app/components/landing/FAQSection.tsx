@@ -20,8 +20,7 @@ export function FAQSection() {
     },
     {
       question: "wen launch?",
-      answer:
-        "Mark your calendar! We’re dropping our token on Pump.fun in February 2025.",
+      answer: "Mark your calendar! We’re dropping our token in April 2025.",
     },
     {
       question: "What's coming next?",
