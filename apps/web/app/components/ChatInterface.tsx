@@ -703,26 +703,30 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
                 )}
               </div>
 
-              {/* Category indicator dots */}
-              <div className="flex justify-center space-x-2 mt-4">
-                {[0, 1, 2, 3, 4].map((index) => (
-                  <button
-                    key={index}
-                    onClick={() => setActiveCategoryIndex(index)}
-                    className={cn(
-                      "w-2.5 h-2.5 rounded-full transition-all duration-300",
-                      activeCategoryIndex === index
-                        ? "bg-primary scale-110 shadow-sm"
-                        : "bg-muted-foreground/30 hover:bg-muted-foreground/50"
-                    )}
-                    aria-label={`Go to category ${index + 1}`}
-                  />
-                ))}
+              {/* Category indicator pills for threaded chat view */}
+              <div className="flex flex-wrap justify-center gap-2 mt-4">
+                {["Market", "Trading", "Wallet", "Tokens", "deBridge"].map(
+                  (label, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setActiveCategoryIndex(index)}
+                      className={cn(
+                        "px-3 py-1 text-xs rounded-full transition-all duration-300",
+                        activeCategoryIndex === index
+                          ? "bg-primary text-primary-foreground font-medium shadow-sm"
+                          : "bg-muted/50 text-muted-foreground hover:bg-muted-foreground/20"
+                      )}
+                      aria-label={`Go to category ${index + 1}`}
+                    >
+                      {label}
+                    </button>
+                  )
+                )}
               </div>
 
               <p className="text-xs text-muted-foreground mt-3 flex items-center justify-center gap-1.5">
                 <ChevronLeft className="w-3 h-3" />
-                <span>Swipe or use arrows to explore more options</span>
+                <span>Swipe or tap a pill to explore options</span>
                 <ChevronRight className="w-3 h-3" />
               </p>
             </div>
@@ -1064,26 +1068,30 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
                 )}
               </div>
 
-              {/* Category indicator dots */}
-              <div className="flex justify-center space-x-2 mt-4">
-                {[0, 1, 2, 3, 4].map((index) => (
-                  <button
-                    key={index}
-                    onClick={() => setActiveCategoryIndex(index)}
-                    className={cn(
-                      "w-2.5 h-2.5 rounded-full transition-all duration-300",
-                      activeCategoryIndex === index
-                        ? "bg-primary scale-110 shadow-sm"
-                        : "bg-muted-foreground/30 hover:bg-muted-foreground/50"
-                    )}
-                    aria-label={`Go to category ${index + 1}`}
-                  />
-                ))}
+              {/* Category indicator pills for threaded chat view */}
+              <div className="flex flex-wrap justify-center gap-2 mt-4">
+                {["Market", "Trading", "Wallet", "Tokens", "deBridge"].map(
+                  (label, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setActiveCategoryIndex(index)}
+                      className={cn(
+                        "px-3 py-1 text-xs rounded-full transition-all duration-300",
+                        activeCategoryIndex === index
+                          ? "bg-primary text-primary-foreground font-medium shadow-sm"
+                          : "bg-muted/50 text-muted-foreground hover:bg-muted-foreground/20"
+                      )}
+                      aria-label={`Go to category ${index + 1}`}
+                    >
+                      {label}
+                    </button>
+                  )
+                )}
               </div>
 
               <p className="text-xs text-muted-foreground mt-3 flex items-center justify-center gap-1.5">
                 <ChevronLeft className="w-3 h-3" />
-                <span>Swipe or use arrows to explore more options</span>
+                <span>Swipe or tap a pill to explore options</span>
                 <ChevronRight className="w-3 h-3" />
               </p>
             </div>
