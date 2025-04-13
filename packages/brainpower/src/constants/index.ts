@@ -14,6 +14,8 @@ export const TOKENS = {
   BONK: new PublicKey("DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263"),
 } as const;
 
+export const DEBRIDGE_API = "https://dln.debridge.finance/v1.0";
+
 /**
  * Default configuration options
  * @property {number} SLIPPAGE_BPS - Default slippage tolerance in basis points (300 = 3%)

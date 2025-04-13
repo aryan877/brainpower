@@ -1,10 +1,22 @@
-import launchPumpfunTokenAction from "./pumpfun/launchPumpfunToken.js";
+import { ACTION_NAMES } from "./actionNames.js";
+import { tokenPriceAction, trendingTokensAction } from "./coingecko/index.js";
+import askForConfirmationAction from "./confirmation/askForConfirmation.js";
+import getAgentByContract from "./cookie3/getAgentByContract.js";
+import getAgentByTwitter from "./cookie3/getAgentByTwitter.js";
+import getTopAgents from "./cookie3/getTopAgents.js";
+import searchTweets from "./cookie3/searchTweets.js";
+import { fetchBridgeQuoteAction } from "./debridge/fetchBridgeQuote.js";
+import { fetchTokenDataAction } from "./debridge/fetchTokenData.js";
+import { getSupportedChainsAction } from "./debridge/getSupportedChains.js";
+import { processTransferAction } from "./debridge/processTransfer.js";
+import { verifyTxStatusAction } from "./debridge/verifyTxStatus.js";
+import getTokenChartAddressAction from "./dexscreener/getTokenChartAddress.js";
+import { tokenDataByAddress as tokenDataByAddressAction } from "./dexscreener/tokenDataByAddress.js";
 import tokenDataByTickerAction from "./dexscreener/tokenDataByTicker.js";
 import { tokenTopHolders as tokenTopHoldersAction } from "./helius/tokenTopHolders.js";
-import { tokenDataByAddress as tokenDataByAddressAction } from "./dexscreener/tokenDataByAddress.js";
 import tradeAction from "./jupiter/trade.js";
-import { ACTION_NAMES } from "./actionNames.js";
-import getTokenChartAddressAction from "./dexscreener/getTokenChartAddress.js";
+import getBundleAnalysisPumpFunAction from "./pumpfun/getBundleAnalysisPumpfun.js";
+import launchPumpfunTokenAction from "./pumpfun/launchPumpfunToken.js";
 import rugcheckAction from "./rugcheck/rugcheck.js";
 import {
   closeEmptyTokenAccountsAction,
@@ -15,13 +27,6 @@ import {
   requestFaucetFundsAction,
   transferAction,
 } from "./solana/index.js";
-import askForConfirmationAction from "./confirmation/askForConfirmation.js";
-import getAgentByTwitter from "./cookie3/getAgentByTwitter.js";
-import getAgentByContract from "./cookie3/getAgentByContract.js";
-import getTopAgents from "./cookie3/getTopAgents.js";
-import searchTweets from "./cookie3/searchTweets.js";
-import getBundleAnalysisPumpFunAction from "./pumpfun/getBundleAnalysisPumpfun.js";
-import { tokenPriceAction, trendingTokensAction } from "./coingecko/index.js";
 
 export { ACTION_NAMES };
 
@@ -50,6 +55,12 @@ export const ACTIONS = {
   // Coingecko Actions
   [ACTION_NAMES.GET_COINGECKO_TOKEN_PRICE]: tokenPriceAction,
   [ACTION_NAMES.GET_COINGECKO_TRENDING_TOKENS]: trendingTokensAction,
+  // deBridge actions
+  [ACTION_NAMES.DEBRIDGE_VERIFY_TX_STATUS]: verifyTxStatusAction,
+  [ACTION_NAMES.GET_SUPPORTED_CHAINS]: getSupportedChainsAction,
+  [ACTION_NAMES.DEBRIDGE_EXECUTE_BRIDGE_TRANSFER]: processTransferAction,
+  [ACTION_NAMES.DEBRIDGE_FETCH_BRIDGE_QUOTE]: fetchBridgeQuoteAction,
+  [ACTION_NAMES.DEBRIDGE_FETCH_TOKEN_DATA]: fetchTokenDataAction,
 };
 
 export type { Action, ActionExample, Handler } from "../types/action.js";

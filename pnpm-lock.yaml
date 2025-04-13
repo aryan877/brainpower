@@ -12,7 +12,7 @@ importers:
         specifier: ^2.3.3
         version: 2.3.3
 
-  apps/backend:
+  apps/server:
     dependencies:
       '@ai-sdk/deepseek':
         specifier: ^0.1.6
@@ -133,7 +133,7 @@ importers:
         specifier: ^5.3.3
         version: 5.7.3
 
-  apps/frontend:
+  apps/web:
     dependencies:
       '@coral-xyz/anchor':
         specifier: ^0.29.0
@@ -8673,7 +8673,7 @@ snapshots:
 
   '@types/bn.js@5.1.6':
     dependencies:
-      '@types/node': 22.10.7
+      '@types/node': 20.17.14
 
   '@types/body-parser@1.19.5':
     dependencies:
@@ -11025,7 +11025,7 @@ snapshots:
 
   glsl-parser@0.0.5:
     dependencies:
-      glsl-tokenizer: 0.0.8
+      glsl-tokenizer: 0.0.9
       through: 1.1.2
 
   glsl-parser@1.0.1:

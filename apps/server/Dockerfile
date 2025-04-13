@@ -36,7 +36,7 @@ RUN npm install -g pnpm@9.15.0 turbo@2.3.3
 FROM base AS pruner
 WORKDIR /app
 COPY --chown=nodeapp:nodeapp . .
-RUN turbo prune brainpower-backend --docker
+RUN turbo prune brainpower-server --docker
 
 #
 # 3) Builder
@@ -55,7 +55,7 @@ RUN pnpm install --frozen-lockfile
 COPY --from=pruner --chown=nodeapp:nodeapp /app/out/full/ .
 
 # Build all packages
-RUN pnpm turbo run build --filter=brainpower-backend
+RUN pnpm turbo run build --filter=brainpower-server
 
 # Set default environment variables
 ENV NODE_ENV=production \
