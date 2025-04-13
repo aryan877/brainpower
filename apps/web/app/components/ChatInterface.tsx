@@ -4,11 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { useChat } from "ai/react";
-import { Loader2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { nanoid } from "nanoid";
 import { useRouter } from "next/navigation";
 import React, {
   FormEvent,
+  TouchEvent,
   useCallback,
   useEffect,
   useRef,
@@ -102,6 +103,7 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
   const { mutateAsync: createThread } = useCreateThread();
   const [isWaitingForResponse, setIsWaitingForResponse] = useState(false);
   const [hasActiveToolCall, setHasActiveToolCall] = useState(false);
+  const [activeCategoryIndex, setActiveCategoryIndex] = useState(0);
 
   const {
     messages,
@@ -262,9 +264,81 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
     }
   }
 
+  // Add this function to handle category navigation
+  const handleCategoryChange = (direction: "next" | "prev") => {
+    if (direction === "next") {
+      setActiveCategoryIndex((prev) => (prev === 4 ? 0 : prev + 1));
+    } else {
+      setActiveCategoryIndex((prev) => (prev === 0 ? 4 : prev - 1));
+    }
+  };
+
+  // Add these states and refs for touch handling
+  const touchStartX = useRef<number | null>(null);
+  const [swipeDirection, setSwipeDirection] = useState<"left" | "right" | null>(
+    null
+  );
+  const suggestionContainerRef = useRef<HTMLDivElement>(null);
+
+  // Add this touch handler function
+  const handleTouchStart = (e: TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    setSwipeDirection(null);
+  };
+
+  const handleTouchMove = (e: TouchEvent) => {
+    if (touchStartX.current === null) return;
+
+    const currentX = e.touches[0].clientX;
+    const diff = touchStartX.current - currentX;
+
+    if (Math.abs(diff) > 20) {
+      setSwipeDirection(diff > 0 ? "left" : "right");
+    }
+  };
+
+  const handleTouchEnd = (e: TouchEvent) => {
+    if (touchStartX.current === null) return;
+
+    const touchEndX = e.changedTouches[0].clientX;
+    const diff = touchStartX.current - touchEndX;
+
+    // Detect swipe (threshold of 50px)
+    if (Math.abs(diff) > 50) {
+      if (diff > 0) {
+        // Swipe left
+        handleCategoryChange("next");
+      } else {
+        // Swipe right
+        handleCategoryChange("prev");
+      }
+    }
+
+    touchStartX.current = null;
+    setSwipeDirection(null);
+  };
+
+  // Add this effect to make the suggestion container height consistent
+  useEffect(() => {
+    const updateSuggestionHeight = () => {
+      if (suggestionContainerRef.current) {
+        // Set a minimum height for the suggestion container
+        const minHeight = 180; // px
+        suggestionContainerRef.current.style.minHeight = `${minHeight}px`;
+      }
+    };
+
+    updateSuggestionHeight();
+    window.addEventListener("resize", updateSuggestionHeight);
+
+    return () => {
+      window.removeEventListener("resize", updateSuggestionHeight);
+    };
+  }, []);
+
   // Use a single input form component for both cases
   const InputForm = (
-    <div className="bg-background mt-auto w-full max-w-3xl mx-auto border-t border-border/20">
+    <div className="bg-background mt-auto w-full max-w-3xl mx-auto border-t border-border/20 pt-2 pb-4 px-3">
       {showScrollDown && messages.length > 0 && (
         <div className="absolute -top-12 left-1/2 -translate-x-1/2">
           <Button
@@ -330,16 +404,53 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
       <div className="flex flex-col h-full">
         <div className="flex-1">
           <div className="h-full pt-10">
-            <div className="text-center max-w-lg mx-auto space-y-6 px-4">
-              <h3 className="text-base font-medium mb-2">
+            <div className="text-center max-w-lg mx-auto space-y-3 px-4">
+              <h3 className="text-base font-medium mb-1">
                 Your intelligent assistant for Solana blockchain interactions
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 text-left mt-4">
-                <div className="bg-muted/20 p-4 rounded-lg hover:bg-muted/30 transition-colors">
-                  <h4 className="text-sm font-medium mb-2">
-                    Market Data & Analysis
-                  </h4>
-                  <ul className="space-y-2.5 text-xs text-muted-foreground">
+
+              {/* Category navigation buttons */}
+              <div className="flex items-center justify-between mb-4">
+                <button
+                  onClick={() => handleCategoryChange("prev")}
+                  className="p-2 rounded-full hover:bg-primary/10 transition-colors text-muted-foreground hover:text-primary flex items-center justify-center"
+                  aria-label="Previous category"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+
+                <div className="text-sm font-medium bg-muted/30 px-4 py-1.5 rounded-full">
+                  {activeCategoryIndex === 0 && "Market Data & Analysis"}
+                  {activeCategoryIndex === 1 && "Trading & Swaps"}
+                  {activeCategoryIndex === 2 && "Wallet & Account Management"}
+                  {activeCategoryIndex === 3 && "Token Creation & Analysis"}
+                  {activeCategoryIndex === 4 &&
+                    "Cross-Chain Bridging (deBridge)"}
+                </div>
+
+                <button
+                  onClick={() => handleCategoryChange("next")}
+                  className="p-2 rounded-full hover:bg-primary/10 transition-colors text-muted-foreground hover:text-primary flex items-center justify-center"
+                  aria-label="Next category"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Category content - only show active one */}
+              <div
+                ref={suggestionContainerRef}
+                className={cn(
+                  "bg-muted/20 p-5 rounded-lg border border-border/10 shadow-sm transition-all duration-300 transform",
+                  swipeDirection === "left" && "translate-x-[-10px] opacity-90",
+                  swipeDirection === "right" && "translate-x-[10px] opacity-90"
+                )}
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+              >
+                {activeCategoryIndex === 0 && (
+                  <ul className="space-y-2 text-xs text-muted-foreground">
                     <li
                       className="cursor-pointer hover:text-primary transition-colors"
                       onClick={() =>
@@ -357,7 +468,7 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
                       onClick={() =>
                         handleInputChange({
                           target: {
-                            value: "What&apos;s the price of SOL right now?",
+                            value: "What's the price of SOL right now?",
                           },
                         } as React.ChangeEvent<HTMLTextAreaElement>)
                       }
@@ -389,10 +500,10 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
                       • Run a rugcheck on a token address
                     </li>
                   </ul>
-                </div>
-                <div className="bg-muted/20 p-4 rounded-lg hover:bg-muted/30 transition-colors">
-                  <h4 className="text-sm font-medium mb-2">Trading & Swaps</h4>
-                  <ul className="space-y-2.5 text-xs text-muted-foreground">
+                )}
+
+                {activeCategoryIndex === 1 && (
+                  <ul className="space-y-2 text-xs text-muted-foreground">
                     <li
                       className="cursor-pointer hover:text-primary transition-colors"
                       onClick={() =>
@@ -430,12 +541,10 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
                       • Get token data for PYTH
                     </li>
                   </ul>
-                </div>
-                <div className="bg-muted/20 p-4 rounded-lg hover:bg-muted/30 transition-colors">
-                  <h4 className="text-sm font-medium mb-2">
-                    Wallet & Account Management
-                  </h4>
-                  <ul className="space-y-2.5 text-xs text-muted-foreground">
+                )}
+
+                {activeCategoryIndex === 2 && (
+                  <ul className="space-y-2 text-xs text-muted-foreground">
                     <li
                       className="cursor-pointer hover:text-primary transition-colors"
                       onClick={() =>
@@ -483,12 +592,10 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
                       • Transfer SOL to another wallet
                     </li>
                   </ul>
-                </div>
-                <div className="bg-muted/20 p-4 rounded-lg hover:bg-muted/30 transition-colors">
-                  <h4 className="text-sm font-medium mb-2">
-                    Token Creation & Analysis
-                  </h4>
-                  <ul className="space-y-2.5 text-xs text-muted-foreground">
+                )}
+
+                {activeCategoryIndex === 3 && (
+                  <ul className="space-y-2 text-xs text-muted-foreground">
                     <li
                       className="cursor-pointer hover:text-primary transition-colors"
                       onClick={() =>
@@ -526,11 +633,97 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
                       • Show me the top holders of JUP token
                     </li>
                   </ul>
-                </div>
+                )}
+
+                {activeCategoryIndex === 4 && (
+                  <ul className="space-y-2 text-xs text-muted-foreground">
+                    <li
+                      className="cursor-pointer hover:text-primary transition-colors"
+                      onClick={() =>
+                        handleInputChange({
+                          target: {
+                            value:
+                              "Get a quote to bridge 1 SOL from Solana to Ethereum",
+                          },
+                        } as React.ChangeEvent<HTMLTextAreaElement>)
+                      }
+                    >
+                      • Get a bridge quote (e.g., SOL to ETH)
+                    </li>
+                    <li
+                      className="cursor-pointer hover:text-primary transition-colors"
+                      onClick={() =>
+                        handleInputChange({
+                          target: {
+                            value: "Show me which chains deBridge supports",
+                          },
+                        } as React.ChangeEvent<HTMLTextAreaElement>)
+                      }
+                    >
+                      • List supported chains for bridging
+                    </li>
+                    <li
+                      className="cursor-pointer hover:text-primary transition-colors"
+                      onClick={() =>
+                        handleInputChange({
+                          target: {
+                            value: "Find USDC token info on Solana",
+                          },
+                        } as React.ChangeEvent<HTMLTextAreaElement>)
+                      }
+                    >
+                      • Find token info on a specific chain
+                    </li>
+                    <li
+                      className="cursor-pointer hover:text-primary transition-colors"
+                      onClick={() =>
+                        handleInputChange({
+                          target: {
+                            value: "Bridge my 0.5 SOL from Solana to Base",
+                          },
+                        } as React.ChangeEvent<HTMLTextAreaElement>)
+                      }
+                    >
+                      • Execute a bridge transfer
+                    </li>
+                    <li
+                      className="cursor-pointer hover:text-primary transition-colors"
+                      onClick={() =>
+                        handleInputChange({
+                          target: {
+                            value:
+                              "Check the status of my bridge transaction 0x...",
+                          },
+                        } as React.ChangeEvent<HTMLTextAreaElement>)
+                      }
+                    >
+                      • Verify bridge transaction status
+                    </li>
+                  </ul>
+                )}
               </div>
-              <p className="text-xs text-muted-foreground mt-4">
-                Click on any suggestion to start, or type your own question
-                below.
+
+              {/* Category indicator dots */}
+              <div className="flex justify-center space-x-2 mt-4">
+                {[0, 1, 2, 3, 4].map((index) => (
+                  <button
+                    key={index}
+                    onClick={() => setActiveCategoryIndex(index)}
+                    className={cn(
+                      "w-2.5 h-2.5 rounded-full transition-all duration-300",
+                      activeCategoryIndex === index
+                        ? "bg-primary scale-110 shadow-sm"
+                        : "bg-muted-foreground/30 hover:bg-muted-foreground/50"
+                    )}
+                    aria-label={`Go to category ${index + 1}`}
+                  />
+                ))}
+              </div>
+
+              <p className="text-xs text-muted-foreground mt-3 flex items-center justify-center gap-1.5">
+                <ChevronLeft className="w-3 h-3" />
+                <span>Swipe or use arrows to explore more options</span>
+                <ChevronRight className="w-3 h-3" />
               </p>
             </div>
           </div>
@@ -549,11 +742,11 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
     isLoading;
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-screen overflow-hidden">
       {/* Messages container */}
       <div
         ref={messagesContainerRef}
-        className="flex-1 overflow-y-auto brainpower-scrollbar px-3 sm:px-4 pb-4"
+        className="flex-1 overflow-y-auto brainpower-scrollbar px-3 sm:px-4 pb-28"
       >
         {isLoadingChat ? (
           <div className="flex-1 flex items-center justify-center">
@@ -566,16 +759,53 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
           </div>
         ) : messages.length === 0 ? (
           <div className="h-full pt-10">
-            <div className="text-center max-w-lg mx-auto space-y-6 px-4">
-              <h3 className="text-base font-medium mb-2">
+            <div className="text-center max-w-lg mx-auto space-y-3 px-4">
+              <h3 className="text-base font-medium mb-1">
                 Your intelligent assistant for Solana blockchain interactions
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 text-left mt-4">
-                <div className="bg-muted/20 p-4 rounded-lg hover:bg-muted/30 transition-colors">
-                  <h4 className="text-sm font-medium mb-2">
-                    Market Data & Analysis
-                  </h4>
-                  <ul className="space-y-2.5 text-xs text-muted-foreground">
+
+              {/* Category navigation buttons */}
+              <div className="flex items-center justify-between mb-4">
+                <button
+                  onClick={() => handleCategoryChange("prev")}
+                  className="p-2 rounded-full hover:bg-primary/10 transition-colors text-muted-foreground hover:text-primary flex items-center justify-center"
+                  aria-label="Previous category"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+
+                <div className="text-sm font-medium bg-muted/30 px-4 py-1.5 rounded-full">
+                  {activeCategoryIndex === 0 && "Market Data & Analysis"}
+                  {activeCategoryIndex === 1 && "Trading & Swaps"}
+                  {activeCategoryIndex === 2 && "Wallet & Account Management"}
+                  {activeCategoryIndex === 3 && "Token Creation & Analysis"}
+                  {activeCategoryIndex === 4 &&
+                    "Cross-Chain Bridging (deBridge)"}
+                </div>
+
+                <button
+                  onClick={() => handleCategoryChange("next")}
+                  className="p-2 rounded-full hover:bg-primary/10 transition-colors text-muted-foreground hover:text-primary flex items-center justify-center"
+                  aria-label="Next category"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Category content - only show active one */}
+              <div
+                ref={suggestionContainerRef}
+                className={cn(
+                  "bg-muted/20 p-5 rounded-lg border border-border/10 shadow-sm transition-all duration-300 transform",
+                  swipeDirection === "left" && "translate-x-[-10px] opacity-90",
+                  swipeDirection === "right" && "translate-x-[10px] opacity-90"
+                )}
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+              >
+                {activeCategoryIndex === 0 && (
+                  <ul className="space-y-2 text-xs text-muted-foreground">
                     <li
                       className="cursor-pointer hover:text-primary transition-colors"
                       onClick={() =>
@@ -593,7 +823,7 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
                       onClick={() =>
                         handleInputChange({
                           target: {
-                            value: "What&apos;s the price of SOL right now?",
+                            value: "What's the price of SOL right now?",
                           },
                         } as React.ChangeEvent<HTMLTextAreaElement>)
                       }
@@ -625,10 +855,10 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
                       • Run a rugcheck on a token address
                     </li>
                   </ul>
-                </div>
-                <div className="bg-muted/20 p-4 rounded-lg hover:bg-muted/30 transition-colors">
-                  <h4 className="text-sm font-medium mb-2">Trading & Swaps</h4>
-                  <ul className="space-y-2.5 text-xs text-muted-foreground">
+                )}
+
+                {activeCategoryIndex === 1 && (
+                  <ul className="space-y-2 text-xs text-muted-foreground">
                     <li
                       className="cursor-pointer hover:text-primary transition-colors"
                       onClick={() =>
@@ -666,12 +896,10 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
                       • Get token data for PYTH
                     </li>
                   </ul>
-                </div>
-                <div className="bg-muted/20 p-4 rounded-lg hover:bg-muted/30 transition-colors">
-                  <h4 className="text-sm font-medium mb-2">
-                    Wallet & Account Management
-                  </h4>
-                  <ul className="space-y-2.5 text-xs text-muted-foreground">
+                )}
+
+                {activeCategoryIndex === 2 && (
+                  <ul className="space-y-2 text-xs text-muted-foreground">
                     <li
                       className="cursor-pointer hover:text-primary transition-colors"
                       onClick={() =>
@@ -719,12 +947,10 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
                       • Transfer SOL to another wallet
                     </li>
                   </ul>
-                </div>
-                <div className="bg-muted/20 p-4 rounded-lg hover:bg-muted/30 transition-colors">
-                  <h4 className="text-sm font-medium mb-2">
-                    Token Creation & Analysis
-                  </h4>
-                  <ul className="space-y-2.5 text-xs text-muted-foreground">
+                )}
+
+                {activeCategoryIndex === 3 && (
+                  <ul className="space-y-2 text-xs text-muted-foreground">
                     <li
                       className="cursor-pointer hover:text-primary transition-colors"
                       onClick={() =>
@@ -762,11 +988,97 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
                       • Show me the top holders of JUP token
                     </li>
                   </ul>
-                </div>
+                )}
+
+                {activeCategoryIndex === 4 && (
+                  <ul className="space-y-2 text-xs text-muted-foreground">
+                    <li
+                      className="cursor-pointer hover:text-primary transition-colors"
+                      onClick={() =>
+                        handleInputChange({
+                          target: {
+                            value:
+                              "Get a quote to bridge 1 SOL from Solana to Ethereum",
+                          },
+                        } as React.ChangeEvent<HTMLTextAreaElement>)
+                      }
+                    >
+                      • Get a bridge quote (e.g., SOL to ETH)
+                    </li>
+                    <li
+                      className="cursor-pointer hover:text-primary transition-colors"
+                      onClick={() =>
+                        handleInputChange({
+                          target: {
+                            value: "Show me which chains deBridge supports",
+                          },
+                        } as React.ChangeEvent<HTMLTextAreaElement>)
+                      }
+                    >
+                      • List supported chains for bridging
+                    </li>
+                    <li
+                      className="cursor-pointer hover:text-primary transition-colors"
+                      onClick={() =>
+                        handleInputChange({
+                          target: {
+                            value: "Find USDC token info on Solana",
+                          },
+                        } as React.ChangeEvent<HTMLTextAreaElement>)
+                      }
+                    >
+                      • Find token info on a specific chain
+                    </li>
+                    <li
+                      className="cursor-pointer hover:text-primary transition-colors"
+                      onClick={() =>
+                        handleInputChange({
+                          target: {
+                            value: "Bridge my 0.5 SOL from Solana to Base",
+                          },
+                        } as React.ChangeEvent<HTMLTextAreaElement>)
+                      }
+                    >
+                      • Execute a bridge transfer
+                    </li>
+                    <li
+                      className="cursor-pointer hover:text-primary transition-colors"
+                      onClick={() =>
+                        handleInputChange({
+                          target: {
+                            value:
+                              "Check the status of my bridge transaction 0x...",
+                          },
+                        } as React.ChangeEvent<HTMLTextAreaElement>)
+                      }
+                    >
+                      • Verify bridge transaction status
+                    </li>
+                  </ul>
+                )}
               </div>
-              <p className="text-xs text-muted-foreground mt-4">
-                Click on any suggestion to start, or type your own question
-                below.
+
+              {/* Category indicator dots */}
+              <div className="flex justify-center space-x-2 mt-4">
+                {[0, 1, 2, 3, 4].map((index) => (
+                  <button
+                    key={index}
+                    onClick={() => setActiveCategoryIndex(index)}
+                    className={cn(
+                      "w-2.5 h-2.5 rounded-full transition-all duration-300",
+                      activeCategoryIndex === index
+                        ? "bg-primary scale-110 shadow-sm"
+                        : "bg-muted-foreground/30 hover:bg-muted-foreground/50"
+                    )}
+                    aria-label={`Go to category ${index + 1}`}
+                  />
+                ))}
+              </div>
+
+              <p className="text-xs text-muted-foreground mt-3 flex items-center justify-center gap-1.5">
+                <ChevronLeft className="w-3 h-3" />
+                <span>Swipe or use arrows to explore more options</span>
+                <ChevronRight className="w-3 h-3" />
               </p>
             </div>
           </div>
@@ -795,7 +1107,9 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="mt-4">{InputForm}</div>
+      <div className="fixed bottom-0 left-0 right-0 z-10 bg-background border-t border-border/20">
+        <div className="max-w-3xl mx-auto">{InputForm}</div>
+      </div>
     </div>
   );
 }
