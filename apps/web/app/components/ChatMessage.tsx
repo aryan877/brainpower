@@ -84,8 +84,8 @@ export default function ChatMessage({
     return (
       <div className="w-full">
         {toolNames.length > 0 && (
-          <div className="max-w-3xl mx-auto px-4">
-            <ToolNames toolNames={toolNames} className="py-2" />
+          <div className="max-w-3xl mx-auto px-2">
+            <ToolNames toolNames={toolNames} className="py-0 mb-0" />
           </div>
         )}
       </div>
@@ -198,43 +198,43 @@ export default function ChatMessage({
   return (
     <div className="w-full">
       {toolNames.length > 0 && (
-        <div className="max-w-3xl mx-auto px-4">
-          <ToolNames toolNames={toolNames} className="py-2" />
+        <div className="max-w-3xl mx-auto px-2">
+          <ToolNames toolNames={toolNames} className="py-0 mb-0" />
         </div>
       )}
       {isMessageReadyToRender(message) && (
-        <div className="max-w-3xl mx-auto py-3">
+        <div className="max-w-3xl mx-auto py-1">
           <div className="relative">
             <div
               className={cn(
                 "flex w-full relative",
                 message.role === "user"
-                  ? "bg-muted dark:bg-muted  rounded-md p-4"
-                  : "py-2 px-4"
+                  ? "bg-muted dark:bg-muted rounded-md p-3"
+                  : "py-1 px-3"
               )}
             >
               {/* Avatar */}
-              <div className="flex-none mr-4">
+              <div className="flex-none mr-3">
                 {message.role === "assistant" ? (
-                  <Avatar className="w-8 h-8 ring-1 ring-primary/30 bg-primary/20 flex items-center justify-center transition-all duration-200 hover:ring-primary/40 hover:bg-primary/30">
-                    <div className="flex items-center gap-2">
+                  <Avatar className="w-7 h-7 ring-1 ring-primary/30 bg-primary/20 flex items-center justify-center transition-all duration-200 hover:ring-primary/40 hover:bg-primary/30">
+                    <div className="flex items-center gap-1">
                       <Image
                         src="/logo.svg"
                         alt="BrainPower Logo"
-                        width={24}
-                        height={24}
+                        width={20}
+                        height={20}
                       />
                     </div>
                   </Avatar>
                 ) : (
-                  <Avatar className="w-8 h-8 ring-1 ring-border bg-background flex items-center justify-center transition-all duration-200 hover:ring-border/80 hover:bg-muted/50">
-                    <User className="w-5 h-5 text-foreground/80" />
+                  <Avatar className="w-7 h-7 ring-1 ring-border bg-background flex items-center justify-center transition-all duration-200 hover:ring-border/80 hover:bg-muted/50">
+                    <User className="w-4 h-4 text-foreground/80" />
                   </Avatar>
                 )}
               </div>
 
               {/* Content */}
-              <div className="flex-1 min-w-0 pt-0.5">
+              <div className="flex-1 min-w-0 pt-0">
                 <div
                   className={cn(
                     "prose dark:prose-invert max-w-none overflow-hidden break-words",
@@ -256,7 +256,7 @@ export default function ChatMessage({
                   {/* Show tool results first */}
                   {message.toolInvocations &&
                     message.toolInvocations.length > 0 && (
-                      <div className="space-y-4 mb-4 not-prose">
+                      <div className="space-y-3 mb-3 not-prose">
                         {message.toolInvocations.map((toolInvocation) =>
                           renderToolInvocation(toolInvocation)
                         )}
@@ -371,7 +371,7 @@ export default function ChatMessage({
               </div>
             </div>
             {message.content?.trim() && (
-              <div className="flex justify-end mt-2">
+              <div className="flex justify-end mt-3">
                 <button
                   onClick={handleCopy}
                   className="p-1.5 hover:bg-primary/10 rounded-md transition-colors"

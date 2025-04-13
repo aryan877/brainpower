@@ -1,6 +1,6 @@
-import type { Config } from "tailwindcss";
 import typography from "@tailwindcss/typography";
 import scrollbar from "tailwind-scrollbar";
+import type { Config } from "tailwindcss";
 import animate from "tailwindcss-animate";
 
 export default {
@@ -13,12 +13,23 @@ export default {
   theme: {
     container: {
       center: true,
-      padding: "2rem",
+      padding: "1rem",
       screens: {
         "2xl": "1400px",
       },
     },
     extend: {
+      spacing: {
+        0: "0px",
+        0.5: "0.125rem",
+        1: "0.25rem",
+        1.5: "0.375rem",
+        2: "0.5rem",
+        2.5: "0.625rem",
+        3: "0.75rem",
+        3.5: "0.875rem",
+        4: "1rem",
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -76,6 +87,31 @@ export default {
       typography: {
         DEFAULT: {
           css: {
+            maxWidth: "65ch",
+            p: {
+              marginTop: "0.75em",
+              marginBottom: "0.75em",
+            },
+            li: {
+              marginTop: "0.375em",
+              marginBottom: "0.375em",
+            },
+            h1: {
+              marginTop: "1.5em",
+              marginBottom: "0.5em",
+            },
+            h2: {
+              marginTop: "1.25em",
+              marginBottom: "0.5em",
+            },
+            h3: {
+              marginTop: "1em",
+              marginBottom: "0.5em",
+            },
+            blockquote: {
+              marginTop: "1em",
+              marginBottom: "1em",
+            },
             "--tw-prose-body": "hsl(var(--foreground))",
             "--tw-prose-headings": "hsl(var(--foreground))",
             "--tw-prose-lead": "hsl(var(--foreground))",

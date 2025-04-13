@@ -1,12 +1,12 @@
-import axios, { AxiosResponse } from "axios";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
+import axios, { AxiosResponse } from "axios";
 import {
   BundleAnalysisResponse,
   PumpFunTrade,
   WalletSummary,
 } from "../../types/index.js";
 
-const BASE_URL = "https://frontend-api.pump.fun";
+const BASE_URL = "https://frontend-api-v3.pump.fun";
 const TOTAL_SUPPLY = 1_000_000_000_000_000; // 1 billion with 6 decimals
 
 async function delay(ms: number) {

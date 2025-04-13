@@ -277,7 +277,7 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
           </Button>
         </div>
       )}
-      <form onSubmit={wrappedHandleSubmit} className="px-3 py-2">
+      <form onSubmit={wrappedHandleSubmit} className="px-2 py-2">
         <div className="relative flex items-center">
           <Textarea
             value={input}
@@ -289,10 +289,11 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
             }
             rows={2}
             className={cn(
-              "resize-none pr-12 text-sm text-foreground placeholder:text-muted-foreground/60",
-              "border border-border/40 rounded-md focus:border-white focus:ring-0"
+              "resize-none pr-10 text-sm text-foreground placeholder:text-muted-foreground/60",
+              "border border-border/40 rounded-md focus:border-white focus:ring-0 shadow-sm",
+              "bg-muted/30 dark:bg-background/90"
             )}
-            style={{ minHeight: "44px", maxHeight: "200px" }}
+            style={{ minHeight: "46px", maxHeight: "160px" }}
             disabled={isLoading || hasActiveToolCall}
             onKeyDown={handleKeyDown}
           />
@@ -327,8 +328,8 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
   if (!threadId) {
     return (
       <div className="flex flex-col h-full">
-        <div className="flex-1 flex items-center justify-center p-4">
-          <div className="text-center w-full max-w-2xl mx-auto space-y-6">
+        <div className="flex-1 p-4 pt-10">
+          <div className="text-center w-full max-w-2xl mx-auto space-y-8">
             <div className="flex flex-col items-center gap-3">
               <Image
                 src="/logo.svg"
@@ -342,12 +343,12 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left px-4">
-              <div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 text-left px-5 mt-6">
+              <div className="bg-muted/20 p-4 rounded-lg hover:bg-muted/30 transition-colors">
                 <h3 className="text-sm font-medium mb-3">
                   Market Data & Analysis
                 </h3>
-                <ul className="space-y-2 text-xs text-muted-foreground">
+                <ul className="space-y-2.5 text-xs text-muted-foreground">
                   <li
                     className="cursor-pointer hover:text-primary transition-colors"
                     onClick={() =>
@@ -398,9 +399,9 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
                 </ul>
               </div>
 
-              <div>
+              <div className="bg-muted/20 p-4 rounded-lg hover:bg-muted/30 transition-colors">
                 <h3 className="text-sm font-medium mb-3">Trading & Swaps</h3>
-                <ul className="space-y-2 text-xs text-muted-foreground">
+                <ul className="space-y-2.5 text-xs text-muted-foreground">
                   <li
                     className="cursor-pointer hover:text-primary transition-colors"
                     onClick={() =>
@@ -436,11 +437,11 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
                 </ul>
               </div>
 
-              <div>
+              <div className="bg-muted/20 p-4 rounded-lg hover:bg-muted/30 transition-colors">
                 <h3 className="text-sm font-medium mb-3">
                   Wallet & Account Management
                 </h3>
-                <ul className="space-y-2 text-xs text-muted-foreground">
+                <ul className="space-y-2.5 text-xs text-muted-foreground">
                   <li
                     className="cursor-pointer hover:text-primary transition-colors"
                     onClick={() =>
@@ -487,11 +488,11 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
                 </ul>
               </div>
 
-              <div>
+              <div className="bg-muted/20 p-4 rounded-lg hover:bg-muted/30 transition-colors">
                 <h3 className="text-sm font-medium mb-3">
                   Token Creation & Analysis
                 </h3>
-                <ul className="space-y-2 text-xs text-muted-foreground">
+                <ul className="space-y-2.5 text-xs text-muted-foreground">
                   <li
                     className="cursor-pointer hover:text-primary transition-colors"
                     onClick={() =>
@@ -537,7 +538,7 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
               </p>
             </div>
 
-            {InputForm}
+            <div className="mt-6">{InputForm}</div>
           </div>
         </div>
       </div>
@@ -549,18 +550,18 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
       {/* Messages container */}
       <div
         ref={messagesContainerRef}
-        className="flex-1 overflow-y-auto brainpower-scrollbar px-3 sm:px-4"
+        className="flex-1 overflow-y-auto brainpower-scrollbar px-3 sm:px-4 pb-4"
       >
         {messages.length === 0 ? (
-          <div className="h-full flex items-center justify-center">
-            <div className="text-center max-w-lg mx-auto space-y-4 px-4">
+          <div className="h-full pt-10">
+            <div className="text-center max-w-lg mx-auto space-y-6 px-4">
               <h3 className="text-base font-medium mb-2">
                 Start a New Conversation
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
-                <div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 text-left mt-4">
+                <div className="bg-muted/20 p-4 rounded-lg hover:bg-muted/30 transition-colors">
                   <h4 className="text-sm font-medium mb-2">Market & Trading</h4>
-                  <ul className="space-y-2 text-xs text-muted-foreground">
+                  <ul className="space-y-2.5 text-xs text-muted-foreground">
                     <li
                       className="cursor-pointer hover:text-primary transition-colors"
                       onClick={() =>
@@ -587,9 +588,9 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
                     </li>
                   </ul>
                 </div>
-                <div>
+                <div className="bg-muted/20 p-4 rounded-lg hover:bg-muted/30 transition-colors">
                   <h4 className="text-sm font-medium mb-2">Wallet & Tokens</h4>
-                  <ul className="space-y-2 text-xs text-muted-foreground">
+                  <ul className="space-y-2.5 text-xs text-muted-foreground">
                     <li
                       className="cursor-pointer hover:text-primary transition-colors"
                       onClick={() =>
@@ -618,11 +619,11 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
             </div>
           </div>
         ) : (
-          <div className="space-y-0">
+          <div className="space-y-2 mb-3">
             {messages.reduce((groups: React.ReactElement[], message) => {
               return [
                 ...groups,
-                <div key={message.id} className="max-w-3xl mx-auto py-2">
+                <div key={message.id} className="max-w-3xl mx-auto py-1">
                   <ChatMessage
                     message={message}
                     isLoading={
@@ -642,7 +643,7 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
         <div ref={messagesEndRef} />
       </div>
 
-      {InputForm}
+      <div className="mt-4">{InputForm}</div>
     </div>
   );
 }

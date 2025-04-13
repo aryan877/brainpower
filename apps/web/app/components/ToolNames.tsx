@@ -1,26 +1,30 @@
 import { cn } from "@/lib/utils";
 import { ACTION_NAMES } from "@repo/brainpower-agent";
 import {
-  Sparkles,
-  ArrowRightLeft,
-  Search,
-  Wallet,
-  Users,
-  LineChart,
-  ShieldAlert,
-  Send,
-  Coins,
-  CircleDollarSign,
-  Gauge,
-  Download,
-  Trash,
   AlertCircle,
+  ArrowRightLeft,
   Bot,
-  Twitter,
-  TrendingUp,
-  MessageCircle,
+  Calculator,
   CandlestickChart,
+  CheckCircle,
+  CircleDollarSign,
+  Coins,
+  Database,
+  Download,
   Flame,
+  Gauge,
+  Globe,
+  LineChart,
+  MessageCircle,
+  Search,
+  Send,
+  ShieldAlert,
+  Sparkles,
+  Trash,
+  TrendingUp,
+  Twitter,
+  Users,
+  Wallet,
 } from "lucide-react";
 import React from "react";
 
@@ -123,13 +127,38 @@ const TOOL_DISPLAY_CONFIG: Record<
     icon: <Flame className="w-3 h-3" />,
     label: "Trending Tokens",
   },
+  // Debridge Tool Names
+  [ACTION_NAMES.GET_SUPPORTED_CHAINS]: {
+    icon: <Globe className="w-3 h-3" />,
+    label: "Supported Chains",
+  },
+  [ACTION_NAMES.DEBRIDGE_VERIFY_TX_STATUS]: {
+    icon: <CheckCircle className="w-3 h-3" />,
+    label: "Verify TX Status",
+  },
+  [ACTION_NAMES.DEBRIDGE_EXECUTE_BRIDGE_TRANSFER]: {
+    icon: <ArrowRightLeft className="w-3 h-3" />,
+    label: "Bridge Transfer",
+  },
+  [ACTION_NAMES.DEBRIDGE_FETCH_BRIDGE_QUOTE]: {
+    icon: <Calculator className="w-3 h-3" />,
+    label: "Bridge Quote",
+  },
+  [ACTION_NAMES.DEBRIDGE_FETCH_TOKEN_DATA]: {
+    icon: <Database className="w-3 h-3" />,
+    label: "Token Data",
+  },
+  [ACTION_NAMES.DEBRIDGE_PROCESS_TRANSFER]: {
+    icon: <Send className="w-3 h-3" />,
+    label: "Transfer",
+  },
 };
 
 export function ToolNames({ toolNames, className }: ToolNamesProps) {
   if (!toolNames.length) return null;
 
   return (
-    <div className={cn("flex flex-wrap gap-2", className)}>
+    <div className={cn("flex flex-wrap gap-1", className)}>
       {toolNames.map((name, index) => {
         const config = TOOL_DISPLAY_CONFIG[name];
         if (!config) return null;
@@ -137,11 +166,11 @@ export function ToolNames({ toolNames, className }: ToolNamesProps) {
         return (
           <div
             key={index}
-            className="flex items-center gap-1.5 text-xs px-2 py-1 rounded-md bg-primary/5 text-primary/90 border border-primary/10 hover:bg-primary/10 transition-colors"
+            className="flex items-center gap-0.5 text-xs px-1 py-0.5 rounded-sm bg-primary/5 text-primary/90 border border-primary/10 hover:bg-primary/10 transition-colors"
             title={name}
           >
             {config.icon}
-            <span>{config.label}</span>
+            <span className="text-[10px]">{config.label}</span>
           </div>
         );
       })}
