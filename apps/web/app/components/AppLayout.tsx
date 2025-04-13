@@ -1,13 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import Sidebar from "./Sidebar";
-import { useDeleteThread, chatKeys } from "../hooks/chat";
-import { ThreadPreview } from "../types";
-import { GetThreadsResponse } from "../types/api/chat";
-import Navbar from "./Navbar";
-import { usePrivy } from "@privy-io/react-auth";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -15,10 +8,17 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { WalletProvider } from "../providers/WalletProvider";
+import { usePrivy } from "@privy-io/react-auth";
 import { useInfiniteQuery } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { chatClient } from "../clients/chat";
+import { chatKeys, useDeleteThread } from "../hooks/chat";
+import { WalletProvider } from "../providers/WalletProvider";
+import { ThreadPreview } from "../types";
+import { GetThreadsResponse } from "../types/api/chat";
+import Navbar from "./Navbar";
+import Sidebar from "./Sidebar";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -182,7 +182,19 @@ export function AppLayout({
 
   return (
     <WalletProvider>
-      <div className="flex h-screen overflow-hidden bg-background relative">
+      <div
+        className="flex h-screen overflow-hidden bg-background relative"
+        style={
+          {
+            "--sidebar-width":
+              isSidebarCollapsed && window.innerWidth >= 768
+                ? "60px"
+                : isSidebarOpen
+                  ? "260px"
+                  : "0px",
+          } as React.CSSProperties
+        }
+      >
         {/* Confirm Dialog */}
         <Dialog
           open={isConfirmDialogOpen}

@@ -338,7 +338,7 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
 
   // Use a single input form component for both cases
   const InputForm = (
-    <div className="bg-background mt-auto w-full max-w-3xl mx-auto border-t border-border/20 pt-2 pb-4 px-3">
+    <div className="bg-background mt-auto w-full max-w-3xl mx-auto pt-2 pb-4 px-3">
       {showScrollDown && messages.length > 0 && (
         <div className="absolute -top-12 left-1/2 -translate-x-1/2">
           <Button
@@ -728,8 +728,14 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
             </div>
           </div>
         </div>
-        <div className="mt-auto w-full max-w-3xl mx-auto border-t border-border/20">
-          {InputForm}
+        <div
+          className="fixed bottom-0 right-0 z-10 bg-background"
+          style={{
+            width: "calc(100% - var(--sidebar-width, 0px))",
+            left: "var(--sidebar-width, 0px)",
+          }}
+        >
+          <div className="max-w-3xl mx-auto">{InputForm}</div>
         </div>
       </div>
     );
@@ -1107,7 +1113,13 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 z-10 bg-background border-t border-border/20">
+      <div
+        className="fixed bottom-0 right-0 z-10 bg-background"
+        style={{
+          width: "calc(100% - var(--sidebar-width, 0px))",
+          left: "var(--sidebar-width, 0px)",
+        }}
+      >
         <div className="max-w-3xl mx-auto">{InputForm}</div>
       </div>
     </div>
