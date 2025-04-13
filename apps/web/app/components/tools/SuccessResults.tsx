@@ -1,32 +1,44 @@
 import {
   ACTION_NAMES,
-  JupiterTokenData,
-  PumpfunLaunchResponse,
-  TokenHolder,
-  ChartAddressResponse,
-  JupiterSwapResponse,
-  TokenCheck,
-  TransferResponse,
-  TokenBalancesResponse,
   AgentDetails,
-  TweetSearchResult,
   AgentsPagedResponse,
   BundleAnalysisResponse,
+  ChartAddressResponse,
+  JupiterSwapResponse,
+  JupiterTokenData,
+  PumpfunLaunchResponse,
+  TokenBalancesResponse,
+  TokenCheck,
+  TokenHolder,
+  TransferResponse,
   TrendingTokensResponse,
+  TweetSearchResult,
+  deBridgeEnhancedQuoteResponse,
+  deBridgeSupportedChainsResponse,
 } from "@repo/brainpower-agent";
-import { PumpFunSuccess } from "./success/PumpFunSuccess";
-import { TokenAddressSuccess } from "./success/TokenAddressSuccess";
-import { TokenHoldersSuccess } from "./success/TokenHoldersSuccess";
-import { ChartAddressSuccess } from "./success/ChartAddressSuccess";
-import { SwapSuccess } from "./success/SwapSuccess";
-import { RugcheckSuccess } from "./success/RugcheckSuccess";
-import { TransferSuccess } from "./success/TransferSuccess";
-import { TokenBalancesSuccess } from "./success/TokenBalancesSuccess";
-import { ConfirmationSuccess } from "./success/ConfirmationSuccess";
 import { AgentDetailsSuccess } from "./success/AgentDetailsSuccess";
-import { TweetSearchSuccess } from "./success/TweetSearchSuccess";
+import { BridgeQuoteSuccess } from "./success/BridgeQuoteSuccess";
+import {
+  BridgeStatusSuccess,
+  type BridgeStatusSuccessProps,
+} from "./success/BridgeStatusSuccess";
+import {
+  BridgeTransferSuccess,
+  type BridgeTransferSuccessProps,
+} from "./success/BridgeTransferSuccess";
 import { BundleAnalysisSuccess } from "./success/BundleAnalysisSuccess";
+import { ChartAddressSuccess } from "./success/ChartAddressSuccess";
+import { ConfirmationSuccess } from "./success/ConfirmationSuccess";
+import { PumpFunSuccess } from "./success/PumpFunSuccess";
+import { RugcheckSuccess } from "./success/RugcheckSuccess";
+import { SupportedChainsSuccess } from "./success/SupportedChainsSuccess";
+import { SwapSuccess } from "./success/SwapSuccess";
+import { TokenAddressSuccess } from "./success/TokenAddressSuccess";
+import { TokenBalancesSuccess } from "./success/TokenBalancesSuccess";
+import { TokenHoldersSuccess } from "./success/TokenHoldersSuccess";
+import { TransferSuccess } from "./success/TransferSuccess";
 import { TrendingTokensSuccess } from "./success/TrendingTokensSuccess";
+import { TweetSearchSuccess } from "./success/TweetSearchSuccess";
 
 // Define a mapping of tool names to their success result types
 export type SuccessResultsMap = {
@@ -47,6 +59,11 @@ export type SuccessResultsMap = {
   [ACTION_NAMES.SEARCH_TWEETS]: TweetSearchResult[];
   // Coingecko Success Results
   [ACTION_NAMES.GET_COINGECKO_TRENDING_TOKENS]: TrendingTokensResponse;
+  // deBridge Success Results
+  [ACTION_NAMES.GET_SUPPORTED_CHAINS]: deBridgeSupportedChainsResponse;
+  [ACTION_NAMES.DEBRIDGE_FETCH_BRIDGE_QUOTE]: deBridgeEnhancedQuoteResponse;
+  [ACTION_NAMES.DEBRIDGE_VERIFY_TX_STATUS]: BridgeStatusSuccessProps["data"];
+  [ACTION_NAMES.DEBRIDGE_EXECUTE_BRIDGE_TRANSFER]: BridgeTransferSuccessProps["data"];
 };
 
 // Registry of tools that have success components
@@ -68,6 +85,11 @@ export const SUCCESS_COMPONENTS_REGISTRY = {
   [ACTION_NAMES.SEARCH_TWEETS]: true,
   // Coingecko Components
   [ACTION_NAMES.GET_COINGECKO_TRENDING_TOKENS]: true,
+  // deBridge Components
+  [ACTION_NAMES.GET_SUPPORTED_CHAINS]: true,
+  [ACTION_NAMES.DEBRIDGE_FETCH_BRIDGE_QUOTE]: true,
+  [ACTION_NAMES.DEBRIDGE_VERIFY_TX_STATUS]: true,
+  [ACTION_NAMES.DEBRIDGE_EXECUTE_BRIDGE_TRANSFER]: true,
 } as const;
 
 // Type guard to check if a tool has success results
@@ -119,6 +141,29 @@ export function SuccessResults<T extends keyof SuccessResultsMap>({
       );
     case ACTION_NAMES.SEARCH_TWEETS:
       return <TweetSearchSuccess data={data as TweetSearchResult[]} />;
+    // deBridge Success Components
+    case ACTION_NAMES.GET_SUPPORTED_CHAINS:
+      return (
+        <SupportedChainsSuccess
+          data={data as deBridgeSupportedChainsResponse}
+        />
+      );
+    case ACTION_NAMES.DEBRIDGE_FETCH_BRIDGE_QUOTE:
+      return (
+        <BridgeQuoteSuccess
+          data={{ data: data as deBridgeEnhancedQuoteResponse }}
+        />
+      );
+    case ACTION_NAMES.DEBRIDGE_VERIFY_TX_STATUS:
+      return (
+        <BridgeStatusSuccess data={data as BridgeStatusSuccessProps["data"]} />
+      );
+    case ACTION_NAMES.DEBRIDGE_EXECUTE_BRIDGE_TRANSFER:
+      return (
+        <BridgeTransferSuccess
+          data={data as BridgeTransferSuccessProps["data"]}
+        />
+      );
     default:
       return null;
   }

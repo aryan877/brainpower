@@ -13,7 +13,10 @@ const fetchBridgeQuoteSchema = z.object({
   dstChainTokenOut: z.string().describe("Token address on destination chain"),
   dstChainTokenOutRecipient: z
     .string()
-    .describe("Recipient address on destination chain"),
+    .min(1, { message: "Recipient address is required" })
+    .describe(
+      "REQUIRED: Recipient wallet address on destination chain - must be specified for all bridge transfers",
+    ),
   account: z.string().describe("Sender's wallet address"),
   slippage: z
     .number()
@@ -31,9 +34,10 @@ export const fetchBridgeQuoteAction: Action = {
     "estimate bridge cost",
     "check bridge fees",
     "calculate bridge amount",
+    "get cross-chain transfer quote",
   ],
   description:
-    "Fetch a quote for bridging tokens between chains including fees and estimated output",
+    "Fetch a quote for bridging tokens between chains including fees and estimated output. Always requires a valid recipient address on the destination chain.",
   examples: [
     [
       {
@@ -43,7 +47,7 @@ export const fetchBridgeQuoteAction: Action = {
           srcChainTokenInAmount: "1000000000000000000",
           dstChainId: "56",
           dstChainTokenOut: "0x...",
-          dstChainTokenOutRecipient: "0x...",
+          dstChainTokenOutRecipient: "0x...", // Always required
           account: "0x...",
           slippage: 0.5,
         },
@@ -52,13 +56,35 @@ export const fetchBridgeQuoteAction: Action = {
           fee: "0.001",
           estimatedOutput: "990000000000000000",
         },
-        explanation: "Gets a quote for bridging 1 ETH from Ethereum to BSC",
+        explanation:
+          "Gets a quote for bridging 1 ETH from Ethereum to BSC, sending to the specified recipient",
       },
     ],
   ],
   schema: fetchBridgeQuoteSchema,
   handler: async (agent, input) => {
     const params = input as FetchBridgeQuoteInput;
+
+    // Double-check recipient address
+    if (
+      !params.dstChainTokenOutRecipient ||
+      params.dstChainTokenOutRecipient.trim() === ""
+    ) {
+      return {
+        status: "error",
+        message: "Recipient address is required for bridge transfers",
+        error: {
+          code: "MISSING_RECIPIENT",
+          message:
+            "You must specify a valid recipient address on the destination chain",
+          details: {
+            parameter: "dstChainTokenOutRecipient",
+            value: params.dstChainTokenOutRecipient || null,
+          },
+        },
+      };
+    }
+
     try {
       const quote = await fetchBridgeQuote({
         srcChainId: params.srcChainId,

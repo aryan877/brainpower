@@ -15,17 +15,20 @@ import {
  * @param params.srcChainTokenInAmount Amount of source tokens to bridge (in smallest units - e.g., 1.0 token with 18 decimals = 1000000000000000000)
  * @param params.dstChainId Destination chain ID (e.g., "7565164" for Solana, "100000014" for Sonic)
  * @param params.dstChainTokenOut Destination token address (use "0x0000000000000000000000000000000000000000" for native tokens on EVM chains, "11111111111111111111111111111111" for Solana's native SOL)
- * @param params.dstChainTokenOutRecipient Recipient address on destination chain
+ * @param params.dstChainTokenOutRecipient Recipient address on destination chain - ALWAYS REQUIRED
  * @param params.slippage Optional slippage tolerance in percentage (e.g., 0.5 for 0.5%)
  * @returns Quote information and transaction data
  */
 export async function fetchBridgeQuote(
   params: deBridgeOrderInput,
 ): Promise<deBridgeOrderResponse> {
-  // Validate required parameters
-  if (!params.dstChainTokenOutRecipient) {
+  // Validate required parameters - enforce recipient address
+  if (
+    !params.dstChainTokenOutRecipient ||
+    params.dstChainTokenOutRecipient.trim() === ""
+  ) {
     throw new Error(
-      "dstChainTokenOutRecipient is required for transaction building",
+      "Recipient address (dstChainTokenOutRecipient) is required for bridge transfers. Please specify a valid recipient address on the destination chain.",
     );
   }
 

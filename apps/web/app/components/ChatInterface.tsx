@@ -4,8 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { useChat } from "ai/react";
+import { Loader2 } from "lucide-react";
 import { nanoid } from "nanoid";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import React, {
   FormEvent,
@@ -289,22 +289,22 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
             }
             rows={2}
             className={cn(
-              "resize-none pr-10 text-sm text-foreground placeholder:text-muted-foreground/60",
-              "border border-border/40 rounded-md focus:border-white focus:ring-0 shadow-sm",
+              "resize-none pr-14 text-sm text-foreground placeholder:text-muted-foreground/60",
+              "border border-white/20 rounded-md focus:border-white focus:ring-0 shadow-sm",
               "bg-muted/30 dark:bg-background/90"
             )}
             style={{ minHeight: "46px", maxHeight: "160px" }}
             disabled={isLoading || hasActiveToolCall}
             onKeyDown={handleKeyDown}
           />
-          <div className="absolute right-2">
+          <div className="absolute right-3">
             {isLoading ? (
               <Button
                 type="button"
                 size="icon"
                 variant="ghost"
                 onClick={() => window.location.reload()}
-                className="h-8 w-8 hover:bg-destructive/90 hover:text-destructive-foreground"
+                className="h-8 w-8 rounded-full hover:bg-destructive/90 hover:text-destructive-foreground border border-white/20"
               >
                 <StopIcon />
               </Button>
@@ -314,7 +314,7 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
                 size="icon"
                 variant="ghost"
                 disabled={isLoading || hasActiveToolCall || !input.trim()}
-                className="h-8 w-8 text-primary hover:bg-primary/10"
+                className="h-8 w-8 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-full text-gray-600 hover:text-gray-800 dark:text-gray-200 dark:hover:text-gray-100 transition-colors"
               >
                 <SendIcon />
               </Button>
@@ -328,239 +328,17 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
   if (!threadId) {
     return (
       <div className="flex flex-col h-full">
-        <div className="flex-1 p-4 pt-10">
-          <div className="text-center w-full max-w-2xl mx-auto space-y-8">
-            <div className="flex flex-col items-center gap-3">
-              <Image
-                src="/logo.svg"
-                alt="BrainPower Logo"
-                width={40}
-                height={40}
-              />
-              <h2 className="text-xl font-medium">BrainPower</h2>
-              <p className="text-sm text-muted-foreground">
-                Your intelligent assistant for Solana blockchain interactions
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 text-left px-5 mt-6">
-              <div className="bg-muted/20 p-4 rounded-lg hover:bg-muted/30 transition-colors">
-                <h3 className="text-sm font-medium mb-3">
-                  Market Data & Analysis
-                </h3>
-                <ul className="space-y-2.5 text-xs text-muted-foreground">
-                  <li
-                    className="cursor-pointer hover:text-primary transition-colors"
-                    onClick={() =>
-                      handleInputChange({
-                        target: {
-                          value: "Show me trending tokens on CoinGecko",
-                        },
-                      } as React.ChangeEvent<HTMLTextAreaElement>)
-                    }
-                  >
-                    • Show me trending tokens on CoinGecko
-                  </li>
-                  <li
-                    className="cursor-pointer hover:text-primary transition-colors"
-                    onClick={() =>
-                      handleInputChange({
-                        target: {
-                          value: "What&apos;s the price of SOL right now?",
-                        },
-                      } as React.ChangeEvent<HTMLTextAreaElement>)
-                    }
-                  >
-                    • What&apos;s the price of SOL right now?
-                  </li>
-                  <li
-                    className="cursor-pointer hover:text-primary transition-colors"
-                    onClick={() =>
-                      handleInputChange({
-                        target: { value: "Get me a price chart for BONK" },
-                      } as React.ChangeEvent<HTMLTextAreaElement>)
-                    }
-                  >
-                    • Get me a price chart for BONK
-                  </li>
-                  <li
-                    className="cursor-pointer hover:text-primary transition-colors"
-                    onClick={() =>
-                      handleInputChange({
-                        target: {
-                          value:
-                            "Run a rugcheck on this address: EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
-                        },
-                      } as React.ChangeEvent<HTMLTextAreaElement>)
-                    }
-                  >
-                    • Run a rugcheck on a token address
-                  </li>
-                </ul>
-              </div>
-
-              <div className="bg-muted/20 p-4 rounded-lg hover:bg-muted/30 transition-colors">
-                <h3 className="text-sm font-medium mb-3">Trading & Swaps</h3>
-                <ul className="space-y-2.5 text-xs text-muted-foreground">
-                  <li
-                    className="cursor-pointer hover:text-primary transition-colors"
-                    onClick={() =>
-                      handleInputChange({
-                        target: {
-                          value: "Find the best rate to swap 10 USDC to BONK",
-                        },
-                      } as React.ChangeEvent<HTMLTextAreaElement>)
-                    }
-                  >
-                    • Find the best rate to swap 10 USDC to BONK
-                  </li>
-                  <li
-                    className="cursor-pointer hover:text-primary transition-colors"
-                    onClick={() =>
-                      handleInputChange({
-                        target: { value: "I want to trade 0.5 SOL for JUP" },
-                      } as React.ChangeEvent<HTMLTextAreaElement>)
-                    }
-                  >
-                    • I want to trade 0.5 SOL for JUP
-                  </li>
-                  <li
-                    className="cursor-pointer hover:text-primary transition-colors"
-                    onClick={() =>
-                      handleInputChange({
-                        target: { value: "Get token data for PYTH" },
-                      } as React.ChangeEvent<HTMLTextAreaElement>)
-                    }
-                  >
-                    • Get token data for PYTH
-                  </li>
-                </ul>
-              </div>
-
-              <div className="bg-muted/20 p-4 rounded-lg hover:bg-muted/30 transition-colors">
-                <h3 className="text-sm font-medium mb-3">
-                  Wallet & Account Management
-                </h3>
-                <ul className="space-y-2.5 text-xs text-muted-foreground">
-                  <li
-                    className="cursor-pointer hover:text-primary transition-colors"
-                    onClick={() =>
-                      handleInputChange({
-                        target: { value: "Show my wallet balance" },
-                      } as React.ChangeEvent<HTMLTextAreaElement>)
-                    }
-                  >
-                    • Show my wallet balance
-                  </li>
-                  <li
-                    className="cursor-pointer hover:text-primary transition-colors"
-                    onClick={() =>
-                      handleInputChange({
-                        target: { value: "Get token balances in my wallet" },
-                      } as React.ChangeEvent<HTMLTextAreaElement>)
-                    }
-                  >
-                    • Get token balances in my wallet
-                  </li>
-                  <li
-                    className="cursor-pointer hover:text-primary transition-colors"
-                    onClick={() =>
-                      handleInputChange({
-                        target: { value: "Close my empty token accounts" },
-                      } as React.ChangeEvent<HTMLTextAreaElement>)
-                    }
-                  >
-                    • Close my empty token accounts
-                  </li>
-                  <li
-                    className="cursor-pointer hover:text-primary transition-colors"
-                    onClick={() =>
-                      handleInputChange({
-                        target: {
-                          value:
-                            "Transfer 0.01 SOL to 8ZVgdBJ4CffjYNCG4xEtKQQu2QfwNqwcXKJ9AXMtk5YY",
-                        },
-                      } as React.ChangeEvent<HTMLTextAreaElement>)
-                    }
-                  >
-                    • Transfer SOL to another wallet
-                  </li>
-                </ul>
-              </div>
-
-              <div className="bg-muted/20 p-4 rounded-lg hover:bg-muted/30 transition-colors">
-                <h3 className="text-sm font-medium mb-3">
-                  Token Creation & Analysis
-                </h3>
-                <ul className="space-y-2.5 text-xs text-muted-foreground">
-                  <li
-                    className="cursor-pointer hover:text-primary transition-colors"
-                    onClick={() =>
-                      handleInputChange({
-                        target: {
-                          value: "Help me launch a token with PumpFun",
-                        },
-                      } as React.ChangeEvent<HTMLTextAreaElement>)
-                    }
-                  >
-                    • Help me launch a token with PumpFun
-                  </li>
-                  <li
-                    className="cursor-pointer hover:text-primary transition-colors"
-                    onClick={() =>
-                      handleInputChange({
-                        target: { value: "Analyze a PumpFun bundle" },
-                      } as React.ChangeEvent<HTMLTextAreaElement>)
-                    }
-                  >
-                    • Analyze a PumpFun bundle
-                  </li>
-                  <li
-                    className="cursor-pointer hover:text-primary transition-colors"
-                    onClick={() =>
-                      handleInputChange({
-                        target: {
-                          value: "Show me the top holders of JUP token",
-                        },
-                      } as React.ChangeEvent<HTMLTextAreaElement>)
-                    }
-                  >
-                    • Show me the top holders of JUP token
-                  </li>
-                </ul>
-              </div>
-            </div>
-
-            <div className="text-left px-4 pt-2">
-              <p className="text-xs text-muted-foreground italic">
-                Click on any suggestion to start, or type your own question
-                below.
-              </p>
-            </div>
-
-            <div className="mt-6">{InputForm}</div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex flex-col h-full">
-      {/* Messages container */}
-      <div
-        ref={messagesContainerRef}
-        className="flex-1 overflow-y-auto brainpower-scrollbar px-3 sm:px-4 pb-4"
-      >
-        {messages.length === 0 ? (
+        <div className="flex-1">
           <div className="h-full pt-10">
             <div className="text-center max-w-lg mx-auto space-y-6 px-4">
               <h3 className="text-base font-medium mb-2">
-                Start a New Conversation
+                Your intelligent assistant for Solana blockchain interactions
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5 text-left mt-4">
                 <div className="bg-muted/20 p-4 rounded-lg hover:bg-muted/30 transition-colors">
-                  <h4 className="text-sm font-medium mb-2">Market & Trading</h4>
+                  <h4 className="text-sm font-medium mb-2">
+                    Market Data & Analysis
+                  </h4>
                   <ul className="space-y-2.5 text-xs text-muted-foreground">
                     <li
                       className="cursor-pointer hover:text-primary transition-colors"
@@ -579,6 +357,47 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
                       onClick={() =>
                         handleInputChange({
                           target: {
+                            value: "What&apos;s the price of SOL right now?",
+                          },
+                        } as React.ChangeEvent<HTMLTextAreaElement>)
+                      }
+                    >
+                      • What&apos;s the price of SOL right now?
+                    </li>
+                    <li
+                      className="cursor-pointer hover:text-primary transition-colors"
+                      onClick={() =>
+                        handleInputChange({
+                          target: {
+                            value: "Get me a price chart for BONK",
+                          },
+                        } as React.ChangeEvent<HTMLTextAreaElement>)
+                      }
+                    >
+                      • Get me a price chart for BONK
+                    </li>
+                    <li
+                      className="cursor-pointer hover:text-primary transition-colors"
+                      onClick={() =>
+                        handleInputChange({
+                          target: {
+                            value: "Run a rugcheck on a token address",
+                          },
+                        } as React.ChangeEvent<HTMLTextAreaElement>)
+                      }
+                    >
+                      • Run a rugcheck on a token address
+                    </li>
+                  </ul>
+                </div>
+                <div className="bg-muted/20 p-4 rounded-lg hover:bg-muted/30 transition-colors">
+                  <h4 className="text-sm font-medium mb-2">Trading & Swaps</h4>
+                  <ul className="space-y-2.5 text-xs text-muted-foreground">
+                    <li
+                      className="cursor-pointer hover:text-primary transition-colors"
+                      onClick={() =>
+                        handleInputChange({
+                          target: {
                             value: "Find the best rate to swap 10 USDC to BONK",
                           },
                         } as React.ChangeEvent<HTMLTextAreaElement>)
@@ -586,10 +405,36 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
                     >
                       • Find the best rate to swap 10 USDC to BONK
                     </li>
+                    <li
+                      className="cursor-pointer hover:text-primary transition-colors"
+                      onClick={() =>
+                        handleInputChange({
+                          target: {
+                            value: "I want to trade 0.5 SOL for JUP",
+                          },
+                        } as React.ChangeEvent<HTMLTextAreaElement>)
+                      }
+                    >
+                      • I want to trade 0.5 SOL for JUP
+                    </li>
+                    <li
+                      className="cursor-pointer hover:text-primary transition-colors"
+                      onClick={() =>
+                        handleInputChange({
+                          target: {
+                            value: "Get token data for PYTH",
+                          },
+                        } as React.ChangeEvent<HTMLTextAreaElement>)
+                      }
+                    >
+                      • Get token data for PYTH
+                    </li>
                   </ul>
                 </div>
                 <div className="bg-muted/20 p-4 rounded-lg hover:bg-muted/30 transition-colors">
-                  <h4 className="text-sm font-medium mb-2">Wallet & Tokens</h4>
+                  <h4 className="text-sm font-medium mb-2">
+                    Wallet & Account Management
+                  </h4>
                   <ul className="space-y-2.5 text-xs text-muted-foreground">
                     <li
                       className="cursor-pointer hover:text-primary transition-colors"
@@ -606,6 +451,49 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
                       onClick={() =>
                         handleInputChange({
                           target: {
+                            value: "Get token balances in my wallet",
+                          },
+                        } as React.ChangeEvent<HTMLTextAreaElement>)
+                      }
+                    >
+                      • Get token balances in my wallet
+                    </li>
+                    <li
+                      className="cursor-pointer hover:text-primary transition-colors"
+                      onClick={() =>
+                        handleInputChange({
+                          target: {
+                            value: "Close my empty token accounts",
+                          },
+                        } as React.ChangeEvent<HTMLTextAreaElement>)
+                      }
+                    >
+                      • Close my empty token accounts
+                    </li>
+                    <li
+                      className="cursor-pointer hover:text-primary transition-colors"
+                      onClick={() =>
+                        handleInputChange({
+                          target: {
+                            value: "Transfer SOL to another wallet",
+                          },
+                        } as React.ChangeEvent<HTMLTextAreaElement>)
+                      }
+                    >
+                      • Transfer SOL to another wallet
+                    </li>
+                  </ul>
+                </div>
+                <div className="bg-muted/20 p-4 rounded-lg hover:bg-muted/30 transition-colors">
+                  <h4 className="text-sm font-medium mb-2">
+                    Token Creation & Analysis
+                  </h4>
+                  <ul className="space-y-2.5 text-xs text-muted-foreground">
+                    <li
+                      className="cursor-pointer hover:text-primary transition-colors"
+                      onClick={() =>
+                        handleInputChange({
+                          target: {
                             value: "Help me launch a token with PumpFun",
                           },
                         } as React.ChangeEvent<HTMLTextAreaElement>)
@@ -613,9 +501,273 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
                     >
                       • Help me launch a token with PumpFun
                     </li>
+                    <li
+                      className="cursor-pointer hover:text-primary transition-colors"
+                      onClick={() =>
+                        handleInputChange({
+                          target: {
+                            value: "Analyze a PumpFun bundle",
+                          },
+                        } as React.ChangeEvent<HTMLTextAreaElement>)
+                      }
+                    >
+                      • Analyze a PumpFun bundle
+                    </li>
+                    <li
+                      className="cursor-pointer hover:text-primary transition-colors"
+                      onClick={() =>
+                        handleInputChange({
+                          target: {
+                            value: "Show me the top holders of JUP token",
+                          },
+                        } as React.ChangeEvent<HTMLTextAreaElement>)
+                      }
+                    >
+                      • Show me the top holders of JUP token
+                    </li>
                   </ul>
                 </div>
               </div>
+              <p className="text-xs text-muted-foreground mt-4">
+                Click on any suggestion to start, or type your own question
+                below.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="mt-auto w-full max-w-3xl mx-auto border-t border-border/20">
+          {InputForm}
+        </div>
+      </div>
+    );
+  }
+
+  const isLoadingChat =
+    threadId &&
+    initialMessages.length === 0 &&
+    messages.length === 0 &&
+    isLoading;
+
+  return (
+    <div className="flex flex-col h-full">
+      {/* Messages container */}
+      <div
+        ref={messagesContainerRef}
+        className="flex-1 overflow-y-auto brainpower-scrollbar px-3 sm:px-4 pb-4"
+      >
+        {isLoadingChat ? (
+          <div className="flex-1 flex items-center justify-center">
+            <div className="flex flex-col items-center gap-4">
+              <div className="animate-pulse">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+              <p className="text-sm text-muted-foreground">Loading chat...</p>
+            </div>
+          </div>
+        ) : messages.length === 0 ? (
+          <div className="h-full pt-10">
+            <div className="text-center max-w-lg mx-auto space-y-6 px-4">
+              <h3 className="text-base font-medium mb-2">
+                Your intelligent assistant for Solana blockchain interactions
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 text-left mt-4">
+                <div className="bg-muted/20 p-4 rounded-lg hover:bg-muted/30 transition-colors">
+                  <h4 className="text-sm font-medium mb-2">
+                    Market Data & Analysis
+                  </h4>
+                  <ul className="space-y-2.5 text-xs text-muted-foreground">
+                    <li
+                      className="cursor-pointer hover:text-primary transition-colors"
+                      onClick={() =>
+                        handleInputChange({
+                          target: {
+                            value: "Show me trending tokens on CoinGecko",
+                          },
+                        } as React.ChangeEvent<HTMLTextAreaElement>)
+                      }
+                    >
+                      • Show me trending tokens on CoinGecko
+                    </li>
+                    <li
+                      className="cursor-pointer hover:text-primary transition-colors"
+                      onClick={() =>
+                        handleInputChange({
+                          target: {
+                            value: "What&apos;s the price of SOL right now?",
+                          },
+                        } as React.ChangeEvent<HTMLTextAreaElement>)
+                      }
+                    >
+                      • What&apos;s the price of SOL right now?
+                    </li>
+                    <li
+                      className="cursor-pointer hover:text-primary transition-colors"
+                      onClick={() =>
+                        handleInputChange({
+                          target: {
+                            value: "Get me a price chart for BONK",
+                          },
+                        } as React.ChangeEvent<HTMLTextAreaElement>)
+                      }
+                    >
+                      • Get me a price chart for BONK
+                    </li>
+                    <li
+                      className="cursor-pointer hover:text-primary transition-colors"
+                      onClick={() =>
+                        handleInputChange({
+                          target: {
+                            value: "Run a rugcheck on a token address",
+                          },
+                        } as React.ChangeEvent<HTMLTextAreaElement>)
+                      }
+                    >
+                      • Run a rugcheck on a token address
+                    </li>
+                  </ul>
+                </div>
+                <div className="bg-muted/20 p-4 rounded-lg hover:bg-muted/30 transition-colors">
+                  <h4 className="text-sm font-medium mb-2">Trading & Swaps</h4>
+                  <ul className="space-y-2.5 text-xs text-muted-foreground">
+                    <li
+                      className="cursor-pointer hover:text-primary transition-colors"
+                      onClick={() =>
+                        handleInputChange({
+                          target: {
+                            value: "Find the best rate to swap 10 USDC to BONK",
+                          },
+                        } as React.ChangeEvent<HTMLTextAreaElement>)
+                      }
+                    >
+                      • Find the best rate to swap 10 USDC to BONK
+                    </li>
+                    <li
+                      className="cursor-pointer hover:text-primary transition-colors"
+                      onClick={() =>
+                        handleInputChange({
+                          target: {
+                            value: "I want to trade 0.5 SOL for JUP",
+                          },
+                        } as React.ChangeEvent<HTMLTextAreaElement>)
+                      }
+                    >
+                      • I want to trade 0.5 SOL for JUP
+                    </li>
+                    <li
+                      className="cursor-pointer hover:text-primary transition-colors"
+                      onClick={() =>
+                        handleInputChange({
+                          target: {
+                            value: "Get token data for PYTH",
+                          },
+                        } as React.ChangeEvent<HTMLTextAreaElement>)
+                      }
+                    >
+                      • Get token data for PYTH
+                    </li>
+                  </ul>
+                </div>
+                <div className="bg-muted/20 p-4 rounded-lg hover:bg-muted/30 transition-colors">
+                  <h4 className="text-sm font-medium mb-2">
+                    Wallet & Account Management
+                  </h4>
+                  <ul className="space-y-2.5 text-xs text-muted-foreground">
+                    <li
+                      className="cursor-pointer hover:text-primary transition-colors"
+                      onClick={() =>
+                        handleInputChange({
+                          target: { value: "Show my wallet balance" },
+                        } as React.ChangeEvent<HTMLTextAreaElement>)
+                      }
+                    >
+                      • Show my wallet balance
+                    </li>
+                    <li
+                      className="cursor-pointer hover:text-primary transition-colors"
+                      onClick={() =>
+                        handleInputChange({
+                          target: {
+                            value: "Get token balances in my wallet",
+                          },
+                        } as React.ChangeEvent<HTMLTextAreaElement>)
+                      }
+                    >
+                      • Get token balances in my wallet
+                    </li>
+                    <li
+                      className="cursor-pointer hover:text-primary transition-colors"
+                      onClick={() =>
+                        handleInputChange({
+                          target: {
+                            value: "Close my empty token accounts",
+                          },
+                        } as React.ChangeEvent<HTMLTextAreaElement>)
+                      }
+                    >
+                      • Close my empty token accounts
+                    </li>
+                    <li
+                      className="cursor-pointer hover:text-primary transition-colors"
+                      onClick={() =>
+                        handleInputChange({
+                          target: {
+                            value: "Transfer SOL to another wallet",
+                          },
+                        } as React.ChangeEvent<HTMLTextAreaElement>)
+                      }
+                    >
+                      • Transfer SOL to another wallet
+                    </li>
+                  </ul>
+                </div>
+                <div className="bg-muted/20 p-4 rounded-lg hover:bg-muted/30 transition-colors">
+                  <h4 className="text-sm font-medium mb-2">
+                    Token Creation & Analysis
+                  </h4>
+                  <ul className="space-y-2.5 text-xs text-muted-foreground">
+                    <li
+                      className="cursor-pointer hover:text-primary transition-colors"
+                      onClick={() =>
+                        handleInputChange({
+                          target: {
+                            value: "Help me launch a token with PumpFun",
+                          },
+                        } as React.ChangeEvent<HTMLTextAreaElement>)
+                      }
+                    >
+                      • Help me launch a token with PumpFun
+                    </li>
+                    <li
+                      className="cursor-pointer hover:text-primary transition-colors"
+                      onClick={() =>
+                        handleInputChange({
+                          target: {
+                            value: "Analyze a PumpFun bundle",
+                          },
+                        } as React.ChangeEvent<HTMLTextAreaElement>)
+                      }
+                    >
+                      • Analyze a PumpFun bundle
+                    </li>
+                    <li
+                      className="cursor-pointer hover:text-primary transition-colors"
+                      onClick={() =>
+                        handleInputChange({
+                          target: {
+                            value: "Show me the top holders of JUP token",
+                          },
+                        } as React.ChangeEvent<HTMLTextAreaElement>)
+                      }
+                    >
+                      • Show me the top holders of JUP token
+                    </li>
+                  </ul>
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground mt-4">
+                Click on any suggestion to start, or type your own question
+                below.
+              </p>
             </div>
           </div>
         ) : (
