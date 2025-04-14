@@ -112,6 +112,7 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
     handleSubmit,
     isLoading,
     addToolResult,
+    stop,
   } = useChat({
     api: "/api/chat/message",
     id: threadId || undefined,
@@ -377,8 +378,8 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
                 type="button"
                 size="icon"
                 variant="ghost"
-                onClick={() => window.location.reload()}
-                className="h-8 w-8 rounded-full hover:bg-destructive/90 hover:text-destructive-foreground border border-white/20"
+                onClick={stop}
+                className="h-8 w-8 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-full text-gray-600 hover:text-gray-800 dark:text-gray-200 dark:hover:text-gray-100 transition-colors"
               >
                 <StopIcon />
               </Button>
