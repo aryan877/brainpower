@@ -261,9 +261,7 @@ export function AppLayout({
         {/* Main content */}
         <div className="flex-1 flex flex-col min-h-screen overflow-hidden">
           {showNavbar && <Navbar onMenuClick={toggleSidebar} />}
-          <div className="flex-1 overflow-y-auto brainpower-scrollbar">
-            {children}
-          </div>
+          <div className="flex-1 flex flex-col overflow-hidden">{children}</div>
         </div>
       </div>
     </WalletProvider>

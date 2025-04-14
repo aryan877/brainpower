@@ -361,13 +361,13 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
                 ? "Please complete/cancel action or wait for response..."
                 : "Type your message..."
             }
-            rows={2}
+            rows={3}
             className={cn(
               "resize-none pr-14 text-sm text-foreground placeholder:text-muted-foreground/60",
               "border border-white/20 rounded-md focus:border-white focus:ring-0 shadow-sm",
               "bg-muted/30 dark:bg-background/90"
             )}
-            style={{ minHeight: "46px", maxHeight: "160px" }}
+            style={{ minHeight: "64px", maxHeight: "160px" }}
             disabled={isLoading || hasActiveToolCall}
             onKeyDown={handleKeyDown}
           />
@@ -752,11 +752,11 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
     isLoading;
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden">
+    <div className="flex flex-col h-full overflow-hidden">
       {/* Messages container */}
       <div
         ref={messagesContainerRef}
-        className="flex-1 overflow-y-auto brainpower-scrollbar px-3 sm:px-4 pb-28"
+        className="flex-1 overflow-y-auto brainpower-scrollbar px-3 sm:px-4 pb-4"
       >
         {isLoadingChat ? (
           <div className="flex-1 flex items-center justify-center">
@@ -1121,13 +1121,7 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
         <div ref={messagesEndRef} />
       </div>
 
-      <div
-        className="fixed bottom-0 right-0 z-10 bg-background"
-        style={{
-          width: "calc(100% - var(--sidebar-width, 0px))",
-          left: "var(--sidebar-width, 0px)",
-        }}
-      >
+      <div className="bg-background">
         <div className="max-w-3xl mx-auto">{InputForm}</div>
       </div>
     </div>

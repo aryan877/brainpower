@@ -1,14 +1,3 @@
-import {
-  Loader2,
-  MessageSquarePlus,
-  PanelLeftClose,
-  PanelLeftOpen,
-} from "lucide-react";
-import { useState } from "react";
-import { ThreadPreview } from "../types";
-import { WalletInfo } from "./WalletInfo";
-import { usePrivy } from "@privy-io/react-auth";
-import { ThemeToggle } from "./ThemeToggle";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -17,6 +6,17 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { usePrivy } from "@privy-io/react-auth";
+import {
+  Loader2,
+  MessageSquarePlus,
+  PanelLeftClose,
+  PanelLeftOpen,
+} from "lucide-react";
+import { useState } from "react";
+import { ThreadPreview } from "../types";
+import { ThemeToggle } from "./ThemeToggle";
+import { WalletInfo } from "./WalletInfo";
 import { WalletSetupButton } from "./WalletSetupButton";
 
 export interface SidebarProps {

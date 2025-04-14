@@ -29,7 +29,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning className="dark">
+    <html lang="en" suppressHydrationWarning className="dark h-full">
       <head>
         <script
           defer
@@ -37,7 +37,9 @@ export default function RootLayout({
           src="https://plausible.io/js/script.js"
         ></script>
       </head>
-      <body className={`${montserrat.variable} ${jakarta.variable} font-sans`}>
+      <body
+        className={`${montserrat.variable} ${jakarta.variable} font-sans h-full overflow-hidden`}
+      >
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"

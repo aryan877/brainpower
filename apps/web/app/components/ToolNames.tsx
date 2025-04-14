@@ -146,7 +146,7 @@ const TOOL_DISPLAY_CONFIG: Record<
   },
   [ACTION_NAMES.DEBRIDGE_FETCH_TOKEN_DATA]: {
     icon: <Database className="w-3 h-3" />,
-    label: "Token Data",
+    label: "Debridge Token Data",
   },
   [ACTION_NAMES.DEBRIDGE_PROCESS_TRANSFER]: {
     icon: <Send className="w-3 h-3" />,
