@@ -38,7 +38,7 @@ export default function RootLayout({
         ></script>
       </head>
       <body
-        className={`${montserrat.variable} ${jakarta.variable} font-sans h-full overflow-hidden`}
+        className={`${montserrat.variable} ${jakarta.variable} font-sans h-full`}
       >
         <ThemeProvider
           attribute="class"

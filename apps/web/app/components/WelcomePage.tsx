@@ -1,16 +1,16 @@
-import Image from "next/image";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
-import { useState, useEffect } from "react";
-import { HeroSection } from "./landing/HeroSection";
-import { ChatGPTSection } from "./landing/ChatGPTSection";
+import Image from "next/image";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 import { AgentsSection } from "./landing/AgentsSection";
-import { HowItWorksSection } from "./landing/HowItWorksSection";
+import { ChatGPTSection } from "./landing/ChatGPTSection";
 import { CryptoProSection } from "./landing/CryptoProSection";
 import { FAQSection } from "./landing/FAQSection";
-import { JoinAlphaSection } from "./landing/JoinAlphaSection";
 import { Footer } from "./landing/Footer";
+import { HeroSection } from "./landing/HeroSection";
+import { HowItWorksSection } from "./landing/HowItWorksSection";
+import { JoinAlphaSection } from "./landing/JoinAlphaSection";
 
 export function WelcomePage({ onLogin }: { onLogin: () => void }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -36,7 +36,7 @@ export function WelcomePage({ onLogin }: { onLogin: () => void }) {
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
   return (
-    <div className="min-h-screen w-screen relative overflow-hidden bg-black dark">
+    <div className="min-h-screen w-screen relative bg-black dark">
       {/* Navigation */}
       <div
         className={`fixed top-0 left-0 right-0 z-50 flex justify-center w-full transition-all duration-300 ${
@@ -156,7 +156,7 @@ export function WelcomePage({ onLogin }: { onLogin: () => void }) {
       </div>
       <HeroSection onLogin={onLogin} />
       {/* Hero Section */}
-      <div className="relative w-full overflow-hidden">
+      <div className="relative w-full">
         {/* Light ray effects */}
         <div className="absolute inset-0 overflow-hidden">
           {/* Primary rays */}

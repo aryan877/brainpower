@@ -205,8 +205,12 @@ export function AppLayout({
               <DialogTitle>{confirmDialogConfig?.title}</DialogTitle>
             </DialogHeader>
             <div className="py-4">{confirmDialogConfig?.content}</div>
-            <DialogFooter>
-              <Button variant="outline" onClick={handleConfirmDialogClose}>
+            <DialogFooter className="flex flex-col sm:flex-row gap-2 sm:justify-end">
+              <Button
+                variant="outline"
+                onClick={handleConfirmDialogClose}
+                className="w-full sm:w-auto"
+              >
                 Cancel
               </Button>
               <Button
@@ -261,7 +265,7 @@ export function AppLayout({
         {/* Main content */}
         <div className="flex-1 flex flex-col min-h-screen overflow-hidden">
           {showNavbar && <Navbar onMenuClick={toggleSidebar} />}
-          <div className="flex-1 flex flex-col overflow-hidden">{children}</div>
+          <div className="flex-1 flex flex-col overflow-y-auto">{children}</div>
         </div>
       </div>
     </WalletProvider>
