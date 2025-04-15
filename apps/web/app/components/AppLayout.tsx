@@ -200,7 +200,7 @@ export function AppLayout({
           open={isConfirmDialogOpen}
           onOpenChange={setIsConfirmDialogOpen}
         >
-          <DialogContent>
+          <DialogContent className="z-[80]">
             <DialogHeader>
               <DialogTitle>{confirmDialogConfig?.title}</DialogTitle>
             </DialogHeader>
