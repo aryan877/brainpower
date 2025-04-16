@@ -1,8 +1,8 @@
 "use client";
 
-import * as React from "react";
 import * as AccordionPrimitive from "@radix-ui/react-accordion";
-import { Plus, Minus } from "lucide-react";
+import { ChevronDown } from "lucide-react";
+import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -14,7 +14,7 @@ const AccordionItem = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <AccordionPrimitive.Item
     ref={ref}
-    className={cn("mb-3", className)}
+    className={cn("border-b", className)}
     {...props}
   />
 ));
@@ -28,19 +28,13 @@ const AccordionTrigger = React.forwardRef<
     <AccordionPrimitive.Trigger
       ref={ref}
       className={cn(
-        "group flex flex-1 items-center justify-between py-4 px-6 text-base font-medium transition-all rounded-md",
-        "bg-[#1a1a1a] border border-white/5 hover:bg-[#1f1f1f]",
-        "shadow-[0_4px_20px_-1px] shadow-black/20",
-        "[&[data-state=open]]:bg-[#1f1f1f]",
+        "flex flex-1 items-center justify-between py-4 text-sm font-medium transition-all hover:underline text-left [&[data-state=open]>svg]:rotate-180",
         className
       )}
       {...props}
     >
       {children}
-      <div className="h-6 w-6 rounded-full border border-white/5 flex items-center justify-center bg-[#1a1a1a]">
-        <Plus className="h-4 w-4 shrink-0 text-white/70 transition-transform duration-200 [.group[data-state=open]_&]:hidden" />
-        <Minus className="h-4 w-4 shrink-0 text-white/70 transition-transform duration-200 hidden [.group[data-state=open]_&]:block" />
-      </div>
+      <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200" />
     </AccordionPrimitive.Trigger>
   </AccordionPrimitive.Header>
 ));
@@ -52,12 +46,12 @@ const AccordionContent = React.forwardRef<
 >(({ className, children, ...props }, ref) => (
   <AccordionPrimitive.Content
     ref={ref}
-    className="overflow-hidden text-sm text-muted-foreground data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down"
+    className="overflow-hidden text-sm data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down"
     {...props}
   >
-    <div className={cn("px-6 pb-4 pt-2", className)}>{children}</div>
+    <div className={cn("pb-4 pt-0", className)}>{children}</div>
   </AccordionPrimitive.Content>
 ));
 AccordionContent.displayName = AccordionPrimitive.Content.displayName;
 
-export { Accordion, AccordionItem, AccordionTrigger, AccordionContent };
+export { Accordion, AccordionContent, AccordionItem, AccordionTrigger };
