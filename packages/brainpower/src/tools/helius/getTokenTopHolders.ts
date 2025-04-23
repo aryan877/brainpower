@@ -1,6 +1,6 @@
-import { PublicKey, Connection } from "@solana/web3.js";
-import { TokenHolder } from "../../types/index.js";
 import { getAccount } from "@solana/spl-token";
+import { Connection, PublicKey } from "@solana/web3.js";
+import { TokenHolder } from "../../types/index.js";
 
 export async function getTokenTopHolders(
   mint: PublicKey,

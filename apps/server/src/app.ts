@@ -13,6 +13,7 @@ import { setupCookie3Routes } from "./routes/cookie3Routes.js";
 import { setupImageRoutes } from "./routes/imageRoutes.js";
 import { setupIPFSRoutes } from "./routes/ipfsRoutes.js";
 import { setupPumpfunRoutes } from "./routes/pumpfunRoutes.js";
+import { setupSpeechRoutes } from "./routes/speechRoutes.js";
 import { setupWalletRoutes } from "./routes/walletRoutes.js";
 
 const app: Express = express();
@@ -85,12 +86,13 @@ const router = express.Router();
 
 // Initialize routes
 export const initializeRoutes = async () => {
-  app.use("/api/chat", setupChatRoutes(router));
+  app.use("/api/chat", setupChatRoutes(express.Router()));
   app.use("/api/wallet", setupWalletRoutes(express.Router()));
   app.use("/api/ipfs", setupIPFSRoutes(express.Router()));
   app.use("/api/image", setupImageRoutes(express.Router()));
   app.use("/api/cookie3", setupCookie3Routes(express.Router()));
   app.use("/api/pumpfun", setupPumpfunRoutes(express.Router()));
+  app.use("/api/speech", setupSpeechRoutes(express.Router()));
   console.log("🛠️ Routes configured");
 
   // Handle 404 for undefined routes

@@ -8,6 +8,8 @@ export enum ErrorCode {
   BAD_REQUEST = "BAD_REQUEST",
   UNAUTHORIZED = "UNAUTHORIZED",
   FORBIDDEN = "FORBIDDEN",
+  INVALID_INPUT = "INVALID_INPUT",
+  EXTERNAL_API_ERROR = "EXTERNAL_API_ERROR",
 }
 
 // Base error response type

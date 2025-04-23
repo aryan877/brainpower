@@ -5,12 +5,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { usePrivy } from "@privy-io/react-auth";
 import { useChat } from "ai/react";
-import { ChevronLeft, ChevronRight, LogIn } from "lucide-react";
+import { Loader2, LogIn, Mic, SendIcon, StopCircle } from "lucide-react";
 import { nanoid } from "nanoid";
 import { useRouter } from "next/navigation";
 import React, {
   FormEvent,
-  TouchEvent,
   useCallback,
   useContext,
   useEffect,
@@ -22,75 +21,14 @@ import {
   useSaveAllMessages,
   useThreadMessages,
 } from "../hooks/chat";
+import { useSpeechRecognition } from "../hooks/use-speech-recognition";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import { useClusterStore } from "../store/clusterStore";
 import { AuthContext } from "./AuthGuard";
 import ChatMessage from "./ChatMessage";
-
-const SendIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    className="h-5 w-5"
-  >
-    <path
-      d="M12 20V4"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <path
-      d="M5 11L12 4L19 11"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
-
-const StopIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    className="h-5 w-5"
-  >
-    <path
-      d="M18 6L6 18"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <path
-      d="M6 6L18 18"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
-
-const ScrollDownIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    className="h-4 w-4"
-  >
-    <path
-      d="M6 9L12 15L18 9"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
+import FeatureSuggestions from "./FeatureSuggestions";
+import { ScrollDownIcon } from "./icons/ScrollDownIcon";
+import { StopIcon } from "./icons/StopIcon";
 
 interface ChatInterfaceProps {
   threadId: string | null;
@@ -106,10 +44,17 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
   const { mutateAsync: createThread } = useCreateThread();
   const [isWaitingForResponse, setIsWaitingForResponse] = useState(false);
   const [hasActiveToolCall, setHasActiveToolCall] = useState(false);
-  const [activeCategoryIndex, setActiveCategoryIndex] = useState(0);
   const { authenticated, login } = useContext(AuthContext);
   const { user } = usePrivy();
   const [showLoginModal, setShowLoginModal] = useState(false);
+
+  // Speech recognition hook
+  const {
+    isRecording,
+    isProcessingSpeech,
+    startRecording,
+    stopRecording: stopSpeechRecording,
+  } = useSpeechRecognition();
 
   // Check if wallet is properly delegated
   const isWalletDelegated = authenticated && user?.wallet?.delegated;
@@ -125,6 +70,7 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
     addToolResult,
     stop,
     error,
+    setInput,
   } = useChat({
     api: "/api/chat/message",
     id: threadId || undefined,
@@ -207,6 +153,20 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
   const handleTextareaFocus = () => {
     if (!authenticated) {
       setShowLoginModal(true);
+    }
+  };
+
+  // Handle speech recording toggle
+  const handleMicClick = async () => {
+    if (!authenticated || needsWalletSetup) return;
+
+    if (isRecording) {
+      const text = await stopSpeechRecording();
+      if (text) {
+        setInput((prevInput) => (prevInput ? `${prevInput} ${text}` : text));
+      }
+    } else {
+      startRecording();
     }
   };
 
@@ -294,81 +254,11 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      wrappedHandleSubmit(e as unknown as FormEvent<HTMLFormElement>);
+      if (!isRecording && !isProcessingSpeech) {
+        wrappedHandleSubmit(e as unknown as FormEvent<HTMLFormElement>);
+      }
     }
   }
-
-  // Add this function to handle category navigation
-  const handleCategoryChange = (direction: "next" | "prev") => {
-    if (direction === "next") {
-      setActiveCategoryIndex((prev) => (prev === 4 ? 0 : prev + 1));
-    } else {
-      setActiveCategoryIndex((prev) => (prev === 0 ? 4 : prev - 1));
-    }
-  };
-
-  // Add these states and refs for touch handling
-  const touchStartX = useRef<number | null>(null);
-  const [swipeDirection, setSwipeDirection] = useState<"left" | "right" | null>(
-    null
-  );
-  const suggestionContainerRef = useRef<HTMLDivElement>(null);
-
-  // Add this touch handler function
-  const handleTouchStart = (e: TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX;
-    setSwipeDirection(null);
-  };
-
-  const handleTouchMove = (e: TouchEvent) => {
-    if (touchStartX.current === null) return;
-
-    const currentX = e.touches[0].clientX;
-    const diff = touchStartX.current - currentX;
-
-    if (Math.abs(diff) > 20) {
-      setSwipeDirection(diff > 0 ? "left" : "right");
-    }
-  };
-
-  const handleTouchEnd = (e: TouchEvent) => {
-    if (touchStartX.current === null) return;
-
-    const touchEndX = e.changedTouches[0].clientX;
-    const diff = touchStartX.current - touchEndX;
-
-    // Detect swipe (threshold of 50px)
-    if (Math.abs(diff) > 50) {
-      if (diff > 0) {
-        // Swipe left
-        handleCategoryChange("next");
-      } else {
-        // Swipe right
-        handleCategoryChange("prev");
-      }
-    }
-
-    touchStartX.current = null;
-    setSwipeDirection(null);
-  };
-
-  // Add this effect to make the suggestion container height consistent
-  useEffect(() => {
-    const updateSuggestionHeight = () => {
-      if (suggestionContainerRef.current) {
-        // Set a minimum height for the suggestion container
-        const minHeight = 180; // px
-        suggestionContainerRef.current.style.minHeight = `${minHeight}px`;
-      }
-    };
-
-    updateSuggestionHeight();
-    window.addEventListener("resize", updateSuggestionHeight);
-
-    return () => {
-      window.removeEventListener("resize", updateSuggestionHeight);
-    };
-  }, []);
 
   // Login modal component
   const LoginModal = (
@@ -428,36 +318,76 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
             value={input}
             onChange={handleInputChange}
             placeholder={
-              hasActiveToolCall
-                ? "Please complete/cancel action or wait for response..."
-                : !authenticated
-                  ? "Login to start chatting..."
-                  : needsWalletSetup
-                    ? "Set up your wallet in sidebar to start chatting..."
-                    : "Type your message..."
+              isRecording
+                ? "Recording... speak now!"
+                : isProcessingSpeech
+                  ? "Processing speech..."
+                  : hasActiveToolCall
+                    ? "Please complete/cancel action or wait for response..."
+                    : !authenticated
+                      ? "Login to start chatting..."
+                      : needsWalletSetup
+                        ? "Set up your wallet in sidebar to start chatting..."
+                        : "Ask anything about Solana..."
             }
             rows={3}
             className={cn(
-              "resize-none pr-14 text-sm text-foreground placeholder:text-muted-foreground/60",
-              "border border-white/20 rounded-md focus:border-white focus:ring-0 shadow-sm",
-              "bg-muted/30 dark:bg-background/90",
+              "resize-none pr-24 text-sm text-foreground placeholder:text-muted-foreground/60",
+              "border border-border rounded-lg focus:border-primary focus:ring-0 shadow-sm",
+              "bg-background dark:bg-background/90",
               (!authenticated || needsWalletSetup) &&
-                "cursor-pointer hover:bg-muted/50"
+                "cursor-pointer hover:bg-muted/10"
             )}
             style={{ minHeight: "64px", maxHeight: "160px" }}
-            disabled={isLoading || hasActiveToolCall || needsWalletSetup}
+            disabled={
+              isLoading ||
+              hasActiveToolCall ||
+              needsWalletSetup ||
+              isRecording ||
+              isProcessingSpeech
+            }
             onKeyDown={handleKeyDown}
             onFocus={handleTextareaFocus}
-            readOnly={!authenticated || needsWalletSetup}
+            readOnly={
+              !authenticated ||
+              needsWalletSetup ||
+              isRecording ||
+              isProcessingSpeech
+            }
           />
-          <div className="absolute right-3">
+          <div className="absolute right-3 flex items-center gap-2">
+            {authenticated && !needsWalletSetup && (
+              <Button
+                type="button"
+                size="icon"
+                variant="ghost"
+                onClick={handleMicClick}
+                disabled={isLoading || hasActiveToolCall || isProcessingSpeech}
+                className={cn(
+                  "h-8 w-8 rounded-full text-muted-foreground hover:text-foreground transition-colors",
+                  isRecording
+                    ? "bg-red-500/20 text-red-500 hover:bg-red-500/30 hover:text-red-600"
+                    : "bg-muted/30 hover:bg-muted/50 dark:bg-muted/10 dark:hover:bg-muted/20"
+                )}
+                aria-label={isRecording ? "Stop recording" : "Start recording"}
+              >
+                {isProcessingSpeech ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : isRecording ? (
+                  <StopCircle className="h-4 w-4" />
+                ) : (
+                  <Mic className="h-4 w-4" />
+                )}
+              </Button>
+            )}
+
             {isLoading ? (
               <Button
                 type="button"
                 size="icon"
                 variant="ghost"
                 onClick={stop}
-                className="h-8 w-8 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-full text-gray-600 hover:text-gray-800 dark:text-gray-200 dark:hover:text-gray-100 transition-colors"
+                className="h-8 w-8 bg-muted/30 hover:bg-muted/50 dark:bg-muted/10 dark:hover:bg-muted/20 rounded-full text-muted-foreground hover:text-foreground transition-colors"
               >
                 <StopIcon />
               </Button>
@@ -467,18 +397,17 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
                 size="icon"
                 variant="ghost"
                 onClick={() => setShowLoginModal(true)}
-                className="h-8 w-8 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-full text-gray-600 hover:text-gray-800 dark:text-gray-200 dark:hover:text-gray-100 transition-colors"
+                className="h-8 w-8 bg-muted/30 hover:bg-muted/50 dark:bg-muted/10 dark:hover:bg-muted/20 rounded-full text-muted-foreground hover:text-foreground transition-colors"
               >
                 <LogIn className="h-4 w-4" />
               </Button>
             ) : needsWalletSetup ? (
-              // Just show a disabled button when wallet setup is needed
               <Button
                 type="button"
                 size="icon"
                 variant="ghost"
                 disabled
-                className="h-8 w-8 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-full text-gray-600 hover:text-gray-800 dark:text-gray-200 dark:hover:text-gray-100 transition-colors opacity-50"
+                className="h-8 w-8 bg-muted/30 hover:bg-muted/50 dark:bg-muted/10 dark:hover:bg-muted/20 rounded-full text-muted-foreground hover:text-foreground transition-colors opacity-50"
               >
                 <SendIcon />
               </Button>
@@ -487,8 +416,14 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
                 type="submit"
                 size="icon"
                 variant="ghost"
-                disabled={isLoading || hasActiveToolCall || !input.trim()}
-                className="h-8 w-8 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-full text-gray-600 hover:text-gray-800 dark:text-gray-200 dark:hover:text-gray-100 transition-colors"
+                disabled={
+                  isLoading ||
+                  hasActiveToolCall ||
+                  !input.trim() ||
+                  isRecording ||
+                  isProcessingSpeech
+                }
+                className="h-8 w-8 bg-muted/30 hover:bg-muted/50 dark:bg-muted/10 dark:hover:bg-muted/20 rounded-full text-muted-foreground hover:text-foreground transition-colors"
               >
                 <SendIcon />
               </Button>
@@ -508,365 +443,19 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
           className="flex-1 overflow-y-auto brainpower-scrollbar px-3 sm:px-4 pb-4"
         >
           {threadId === null || messages.length === 0 ? (
-            <div className="h-full pt-10">
-              <div className="text-center max-w-lg mx-auto space-y-3 px-4">
-                <h3 className="text-base font-medium mb-1">
-                  Your intelligent assistant for Solana blockchain interactions
-                </h3>
-
-                {/* Category navigation buttons */}
-                <div className="flex items-center justify-between mb-4">
-                  <button
-                    onClick={() => handleCategoryChange("prev")}
-                    className="p-2 rounded-full hover:bg-primary/10 transition-colors text-muted-foreground hover:text-primary flex items-center justify-center"
-                    aria-label="Previous category"
-                  >
-                    <ChevronLeft className="w-5 h-5" />
-                  </button>
-
-                  <div className="text-sm font-medium bg-muted/30 px-4 py-1.5 rounded-full">
-                    {activeCategoryIndex === 0 && "Market Data & Analysis"}
-                    {activeCategoryIndex === 1 && "Trading & Swaps"}
-                    {activeCategoryIndex === 2 && "Wallet & Account Management"}
-                    {activeCategoryIndex === 3 && "Token Creation & Analysis"}
-                    {activeCategoryIndex === 4 &&
-                      "Cross-Chain Bridging (deBridge)"}
-                  </div>
-
-                  <button
-                    onClick={() => handleCategoryChange("next")}
-                    className="p-2 rounded-full hover:bg-primary/10 transition-colors text-muted-foreground hover:text-primary flex items-center justify-center"
-                    aria-label="Next category"
-                  >
-                    <ChevronRight className="w-5 h-5" />
-                  </button>
-                </div>
-
-                {/* Category content - only show active one */}
-                <div
-                  ref={suggestionContainerRef}
-                  className={cn(
-                    "bg-muted/20 p-5 rounded-lg border border-border/10 shadow-sm transition-all duration-300 transform",
-                    swipeDirection === "left" &&
-                      "translate-x-[-10px] opacity-90",
-                    swipeDirection === "right" &&
-                      "translate-x-[10px] opacity-90"
-                  )}
-                  onTouchStart={handleTouchStart}
-                  onTouchMove={handleTouchMove}
-                  onTouchEnd={handleTouchEnd}
-                >
-                  {activeCategoryIndex === 0 && (
-                    <ul className="space-y-2 text-xs text-muted-foreground">
-                      <li
-                        className="cursor-pointer hover:text-primary transition-colors"
-                        onClick={() =>
-                          handleInputChange({
-                            target: {
-                              value: "Show me trending tokens on CoinGecko",
-                            },
-                          } as React.ChangeEvent<HTMLTextAreaElement>)
-                        }
-                      >
-                        • Show me trending tokens on CoinGecko
-                      </li>
-                      <li
-                        className="cursor-pointer hover:text-primary transition-colors"
-                        onClick={() =>
-                          handleInputChange({
-                            target: {
-                              value: "What's the price of SOL right now?",
-                            },
-                          } as React.ChangeEvent<HTMLTextAreaElement>)
-                        }
-                      >
-                        • What&apos;s the price of SOL right now?
-                      </li>
-                      <li
-                        className="cursor-pointer hover:text-primary transition-colors"
-                        onClick={() =>
-                          handleInputChange({
-                            target: {
-                              value: "Get me a price chart for BONK",
-                            },
-                          } as React.ChangeEvent<HTMLTextAreaElement>)
-                        }
-                      >
-                        • Get me a price chart for BONK
-                      </li>
-                      <li
-                        className="cursor-pointer hover:text-primary transition-colors"
-                        onClick={() =>
-                          handleInputChange({
-                            target: {
-                              value: "Run a rugcheck on a token address",
-                            },
-                          } as React.ChangeEvent<HTMLTextAreaElement>)
-                        }
-                      >
-                        • Run a rugcheck on a token address
-                      </li>
-                    </ul>
-                  )}
-
-                  {activeCategoryIndex === 1 && (
-                    <ul className="space-y-2 text-xs text-muted-foreground">
-                      <li
-                        className="cursor-pointer hover:text-primary transition-colors"
-                        onClick={() =>
-                          handleInputChange({
-                            target: {
-                              value:
-                                "Find the best rate to swap 10 USDC to BONK",
-                            },
-                          } as React.ChangeEvent<HTMLTextAreaElement>)
-                        }
-                      >
-                        • Find the best rate to swap 10 USDC to BONK
-                      </li>
-                      <li
-                        className="cursor-pointer hover:text-primary transition-colors"
-                        onClick={() =>
-                          handleInputChange({
-                            target: {
-                              value: "I want to trade 0.5 SOL for JUP",
-                            },
-                          } as React.ChangeEvent<HTMLTextAreaElement>)
-                        }
-                      >
-                        • I want to trade 0.5 SOL for JUP
-                      </li>
-                      <li
-                        className="cursor-pointer hover:text-primary transition-colors"
-                        onClick={() =>
-                          handleInputChange({
-                            target: {
-                              value: "Get token data for PYTH",
-                            },
-                          } as React.ChangeEvent<HTMLTextAreaElement>)
-                        }
-                      >
-                        • Get token data for PYTH
-                      </li>
-                    </ul>
-                  )}
-
-                  {activeCategoryIndex === 2 && (
-                    <ul className="space-y-2 text-xs text-muted-foreground">
-                      <li
-                        className="cursor-pointer hover:text-primary transition-colors"
-                        onClick={() =>
-                          handleInputChange({
-                            target: { value: "Show my wallet balance" },
-                          } as React.ChangeEvent<HTMLTextAreaElement>)
-                        }
-                      >
-                        • Show my wallet balance
-                      </li>
-                      <li
-                        className="cursor-pointer hover:text-primary transition-colors"
-                        onClick={() =>
-                          handleInputChange({
-                            target: {
-                              value: "Get token balances in my wallet",
-                            },
-                          } as React.ChangeEvent<HTMLTextAreaElement>)
-                        }
-                      >
-                        • Get token balances in my wallet
-                      </li>
-                      <li
-                        className="cursor-pointer hover:text-primary transition-colors"
-                        onClick={() =>
-                          handleInputChange({
-                            target: {
-                              value: "Close my empty token accounts",
-                            },
-                          } as React.ChangeEvent<HTMLTextAreaElement>)
-                        }
-                      >
-                        • Close my empty token accounts
-                      </li>
-                      <li
-                        className="cursor-pointer hover:text-primary transition-colors"
-                        onClick={() =>
-                          handleInputChange({
-                            target: {
-                              value: "Transfer SOL to another wallet",
-                            },
-                          } as React.ChangeEvent<HTMLTextAreaElement>)
-                        }
-                      >
-                        • Transfer SOL to another wallet
-                      </li>
-                    </ul>
-                  )}
-
-                  {activeCategoryIndex === 3 && (
-                    <ul className="space-y-2 text-xs text-muted-foreground">
-                      <li
-                        className="cursor-pointer hover:text-primary transition-colors"
-                        onClick={() =>
-                          handleInputChange({
-                            target: {
-                              value: "Help me launch a token with PumpFun",
-                            },
-                          } as React.ChangeEvent<HTMLTextAreaElement>)
-                        }
-                      >
-                        • Help me launch a token with PumpFun
-                      </li>
-                      <li
-                        className="cursor-pointer hover:text-primary transition-colors"
-                        onClick={() =>
-                          handleInputChange({
-                            target: {
-                              value: "Analyze a PumpFun bundle",
-                            },
-                          } as React.ChangeEvent<HTMLTextAreaElement>)
-                        }
-                      >
-                        • Analyze a PumpFun bundle
-                      </li>
-                      <li
-                        className="cursor-pointer hover:text-primary transition-colors"
-                        onClick={() =>
-                          handleInputChange({
-                            target: {
-                              value: "Show me the top holders of JUP token",
-                            },
-                          } as React.ChangeEvent<HTMLTextAreaElement>)
-                        }
-                      >
-                        • Show me the top holders of JUP token
-                      </li>
-                    </ul>
-                  )}
-
-                  {activeCategoryIndex === 4 && (
-                    <ul className="space-y-2 text-xs text-muted-foreground">
-                      <li
-                        className="cursor-pointer hover:text-primary transition-colors"
-                        onClick={() =>
-                          handleInputChange({
-                            target: {
-                              value:
-                                "Get a quote to bridge 1 SOL from Solana to Ethereum",
-                            },
-                          } as React.ChangeEvent<HTMLTextAreaElement>)
-                        }
-                      >
-                        • Get a bridge quote (e.g., SOL to ETH)
-                      </li>
-                      <li
-                        className="cursor-pointer hover:text-primary transition-colors"
-                        onClick={() =>
-                          handleInputChange({
-                            target: {
-                              value: "Show me which chains deBridge supports",
-                            },
-                          } as React.ChangeEvent<HTMLTextAreaElement>)
-                        }
-                      >
-                        • List supported chains for bridging
-                      </li>
-                      <li
-                        className="cursor-pointer hover:text-primary transition-colors"
-                        onClick={() =>
-                          handleInputChange({
-                            target: {
-                              value: "Find USDC token info on Solana",
-                            },
-                          } as React.ChangeEvent<HTMLTextAreaElement>)
-                        }
-                      >
-                        • Find token info on a specific chain
-                      </li>
-                      <li
-                        className="cursor-pointer hover:text-primary transition-colors"
-                        onClick={() =>
-                          handleInputChange({
-                            target: {
-                              value: "Bridge my 0.5 SOL from Solana to Base",
-                            },
-                          } as React.ChangeEvent<HTMLTextAreaElement>)
-                        }
-                      >
-                        • Execute a bridge transfer
-                      </li>
-                      <li
-                        className="cursor-pointer hover:text-primary transition-colors"
-                        onClick={() =>
-                          handleInputChange({
-                            target: {
-                              value:
-                                "Check the status of my bridge transaction 0x...",
-                            },
-                          } as React.ChangeEvent<HTMLTextAreaElement>)
-                        }
-                      >
-                        • Verify bridge transaction status
-                      </li>
-                    </ul>
-                  )}
-                </div>
-
-                {/* Category indicator pills */}
-                <div className="flex flex-wrap justify-center gap-2 mt-4">
-                  {["Market", "Trading", "Wallet", "Tokens", "deBridge"].map(
-                    (label, index) => (
-                      <button
-                        key={index}
-                        onClick={() => setActiveCategoryIndex(index)}
-                        className={cn(
-                          "px-3 py-1 text-xs rounded-full transition-all duration-300",
-                          activeCategoryIndex === index
-                            ? "bg-primary text-primary-foreground font-medium shadow-sm"
-                            : "bg-muted/50 text-muted-foreground hover:bg-muted-foreground/20"
-                        )}
-                        aria-label={`Go to category ${index + 1}`}
-                      >
-                        {label}
-                      </button>
-                    )
-                  )}
-                </div>
-
-                <p className="text-xs text-muted-foreground mt-3 flex items-center justify-center gap-1.5">
-                  <ChevronLeft className="w-3 h-3" />
-                  <span>Swipe or tap a pill to explore options</span>
-                  <ChevronRight className="w-3 h-3" />
-                </p>
-
-                {/* Add login prompt if not authenticated, but no wallet setup button */}
-                {!authenticated ? (
-                  <div className="mt-6 px-4">
-                    <Button
-                      onClick={login}
-                      className="w-full gap-2 bg-gradient-to-r from-primary to-primary/80"
-                    >
-                      <LogIn className="h-4 w-4" />
-                      Login to Start Chatting
-                    </Button>
-                    <p className="text-xs text-muted-foreground mt-3">
-                      You will need to login to interact with the agent.
-                    </p>
-                  </div>
-                ) : needsWalletSetup ? (
-                  <div className="mt-6 px-4">
-                    <p className="text-sm text-muted-foreground">
-                      Please set up your wallet in the sidebar to start
-                      chatting.
-                    </p>
-                  </div>
-                ) : null}
-              </div>
+            <div>
+              <FeatureSuggestions
+                handleInputChange={handleInputChange}
+                authenticated={authenticated}
+                needsWalletSetup={needsWalletSetup}
+                login={login}
+              />
             </div>
           ) : (
-            <div className="space-y-2 mb-3">
+            <div className="space-y-2 mb-3 max-w-3xl mx-auto">
               {/* Show errors at the top of chat if they exist */}
               {error && (
-                <div className="max-w-3xl mx-auto p-3 bg-destructive/10 border border-destructive/20 rounded-md text-destructive">
+                <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-md text-destructive">
                   <p className="text-sm font-medium">
                     Error:{" "}
                     {error.message || "An error occurred during the chat."}
@@ -876,7 +465,7 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
               {messages.reduce((groups: React.ReactElement[], message) => {
                 return [
                   ...groups,
-                  <div key={message.id} className="max-w-3xl mx-auto py-1">
+                  <div key={message.id} className="py-1">
                     <ChatMessage
                       message={message}
                       isLoading={
