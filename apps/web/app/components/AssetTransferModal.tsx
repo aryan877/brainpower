@@ -1,34 +1,33 @@
-import { useState, useEffect, useCallback } from "react";
-import {
-  PublicKey,
-  Transaction,
-  VersionedTransaction,
-  ComputeBudgetProgram,
-  TransactionInstruction,
-} from "@solana/web3.js";
-import { useWallet } from "../hooks/wallet";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog";
-import { Asset } from "../types/api/wallet";
-import { walletClient } from "../clients/wallet";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
+  ASSOCIATED_TOKEN_PROGRAM_ID,
+  createAssociatedTokenAccountIdempotentInstruction,
   createTransferInstruction,
   getAssociatedTokenAddress,
-  createAssociatedTokenAccountIdempotentInstruction,
   TOKEN_PROGRAM_ID,
-  ASSOCIATED_TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
+import {
+  ComputeBudgetProgram,
+  PublicKey,
+  Transaction,
+  TransactionInstruction,
+  VersionedTransaction,
+} from "@solana/web3.js";
+import { useCallback, useEffect, useState } from "react";
+import { walletClient } from "../clients/wallet";
+import { usePriorityFees, useWallet } from "../hooks/wallet";
 import { useNotificationStore } from "../store/notificationStore";
-import { usePriorityFees } from "../hooks/wallet";
+import { Asset } from "../types/api/wallet";
 
 interface AssetTransferModalProps {
   isOpen: boolean;
@@ -504,11 +503,12 @@ export function AssetTransferModal({
             </div>
           </div>
         </div>
-        <DialogFooter>
+        <DialogFooter className="flex flex-col sm:flex-row gap-2 sm:justify-end">
           <Button
             variant="outline"
             onClick={handleClose}
             disabled={isTransferring}
+            className="w-full sm:w-auto"
           >
             Cancel
           </Button>
@@ -516,11 +516,14 @@ export function AssetTransferModal({
             <Button
               onClick={handleTransfer}
               disabled={isTransferring || !recipientAddress || !amount}
+              className="w-full sm:w-auto"
             >
               {isTransferring ? "Processing..." : "Transfer"}
             </Button>
           ) : (
-            <Button disabled>NFT Transfers Not Supported</Button>
+            <Button disabled className="w-full sm:w-auto">
+              NFT Transfers Not Supported
+            </Button>
           )}
         </DialogFooter>
       </DialogContent>

@@ -188,17 +188,19 @@ export function WalletModal({ isOpen, onClose }: WalletModalProps) {
             Available balance: {balance?.toFixed(6) || "0"} SOL
           </p>
         </div>
-        <DialogFooter>
+        <DialogFooter className="flex flex-col sm:flex-row gap-2 sm:justify-end">
           <Button
             variant="outline"
             onClick={handleClose}
             disabled={isWithdrawing}
+            className="w-full sm:w-auto"
           >
             Cancel
           </Button>
           <Button
             onClick={handleWithdraw}
             disabled={isWithdrawing || !withdrawAmount || !recipientAddress}
+            className="w-full sm:w-auto"
           >
             {isWithdrawing ? (
               "Sending..."

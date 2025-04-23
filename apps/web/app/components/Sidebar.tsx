@@ -114,14 +114,19 @@ export default function Sidebar({
               undone.
             </DialogDescription>
           </DialogHeader>
-          <div className="flex justify-end gap-3">
-            <Button variant="outline" onClick={() => setThreadToDelete(null)}>
+          <div className="flex flex-col sm:flex-row gap-2 sm:justify-end">
+            <Button
+              variant="outline"
+              onClick={() => setThreadToDelete(null)}
+              className="w-full sm:w-auto"
+            >
               Cancel
             </Button>
             <Button
               variant="destructive"
               onClick={confirmDelete}
               disabled={deletingThreadId !== null}
+              className="w-full sm:w-auto"
             >
               {deletingThreadId ? "Deleting..." : "Delete"}
             </Button>

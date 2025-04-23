@@ -139,19 +139,19 @@ export function WalletSetupButton({
               </div>
             )}
 
-            <div className="flex justify-end gap-3">
+            <div className="flex flex-col sm:flex-row gap-2 sm:justify-end">
               <Button
                 variant="outline"
                 onClick={() => setShowDialog(false)}
                 disabled={isLoading}
-                className="text-sm"
+                className="text-sm w-full sm:w-auto"
               >
                 Cancel
               </Button>
               <Button
                 onClick={handleCreateWallet}
                 disabled={isLoading}
-                className="text-sm"
+                className="text-sm w-full sm:w-auto"
               >
                 {isLoading ? (
                   <>
