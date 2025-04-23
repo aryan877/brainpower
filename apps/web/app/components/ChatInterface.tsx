@@ -5,7 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { usePrivy } from "@privy-io/react-auth";
 import { useChat } from "ai/react";
-import { Loader2, LogIn, Mic, SendIcon, StopCircle } from "lucide-react";
+import { Loader2, LogIn, Mic, StopCircle } from "lucide-react";
 import { nanoid } from "nanoid";
 import { useRouter } from "next/navigation";
 import React, {
@@ -28,6 +28,7 @@ import { AuthContext } from "./AuthGuard";
 import ChatMessage from "./ChatMessage";
 import FeatureSuggestions from "./FeatureSuggestions";
 import { ScrollDownIcon } from "./icons/ScrollDownIcon";
+import { SendIcon } from "./icons/SendIcon";
 import { StopIcon } from "./icons/StopIcon";
 
 interface ChatInterfaceProps {
@@ -368,10 +369,10 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
                 onClick={handleMicClick}
                 disabled={isLoading || hasActiveToolCall || isProcessingSpeech}
                 className={cn(
-                  "h-8 w-8 rounded-full text-muted-foreground hover:text-foreground transition-colors",
+                  "h-8 w-8 rounded-full transition-all",
                   isRecording
-                    ? "bg-red-500/20 text-red-500 hover:bg-red-500/30 hover:text-red-600"
-                    : "bg-muted/30 hover:bg-muted/50 dark:bg-muted/10 dark:hover:bg-muted/20"
+                    ? "bg-muted text-destructive hover:bg-muted/80 hover:text-destructive/90"
+                    : "bg-background text-muted-foreground hover:bg-muted hover:text-foreground"
                 )}
                 aria-label={isRecording ? "Stop recording" : "Start recording"}
               >
@@ -391,7 +392,7 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
                 size="icon"
                 variant="ghost"
                 onClick={stop}
-                className="h-8 w-8 bg-muted/30 hover:bg-muted/50 dark:bg-muted/10 dark:hover:bg-muted/20 rounded-full text-muted-foreground hover:text-foreground transition-colors"
+                className="h-8 w-8 rounded-full transition-all bg-muted text-amber-600 hover:bg-muted/80 hover:text-amber-700"
               >
                 <StopIcon />
               </Button>
@@ -401,7 +402,7 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
                 size="icon"
                 variant="ghost"
                 onClick={() => setShowLoginModal(true)}
-                className="h-8 w-8 bg-muted/30 hover:bg-muted/50 dark:bg-muted/10 dark:hover:bg-muted/20 rounded-full text-muted-foreground hover:text-foreground transition-colors"
+                className="h-8 w-8 rounded-full transition-all bg-background text-muted-foreground hover:bg-muted hover:text-foreground"
               >
                 <LogIn className="h-4 w-4" />
               </Button>
@@ -411,7 +412,7 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
                 size="icon"
                 variant="ghost"
                 disabled
-                className="h-8 w-8 bg-muted/30 hover:bg-muted/50 dark:bg-muted/10 dark:hover:bg-muted/20 rounded-full text-muted-foreground hover:text-foreground transition-colors opacity-50"
+                className="h-8 w-8 rounded-full bg-background text-muted-foreground opacity-50"
               >
                 <SendIcon />
               </Button>
@@ -427,7 +428,16 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
                   isRecording ||
                   isProcessingSpeech
                 }
-                className="h-8 w-8 bg-muted/30 hover:bg-muted/50 dark:bg-muted/10 dark:hover:bg-muted/20 rounded-full text-muted-foreground hover:text-foreground transition-colors"
+                className={cn(
+                  "h-8 w-8 rounded-full transition-all",
+                  input.trim() &&
+                    !isRecording &&
+                    !isProcessingSpeech &&
+                    !isLoading &&
+                    !hasActiveToolCall
+                    ? "bg-muted text-primary hover:bg-muted/80 hover:text-primary/90"
+                    : "bg-background text-muted-foreground"
+                )}
               >
                 <SendIcon />
               </Button>
