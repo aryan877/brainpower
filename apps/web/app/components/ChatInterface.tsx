@@ -111,7 +111,10 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
 
   // Auto scroll to bottom on new messages
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    // Only scroll if messages exist
+    if (messages.length > 0) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
   }, [messages]);
 
   // Add scroll handler to check if we're at bottom
@@ -119,10 +122,10 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
     if (messagesContainerRef.current) {
       const { scrollTop, scrollHeight, clientHeight } =
         messagesContainerRef.current;
-      // Only show scroll button if there's actually scrollable content AND we're not at bottom
       const hasScrollableContent = scrollHeight > clientHeight;
       const isAtBottom =
-        Math.abs(scrollHeight - clientHeight - scrollTop) < 100;
+        // Use a smaller threshold for more accurate bottom detection
+        Math.abs(scrollHeight - clientHeight - scrollTop) < 10;
       setShowScrollDown(!isAtBottom && hasScrollableContent);
     }
   }, []);
@@ -142,9 +145,10 @@ export default function ChatInterface({ threadId }: ChatInterfaceProps) {
     }
   }, [handleScroll]);
 
-  // Auto scroll to bottom on new messages if already at bottom
+  // Auto scroll to bottom on new messages if already at bottom and messages exist
   useEffect(() => {
-    if (!showScrollDown) {
+    // Only auto-scroll if there are messages and the user hasn't scrolled up
+    if (messages.length > 0 && !showScrollDown) {
       scrollToBottom();
     }
   }, [messages, showScrollDown, scrollToBottom]);
