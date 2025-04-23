@@ -1,5 +1,6 @@
-import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Menu } from "lucide-react";
+import Link from "next/link";
 import Logo from "./Logo";
 
 interface NavbarProps {
@@ -18,7 +19,9 @@ export function Navbar({ onMenuClick }: NavbarProps) {
         >
           <Menu className="h-5 w-5" />
         </Button>
-        <Logo />
+        <Link href="/">
+          <Logo />
+        </Link>
       </div>
     </header>
   );

@@ -1,22 +1,9 @@
 "use client";
 
-import { usePrivy, type WalletWithMetadata } from "@privy-io/react-auth";
-import { useSolanaWallets } from "@privy-io/react-auth/solana";
-import {
-  Copy,
-  ArrowUpRight,
-  RefreshCw,
-  Download,
-  ExternalLink,
-  Coins,
-  FileIcon,
-  Check,
-} from "lucide-react";
-import { useState, useMemo, useCallback } from "react";
-import { useClusterStore } from "../store/clusterStore";
-import { useWallet, useTransactionHistory } from "../hooks/wallet";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Select,
   SelectContent,
@@ -24,26 +11,38 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { usePrivy, type WalletWithMetadata } from "@privy-io/react-auth";
+import { useSolanaWallets } from "@privy-io/react-auth/solana";
 import { Cluster } from "@repo/brainpower-agent";
-import { AuthGuard } from "../components/AuthGuard";
-import { AppLayout } from "../components/AppLayout";
-import { useWalletModal } from "../providers/WalletProvider";
-import { formatDistanceToNow } from "date-fns";
-import { Skeleton } from "@/components/ui/skeleton";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Badge } from "@/components/ui/badge";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
-import { Transaction } from "../types/api/wallet";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { walletClient } from "../clients/wallet";
-import { Asset } from "../types/api/wallet";
-import { AssetTransferModal } from "../components/AssetTransferModal";
+import { formatDistanceToNow } from "date-fns";
+import {
+  ArrowUpRight,
+  Check,
+  Coins,
+  Copy,
+  Download,
+  ExternalLink,
+  FileIcon,
+  RefreshCw,
+} from "lucide-react";
 import Image from "next/image";
+import { useCallback, useMemo, useState } from "react";
+import { walletClient } from "../clients/wallet";
+import { AppLayout } from "../components/AppLayout";
+import { AssetTransferModal } from "../components/AssetTransferModal";
+import { AuthGuard } from "../components/AuthGuard";
+import { useTransactionHistory, useWallet } from "../hooks/wallet";
+import { useWalletModal } from "../providers/WalletProvider";
+import { useClusterStore } from "../store/clusterStore";
+import { Asset, Transaction } from "../types/api/wallet";
 
 function TransactionList({
   transactions,
@@ -715,7 +714,7 @@ function WalletContent() {
 export default function WalletPage() {
   return (
     <AuthGuard>
-      <AppLayout selectedThread={null}>
+      <AppLayout selectedThread={null} showNavbar={true}>
         <WalletContent />
       </AppLayout>
     </AuthGuard>

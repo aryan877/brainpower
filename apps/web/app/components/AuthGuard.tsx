@@ -4,8 +4,16 @@ import { usePrivy } from "@privy-io/react-auth";
 import { motion } from "framer-motion";
 import { useTheme } from "next-themes";
 import Image from "next/image";
-import { ReactNode, useEffect, useState } from "react";
-import { WelcomePage } from "./WelcomePage";
+import React, { ReactNode, useEffect, useState } from "react";
+
+// Create a context to share authentication status across components
+export const AuthContext = React.createContext<{
+  authenticated: boolean;
+  login: () => void;
+}>({
+  authenticated: false,
+  login: () => {},
+});
 
 export function AuthGuard({ children }: { children: ReactNode }) {
   const { ready, authenticated, login } = usePrivy();
@@ -59,9 +67,10 @@ export function AuthGuard({ children }: { children: ReactNode }) {
     );
   }
 
-  if (!authenticated) {
-    return <WelcomePage onLogin={login} />;
-  }
-
-  return <>{children}</>;
+  // Instead of conditionally rendering WelcomePage, pass auth status to children
+  return (
+    <AuthContext.Provider value={{ authenticated, login }}>
+      {children}
+    </AuthContext.Provider>
+  );
 }

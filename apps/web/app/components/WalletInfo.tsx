@@ -1,11 +1,5 @@
 "use client";
 
-import { usePrivy } from "@privy-io/react-auth";
-import { useSolanaWallets } from "@privy-io/react-auth/solana";
-import { Copy, Wallet, Plus, LogOut, Send, RefreshCw } from "lucide-react";
-import { useState } from "react";
-import { useClusterStore } from "../store/clusterStore";
-import { useWallet, useStoreWallet } from "../hooks/wallet";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
@@ -20,9 +14,24 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { usePrivy } from "@privy-io/react-auth";
+import { useFundWallet, useSolanaWallets } from "@privy-io/react-auth/solana";
 import { Cluster } from "@repo/brainpower-agent";
+import {
+  Copy,
+  Download,
+  LogOut,
+  Plus,
+  RefreshCw,
+  Send,
+  Wallet,
+} from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
+import { useStoreWallet, useWallet } from "../hooks/wallet";
 import { useWalletModal } from "../providers/WalletProvider";
+import { useClusterStore } from "../store/clusterStore";
+import { useNotificationStore } from "../store/notificationStore";
 
 interface WalletInfoProps {
   onLogoutClick: () => void;
@@ -48,6 +57,16 @@ export function WalletInfo({
   const [copied, setCopied] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const { openWalletModal } = useWalletModal();
+  const { addNotification } = useNotificationStore();
+
+  const { fundWallet } = useFundWallet({
+    onUserExited: ({ balance }) => {
+      refreshBalance();
+      if (balance && balance > 0) {
+        addNotification("success", "Successfully funded wallet", {});
+      }
+    },
+  });
 
   if (!ready) return null;
 
@@ -74,6 +93,17 @@ export function WalletInfo({
     }
   };
 
+  const handleFundWallet = async () => {
+    if (!walletAddress) return;
+
+    try {
+      await fundWallet(walletAddress);
+    } catch (error) {
+      console.error("Error funding wallet:", error);
+      addNotification("error", "Failed to open funding flow", {});
+    }
+  };
+
   if (isCollapsed) {
     return (
       <div className="p-2 flex flex-col items-center gap-2">
@@ -95,11 +125,11 @@ export function WalletInfo({
   }
 
   return (
-    <div className="p-4">
-      <div className="flex items-center justify-between mb-3">
+    <div className="p-4 space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <Wallet className="h-4 w-4 text-muted-foreground" />
-          <span className="text-sm font-medium text-foreground">
+          <Wallet className="h-5 w-5 text-primary flex-shrink-0" />
+          <span className="font-semibold text-foreground text-base sm:text-lg">
             Solana Wallet
           </span>
         </div>
@@ -108,20 +138,20 @@ export function WalletInfo({
             onClick={onLogoutClick}
             variant="ghost"
             size="sm"
-            className="text-destructive hover:text-destructive/90 hover:bg-destructive/10"
+            className="text-destructive hover:text-destructive/90 hover:bg-destructive/10 text-xs sm:text-sm"
           >
-            <LogOut className="h-3 w-3 mr-1" />
+            <LogOut className="h-3.5 w-3.5 mr-1 sm:mr-1.5 flex-shrink-0" />
             Logout
           </Button>
         )}
       </div>
 
-      <div className="mb-3">
+      <div>
         <Select
           value={selectedCluster}
           onValueChange={(value) => setSelectedCluster(value as Cluster)}
         >
-          <SelectTrigger className="w-full text-xs">
+          <SelectTrigger className="w-full bg-card border-border text-sm">
             <SelectValue placeholder="Select network" />
           </SelectTrigger>
           <SelectContent>
@@ -132,20 +162,22 @@ export function WalletInfo({
       </div>
 
       {wallet ? (
-        <div className="space-y-2">
-          <div className="text-xs text-muted-foreground">
-            <Card className="p-2 space-y-2">
+        <div className="space-y-3">
+          <Card className="bg-card/50 border-border overflow-hidden">
+            <div className="p-3 space-y-3">
               <div className="flex items-center justify-between">
-                <span className="font-medium">Address</span>
+                <span className="font-medium text-sm text-foreground">
+                  Address
+                </span>
                 <Tooltip open={copied}>
                   <TooltipTrigger asChild>
                     <Button
                       onClick={copyAddress}
                       variant="ghost"
                       size="sm"
-                      className="p-1 h-auto"
+                      className="p-1.5 h-auto flex-shrink-0"
                     >
-                      <Copy className="h-3 w-3" />
+                      <Copy className="h-3.5 w-3.5" />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
@@ -153,24 +185,41 @@ export function WalletInfo({
                   </TooltipContent>
                 </Tooltip>
               </div>
-              <div className="break-all text-foreground">{walletAddress}</div>
-              <div className="pt-1">
-                <Link href="/wallet" className="no-underline w-full block">
-                  <Button variant="outline" size="default" className="w-full">
-                    Manage Wallet
-                  </Button>
-                </Link>
+              <div className="text-xs break-all text-foreground/80 bg-background/50 p-2 rounded-md font-mono">
+                {walletAddress}
               </div>
-            </Card>
-          </div>
-          <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span>Balance:</span>
-            <div className="flex items-center gap-2">
-              <Card className="px-2 py-1">
-                {isLoadingBalance
-                  ? "Loading..."
-                  : `${balance?.toFixed(4) || "0"} SOL`}
-              </Card>
+            </div>
+            <Link
+              href="/wallet"
+              className="no-underline w-full block border-t border-border"
+            >
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full rounded-none h-10 font-medium text-sm"
+              >
+                Manage Wallet
+              </Button>
+            </Link>
+          </Card>
+
+          <div className="flex flex-wrap items-center justify-between gap-3 bg-card/50 rounded-lg p-3 border border-border">
+            <div className="flex items-center gap-2 flex-wrap">
+              <div className="text-sm font-medium whitespace-nowrap">
+                Balance:
+              </div>
+              <div className="bg-background px-3 py-1.5 rounded-md font-medium text-sm flex-shrink-0">
+                {isLoadingBalance ? (
+                  <span className="flex items-center gap-1">
+                    <div className="animate-spin rounded-full h-3 w-3 border-2 border-t-transparent border-primary"></div>
+                    Loading...
+                  </span>
+                ) : (
+                  `${balance?.toFixed(4) || "0"} SOL`
+                )}
+              </div>
+            </div>
+            <div className="flex items-center gap-1.5 flex-shrink-0">
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
@@ -178,7 +227,7 @@ export function WalletInfo({
                     disabled={isLoadingBalance || isRefetchingBalance}
                     variant="ghost"
                     size="sm"
-                    className="p-1.5 h-auto"
+                    className="p-1.5 h-auto rounded-full"
                   >
                     <RefreshCw
                       className={`h-3.5 w-3.5 ${
@@ -194,36 +243,64 @@ export function WalletInfo({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
+                    onClick={handleFundWallet}
+                    variant="ghost"
+                    size="sm"
+                    className="p-1.5 h-auto rounded-full"
+                  >
+                    <Download className="h-3.5 w-3.5" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Fund wallet</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
                     onClick={openWalletModal}
                     variant="ghost"
                     size="sm"
-                    className="p-1.5 h-auto"
+                    className="p-1.5 h-auto rounded-full"
                   >
                     <Send className="h-3.5 w-3.5" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>Withdraw</TooltipContent>
+                <TooltipContent>Send SOL</TooltipContent>
               </Tooltip>
             </div>
           </div>
+
+          <Button
+            onClick={handleFundWallet}
+            variant="default"
+            size="default"
+            className="w-full font-medium text-sm"
+          >
+            <Download className="h-4 w-4 mr-2 flex-shrink-0" />
+            Fund Wallet
+          </Button>
         </div>
       ) : (
-        <Card className="p-3">
+        <Card className="bg-card/50 border-border p-4 flex flex-col items-center text-center">
           {isCreating ? (
-            <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
-              <div className="animate-spin rounded-full h-3 w-3 border-b border-primary" />
-              <span>Creating Solana wallet...</span>
+            <div className="flex flex-col items-center justify-center gap-3 py-2">
+              <div className="animate-spin rounded-full h-6 w-6 border-2 border-t-transparent border-primary"></div>
+              <span className="text-muted-foreground text-sm">
+                Creating Solana wallet...
+              </span>
             </div>
           ) : (
-            <div className="flex flex-col gap-2 text-xs text-muted-foreground">
-              <p>Create a Solana wallet to get started</p>
+            <div className="flex flex-col gap-3 text-sm items-center">
+              <Wallet className="h-8 w-8 text-primary/80" />
+              <p className="text-muted-foreground">
+                Create a Solana wallet to get started
+              </p>
               <Button
                 onClick={handleCreateWallet}
                 disabled={isCreating}
-                size="sm"
-                className="w-full"
+                size="default"
+                className="w-full mt-2 text-sm"
               >
-                <Plus className="h-3 w-3 mr-1" />
+                <Plus className="h-4 w-4 mr-2 flex-shrink-0" />
                 {isCreating ? "Creating..." : "Create Solana Wallet"}
               </Button>
             </div>

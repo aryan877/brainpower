@@ -1,10 +1,10 @@
 "use client";
 
-import { Suspense } from "react";
-import { AuthGuard } from "./components/AuthGuard";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 import { usePrivy } from "@privy-io/react-auth";
+import { useRouter } from "next/navigation";
+import { Suspense, useEffect } from "react";
+import { AuthGuard } from "./components/AuthGuard";
+import { WelcomePage } from "./components/WelcomePage";
 
 function HomeContent() {
   const router = useRouter();
@@ -18,7 +18,7 @@ function HomeContent() {
     }
   }, [authenticated, router]);
 
-  return null;
+  return <WelcomePage onLogin={() => router.push("/chat")} />;
 }
 
 export default function Home() {

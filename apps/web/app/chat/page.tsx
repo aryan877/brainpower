@@ -1,10 +1,10 @@
 "use client";
 
-import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import ChatInterface from "../components/ChatInterface";
-import { AuthGuard } from "../components/AuthGuard";
+import { Suspense } from "react";
 import { AppLayout } from "../components/AppLayout";
+import { AuthGuard } from "../components/AuthGuard";
+import ChatInterface from "../components/ChatInterface";
 
 function ChatContent() {
   const searchParams = useSearchParams();

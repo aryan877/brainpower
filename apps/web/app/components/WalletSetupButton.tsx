@@ -1,6 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
-import { useWalletSetup } from "../hooks/useWalletSetup";
 import {
   Dialog,
   DialogContent,
@@ -8,7 +6,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
+import { Loader2, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useWalletSetup } from "../hooks/useWalletSetup";
 
 interface WalletSetupButtonProps {
   onSuccess?: () => void;
@@ -20,12 +21,14 @@ interface WalletSetupButtonProps {
     | "secondary"
     | "ghost"
     | "link";
+  showIconOnly?: boolean;
 }
 
 export function WalletSetupButton({
   onSuccess,
   className = "",
   variant = "default",
+  showIconOnly = false,
 }: WalletSetupButtonProps) {
   const [showDialog, setShowDialog] = useState(false);
   const {
@@ -105,24 +108,33 @@ export function WalletSetupButton({
         className={className}
         variant={variant}
         disabled={isLoading}
+        size={showIconOnly ? "icon" : "default"}
       >
-        {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-        {buttonText}
+        {isLoading ? (
+          <Loader2
+            className={cn("h-4 w-4 animate-spin", !showIconOnly && "mr-2")}
+          />
+        ) : (
+          <Plus className={cn("h-4 w-4", !showIconOnly && "mr-2")} />
+        )}
+        {!showIconOnly && buttonText}
       </Button>
 
       {/* Only show dialog for wallet creation, not for delegation */}
       {!needsDelegation && (
         <Dialog open={showDialog} onOpenChange={setShowDialog}>
-          <DialogContent>
+          <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
-              <DialogTitle>{dialogTitle}</DialogTitle>
-              <DialogDescription className="pt-2">
+              <DialogTitle className="text-lg md:text-xl">
+                {dialogTitle}
+              </DialogTitle>
+              <DialogDescription className="pt-2 text-sm md:text-base">
                 {dialogDescription}
               </DialogDescription>
             </DialogHeader>
 
             {error && (
-              <div className="text-sm text-destructive mb-4">
+              <div className="text-xs md:text-sm text-destructive mb-4">
                 Error: {error}
               </div>
             )}
@@ -132,13 +144,18 @@ export function WalletSetupButton({
                 variant="outline"
                 onClick={() => setShowDialog(false)}
                 disabled={isLoading}
+                className="text-sm"
               >
                 Cancel
               </Button>
-              <Button onClick={handleCreateWallet} disabled={isLoading}>
+              <Button
+                onClick={handleCreateWallet}
+                disabled={isLoading}
+                className="text-sm"
+              >
                 {isLoading ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
                     {buttonText}
                   </>
                 ) : (

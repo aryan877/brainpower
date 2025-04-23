@@ -1,15 +1,4 @@
-import { useState } from "react";
-import {
-  LAMPORTS_PER_SOL,
-  PublicKey,
-  SystemProgram,
-  Transaction,
-  VersionedTransaction,
-} from "@solana/web3.js";
-import { useWallet } from "../hooks/wallet";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
@@ -17,9 +6,20 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { walletClient } from "../clients/wallet";
-import { useNotificationStore } from "../store/notificationStore";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  LAMPORTS_PER_SOL,
+  PublicKey,
+  SystemProgram,
+  Transaction,
+  VersionedTransaction,
+} from "@solana/web3.js";
 import { ArrowUpRight } from "lucide-react";
+import { useState } from "react";
+import { walletClient } from "../clients/wallet";
+import { useWallet } from "../hooks/wallet";
+import { useNotificationStore } from "../store/notificationStore";
 
 interface WalletModalProps {
   isOpen: boolean;

@@ -6,9 +6,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
 import { usePrivy } from "@privy-io/react-auth";
 import {
   Loader2,
+  LogIn,
   MessageSquarePlus,
   PanelLeftClose,
   PanelLeftOpen,
@@ -32,6 +34,8 @@ export interface SidebarProps {
   hasMore: boolean;
   isLoadingMore: boolean;
   onLoadMore: () => void;
+  isAuthenticated?: boolean;
+  onLogin?: () => void;
 }
 
 export default function Sidebar({
@@ -47,6 +51,8 @@ export default function Sidebar({
   hasMore,
   isLoadingMore,
   onLoadMore,
+  isAuthenticated = false,
+  onLogin,
 }: SidebarProps) {
   const { user } = usePrivy();
   const [threadToDelete, setThreadToDelete] = useState<ThreadPreview | null>(
@@ -56,8 +62,10 @@ export default function Sidebar({
   const [deletingThreadId, setDeletingThreadId] = useState<string | null>(null);
 
   const handleNewChatClick = () => {
-    if (user?.wallet?.delegated) {
+    if (isAuthenticated && user?.wallet?.delegated) {
       onCreateThread();
+    } else if (!isAuthenticated && onLogin) {
+      onLogin();
     }
   };
 
@@ -88,8 +96,9 @@ export default function Sidebar({
     return "New Chat";
   };
 
-  const canCreateNewChat = user?.wallet?.delegated;
-  const needsWalletSetup = !user?.wallet || !user.wallet.delegated;
+  const canCreateNewChat = isAuthenticated && user?.wallet?.delegated;
+  const needsWalletSetup =
+    isAuthenticated && (!user?.wallet || !user.wallet.delegated);
 
   return (
     <>
@@ -121,74 +130,138 @@ export default function Sidebar({
       </Dialog>
 
       <aside className="flex flex-col h-full bg-background border-r relative dark:border-border">
-        <div className={`p-4 ${isCollapsed ? "px-2" : ""}`}>
-          <div
-            className={`flex items-center gap-2 mb-4 ${
-              isCollapsed ? "flex-col" : ""
-            }`}
-          >
-            {onToggleCollapse && isCollapsed && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="w-full h-8"
-                onClick={onToggleCollapse}
-                title="Expand sidebar"
-              >
-                <PanelLeftOpen className="h-4 w-4" />
-              </Button>
-            )}
-            {canCreateNewChat ? (
-              <Button
-                onClick={handleNewChatClick}
-                disabled={isLoading}
-                className={`flex-1 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 ${
-                  isCollapsed ? "w-full p-2" : ""
-                }`}
-                variant="default"
-                size={isCollapsed ? "icon" : "default"}
-              >
-                {isLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <MessageSquarePlus
-                    className={`h-4 w-4 ${!isCollapsed && "mr-2"}`}
-                  />
-                )}
-                {!isCollapsed && (isLoading ? "Creating..." : "New Chat")}
-              </Button>
-            ) : (
-              <WalletSetupButton
-                className={`flex-1 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 ${
-                  isCollapsed ? "w-full p-2" : ""
-                }`}
-                variant="default"
-              />
-            )}
-            <div
-              className={`flex items-center ${isCollapsed ? "flex-col" : ""} gap-2`}
-            >
-              <ThemeToggle />
-              {onToggleCollapse && !isCollapsed && (
+        <div className={cn("p-4", isCollapsed && "p-2")}>
+          {isCollapsed ? (
+            <div className="flex flex-col items-center gap-6 mt-2">
+              {onToggleCollapse && (
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="hidden md:flex h-8 w-8"
+                  className="h-8 w-8"
                   onClick={onToggleCollapse}
-                  title="Collapse sidebar"
+                  title="Expand sidebar"
                 >
-                  <PanelLeftClose className="h-4 w-4" />
+                  <PanelLeftOpen className="h-4 w-4" />
+                </Button>
+              )}
+
+              {!isAuthenticated ? (
+                <Button
+                  onClick={onLogin}
+                  className="p-2 h-10 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
+                  variant="default"
+                  size="icon"
+                  title="Login"
+                >
+                  <LogIn className="h-4 w-4" />
+                </Button>
+              ) : canCreateNewChat ? (
+                <Button
+                  onClick={handleNewChatClick}
+                  disabled={isLoading}
+                  className="p-2 h-10 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
+                  variant="default"
+                  size="icon"
+                  title={isLoading ? "Creating..." : "New Chat"}
+                >
+                  {isLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <MessageSquarePlus className="h-4 w-4" />
+                  )}
+                </Button>
+              ) : (
+                <WalletSetupButton
+                  className="p-2 h-10 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
+                  variant="default"
+                  showIconOnly={true}
+                />
+              )}
+
+              <ThemeToggle />
+            </div>
+          ) : (
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center flex-1 gap-2">
+                <div className="flex flex-1">
+                  {!isAuthenticated ? (
+                    <Button
+                      onClick={onLogin}
+                      className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 flex-1"
+                      variant="default"
+                    >
+                      <LogIn className="h-4 w-4" />
+                      <span className="ml-2">Login</span>
+                    </Button>
+                  ) : canCreateNewChat ? (
+                    <Button
+                      onClick={handleNewChatClick}
+                      disabled={isLoading}
+                      className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 flex-1"
+                      variant="default"
+                    >
+                      {isLoading ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <MessageSquarePlus className="h-4 w-4" />
+                      )}
+                      <span className="ml-2">
+                        {isLoading ? "Creating..." : "New Chat"}
+                      </span>
+                    </Button>
+                  ) : (
+                    <WalletSetupButton
+                      className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 flex-1"
+                      variant="default"
+                      showIconOnly={false}
+                    />
+                  )}
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <ThemeToggle />
+                {onToggleCollapse && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="hidden md:flex h-8 w-8"
+                    onClick={onToggleCollapse}
+                    title="Collapse sidebar"
+                  >
+                    <PanelLeftClose className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div
+          className={cn(
+            "flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent pb-4",
+            isCollapsed && "hidden"
+          )}
+        >
+          {!isAuthenticated ? (
+            <div className="p-4 text-center text-muted-foreground">
+              <p className="text-sm md:text-base">Welcome to BrainPower</p>
+              <p className="text-xs md:text-sm mt-2">
+                Login to start chatting and create your own conversations
+              </p>
+              {!isCollapsed && (
+                <Button
+                  onClick={onLogin}
+                  className="mt-4 w-full"
+                  variant="outline"
+                  size="sm"
+                >
+                  <LogIn className="h-4 w-4 mr-2" />
+                  Login to Your Account
                 </Button>
               )}
             </div>
-          </div>
-        </div>
-
-        {/* Chat threads list */}
-        <div
-          className={`flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent pb-4 ${isCollapsed ? "hidden md:hidden" : ""}`}
-        >
-          {threads.length === 0 ? (
+          ) : threads.length === 0 ? (
             !isCollapsed && (
               <div className="p-4 text-center text-muted-foreground">
                 <p className="text-sm md:text-base">No chats yet</p>
@@ -278,9 +351,19 @@ export default function Sidebar({
           )}
         </div>
 
-        {/* Wallet info at the bottom */}
         <div className="mt-auto border-t">
-          <WalletInfo onLogoutClick={onLogoutClick} isCollapsed={isCollapsed} />
+          {isAuthenticated ? (
+            <WalletInfo
+              onLogoutClick={onLogoutClick}
+              isCollapsed={isCollapsed}
+            />
+          ) : (
+            <div className={cn("p-4", isCollapsed && "hidden")}>
+              <p className="text-xs text-muted-foreground">
+                Login to access your wallet
+              </p>
+            </div>
+          )}
         </div>
       </aside>
     </>

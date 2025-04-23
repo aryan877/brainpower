@@ -1,6 +1,6 @@
-import { useState } from "react";
-import { usePrivy, useHeadlessDelegatedActions } from "@privy-io/react-auth";
+import { useHeadlessDelegatedActions, usePrivy } from "@privy-io/react-auth";
 import { useSolanaWallets } from "@privy-io/react-auth/solana";
+import { useEffect, useState } from "react";
 import { useStoreWallet } from "./wallet";
 
 interface WalletSetupState {
@@ -22,6 +22,9 @@ export const useWalletSetup = (): WalletSetupState & WalletSetupActions => {
   const [isCreatingWallet, setIsCreatingWallet] = useState(false);
   const [isDelegatingWallet, setIsDelegatingWallet] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [newlyCreatedWalletAddress, setNewlyCreatedWalletAddress] = useState<
+    string | null
+  >(null);
 
   const { createWallet } = useSolanaWallets();
   const { delegateWallet } = useHeadlessDelegatedActions();
@@ -53,7 +56,7 @@ export const useWalletSetup = (): WalletSetupState & WalletSetupActions => {
       // Store the wallet after delegation
       await storeWallet({
         address: user.wallet.address,
-        chainType: user.wallet.chainType,
+        chainType: "solana",
       });
     } catch (err) {
       console.error("Error delegating wallet:", err);
@@ -87,27 +90,75 @@ export const useWalletSetup = (): WalletSetupState & WalletSetupActions => {
         throw new Error("Failed to create wallet");
       }
 
-      // Delegate the new wallet
-      setIsDelegatingWallet(true);
-      await delegateWallet({
-        address: wallet.address,
-        chainType: "solana",
-      });
-
-      // Store the wallet
-      await storeWallet({
-        address: wallet.address,
-        chainType: wallet.chainType,
-      });
+      // Instead, set the address to trigger the useEffect for delegation
+      setNewlyCreatedWalletAddress(wallet.address);
     } catch (err) {
       console.error("Error in wallet setup:", err);
       setError(err instanceof Error ? err.message : "Failed to setup wallet");
+      // Reset pending delegation state on error
+      setNewlyCreatedWalletAddress(null);
       throw err;
     } finally {
+      // Only stop the creation loading state here
       setIsCreatingWallet(false);
-      setIsDelegatingWallet(false);
+      // Delegation loading state is handled by the effect
     }
   };
+
+  // Effect to handle delegation after a new wallet is created and user state potentially updates
+  useEffect(() => {
+    const attemptDelegation = async () => {
+      if (
+        !newlyCreatedWalletAddress ||
+        !user?.wallet ||
+        user.wallet.address !== newlyCreatedWalletAddress
+      ) {
+        // Conditions not met: either no pending address, user object not ready, or wallet address doesn't match
+        return;
+      }
+
+      // Wallet address matches the newly created one, proceed with delegation
+      try {
+        console.log(
+          `User object updated, attempting delegation for: ${newlyCreatedWalletAddress}`
+        );
+        setIsDelegatingWallet(true);
+        setError(null);
+
+        // Delegate the new wallet
+        await delegateWallet({
+          address: newlyCreatedWalletAddress,
+          chainType: "solana",
+        });
+
+        // Store the wallet
+        await storeWallet({
+          address: newlyCreatedWalletAddress,
+          chainType: "solana",
+        });
+
+        console.log(
+          `Successfully delegated and stored: ${newlyCreatedWalletAddress}`
+        );
+      } catch (err) {
+        console.error("Error delegating newly created wallet in effect:", err);
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Failed to delegate newly created wallet"
+        );
+        // Rethrow to allow calling components to catch if needed
+        throw err;
+      } finally {
+        // Reset state regardless of success or failure
+        setNewlyCreatedWalletAddress(null);
+        setIsDelegatingWallet(false);
+      }
+    };
+
+    attemptDelegation();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, newlyCreatedWalletAddress]); // Dependencies: user state and the pending address
 
   return {
     // States

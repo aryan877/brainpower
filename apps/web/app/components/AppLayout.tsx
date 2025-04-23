@@ -11,12 +11,13 @@ import {
 import { usePrivy } from "@privy-io/react-auth";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { chatClient } from "../clients/chat";
 import { chatKeys, useDeleteThread } from "../hooks/chat";
 import { WalletProvider } from "../providers/WalletProvider";
 import { ThreadPreview } from "../types";
 import { GetThreadsResponse } from "../types/api/chat";
+import { AuthContext } from "./AuthGuard";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
 
@@ -37,6 +38,7 @@ export function AppLayout({
   // const { mutateAsync: createThreadMutation } = useCreateThread();
   const { mutateAsync: deleteThreadMutation } = useDeleteThread();
   const { user, logout } = usePrivy();
+  const { authenticated, login } = useContext(AuthContext);
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
   const [confirmDialogConfig, setConfirmDialogConfig] = useState<{
     title: string;
@@ -44,7 +46,7 @@ export function AppLayout({
     onConfirm: () => Promise<void>;
   } | null>(null);
 
-  // Fetch threads with infinite query
+  // Fetch threads with infinite query - only if authenticated
   const {
     data,
     isLoading,
@@ -62,6 +64,7 @@ export function AppLayout({
     },
     getNextPageParam: (lastPage: GetThreadsResponse) => lastPage.nextCursor,
     initialPageParam: undefined as string | undefined,
+    enabled: authenticated, // Only fetch if authenticated
   });
 
   // Flatten all threads from all pages
@@ -108,20 +111,20 @@ export function AppLayout({
     };
   }, [isSidebarOpen]);
 
-  // const createThread = async () => {
-  //   try {
-  //     const response = await createThreadMutation();
-  //     router.push(`/chat?chatId=${response.threadId}`);
-  //   } catch (error) {
-  //     console.error("Error creating thread:", error);
-  //   }
-  // };
-
   const createThread = async () => {
+    if (!authenticated) {
+      login();
+      return;
+    }
     router.push("/chat");
   };
 
   const handleDeleteClick = async (thread: ThreadPreview) => {
+    if (!authenticated) {
+      login();
+      return;
+    }
+
     try {
       await deleteThreadMutation(thread.threadId);
       if (selectedThread === thread.threadId) {
@@ -135,11 +138,18 @@ export function AppLayout({
   };
 
   const handleSelectThread = (threadId: string) => {
+    if (!authenticated) {
+      login();
+      return;
+    }
+
     router.push(`/chat?chatId=${threadId}`);
   };
 
   const handleLoadMore = () => {
-    fetchNextPage();
+    if (authenticated) {
+      fetchNextPage();
+    }
   };
 
   const showConfirmDialog = (config: {
@@ -180,94 +190,94 @@ export function AppLayout({
     });
   };
 
-  return (
-    <WalletProvider>
-      <div
-        className="flex h-screen overflow-hidden bg-background relative"
-        style={
-          {
-            "--sidebar-width":
-              isSidebarCollapsed && window.innerWidth >= 768
-                ? "60px"
-                : isSidebarOpen
-                  ? "260px"
-                  : "0px",
-          } as React.CSSProperties
-        }
-      >
-        {/* Confirm Dialog */}
-        <Dialog
-          open={isConfirmDialogOpen}
-          onOpenChange={setIsConfirmDialogOpen}
-        >
-          <DialogContent className="z-[80]">
-            <DialogHeader>
-              <DialogTitle>{confirmDialogConfig?.title}</DialogTitle>
-            </DialogHeader>
-            <div className="py-4">{confirmDialogConfig?.content}</div>
-            <DialogFooter className="flex flex-col sm:flex-row gap-2 sm:justify-end">
-              <Button
-                variant="outline"
-                onClick={handleConfirmDialogClose}
-                className="w-full sm:w-auto"
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="destructive"
-                onClick={async () => {
-                  if (confirmDialogConfig) {
-                    await confirmDialogConfig.onConfirm();
-                    handleConfirmDialogClose();
-                  }
-                }}
-              >
-                Confirm
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-
-        {/* Mobile sidebar overlay */}
-        {isSidebarOpen && window.innerWidth < 768 && (
-          <div
-            className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[60] md:hidden"
-            onClick={toggleSidebar}
-          />
-        )}
-
-        {/* Sidebar container */}
-        <div
-          className={`fixed md:static h-full z-[70] transition-all duration-300 ease-in-out ${
-            isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-          } md:translate-x-0 md:z-0 ${
+  // Conditionally wrap content based on authentication
+  const content = (
+    <div
+      className="flex h-screen overflow-hidden bg-background relative"
+      style={
+        {
+          "--sidebar-width":
             isSidebarCollapsed && window.innerWidth >= 768
-              ? "w-[60px]"
-              : "w-[260px]"
-          }`}
-        >
-          <Sidebar
-            threads={threads}
-            selectedThread={selectedThread}
-            onSelectThread={handleSelectThread}
-            onCreateThread={createThread}
-            onDeleteClick={handleDeleteClick}
-            isLoading={isLoading}
-            onLogoutClick={handleLogoutClick}
-            isCollapsed={isSidebarCollapsed && window.innerWidth >= 768}
-            onToggleCollapse={toggleSidebarCollapse}
-            hasMore={!!hasNextPage}
-            isLoadingMore={isFetchingNextPage}
-            onLoadMore={handleLoadMore}
-          />
-        </div>
+              ? "60px"
+              : isSidebarOpen
+                ? "260px"
+                : "0px",
+        } as React.CSSProperties
+      }
+    >
+      {/* Confirm Dialog */}
+      <Dialog open={isConfirmDialogOpen} onOpenChange={setIsConfirmDialogOpen}>
+        <DialogContent className="z-[80]">
+          <DialogHeader>
+            <DialogTitle>{confirmDialogConfig?.title}</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">{confirmDialogConfig?.content}</div>
+          <DialogFooter className="flex flex-col sm:flex-row gap-2 sm:justify-end">
+            <Button
+              variant="outline"
+              onClick={handleConfirmDialogClose}
+              className="w-full sm:w-auto"
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={async () => {
+                if (confirmDialogConfig) {
+                  await confirmDialogConfig.onConfirm();
+                  handleConfirmDialogClose();
+                }
+              }}
+            >
+              Confirm
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
-        {/* Main content */}
-        <div className="flex-1 flex flex-col min-h-screen overflow-hidden">
-          {showNavbar && <Navbar onMenuClick={toggleSidebar} />}
-          <div className="flex-1 flex flex-col overflow-y-auto">{children}</div>
-        </div>
+      {/* Mobile sidebar overlay */}
+      {isSidebarOpen && window.innerWidth < 768 && (
+        <div
+          className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[60] md:hidden"
+          onClick={toggleSidebar}
+        />
+      )}
+
+      {/* Sidebar container */}
+      <div
+        className={`fixed md:static h-full z-[70] transition-all duration-300 ease-in-out ${
+          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+        } md:translate-x-0 md:z-0 ${
+          isSidebarCollapsed && window.innerWidth >= 768
+            ? "w-[60px]"
+            : "w-[260px]"
+        }`}
+      >
+        <Sidebar
+          threads={threads}
+          selectedThread={selectedThread}
+          onSelectThread={handleSelectThread}
+          onCreateThread={createThread}
+          onDeleteClick={handleDeleteClick}
+          isLoading={isLoading}
+          onLogoutClick={handleLogoutClick}
+          isCollapsed={isSidebarCollapsed && window.innerWidth >= 768}
+          onToggleCollapse={toggleSidebarCollapse}
+          hasMore={!!hasNextPage}
+          isLoadingMore={isFetchingNextPage}
+          onLoadMore={handleLoadMore}
+          isAuthenticated={authenticated}
+          onLogin={login}
+        />
       </div>
-    </WalletProvider>
+
+      {/* Main content */}
+      <div className="flex-1 flex flex-col min-h-screen overflow-hidden">
+        {showNavbar && <Navbar onMenuClick={toggleSidebar} />}
+        <div className="flex-1 flex flex-col overflow-y-auto">{children}</div>
+      </div>
+    </div>
   );
+
+  return authenticated ? <WalletProvider>{content}</WalletProvider> : content;
 }
