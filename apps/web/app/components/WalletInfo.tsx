@@ -60,11 +60,8 @@ export function WalletInfo({
   const { addNotification } = useNotificationStore();
 
   const { fundWallet } = useFundWallet({
-    onUserExited: ({ balance }) => {
+    onUserExited: () => {
       refreshBalance();
-      if (balance && balance > 0) {
-        addNotification("success", "Successfully funded wallet", {});
-      }
     },
   });
 
