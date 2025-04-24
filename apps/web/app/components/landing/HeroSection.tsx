@@ -1,14 +1,21 @@
-import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
+import { ExternalLink } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+
+export const BRAIN_TOKEN_ADDRESS =
+  "PctT849PR4DQFdQYzSSPPP7riwFffxcmHmMCCP9pump";
 
 interface HeroSectionProps {
   onLogin: () => void;
 }
 
 export function HeroSection({ onLogin }: HeroSectionProps) {
+  const PUMP_FUN_LINK = `https://pump.fun/coin/${BRAIN_TOKEN_ADDRESS}`;
+
   return (
-    <div className="relative z-[30] flex flex-col items-center justify-start gap-8 px-4 max-w-7xl mx-auto pt-40 text-white">
+    <div className="relative z-[30] flex flex-col items-center justify-start gap-8 px-4 max-w-7xl mx-auto pt-48 text-white">
       {/* Background Effects */}
       <div className="absolute inset-0 -z-10">
         <div className="absolute inset-0 z-0">
@@ -180,31 +187,54 @@ export function HeroSection({ onLogin }: HeroSectionProps) {
         </p>
       </div>
 
-      <div className="relative">
-        <motion.div
-          className="absolute -inset-[1px] rounded-md"
-          style={{
-            background:
-              "linear-gradient(90deg, transparent, rgba(239, 68, 68, 0.8), transparent)",
-            backgroundSize: "200% 100%",
-          }}
-          animate={{
-            backgroundPosition: ["200% 0", "-200% 0"],
-          }}
-          transition={{
-            duration: 4,
-            repeat: Infinity,
-            ease: "linear",
-          }}
-        />
-        <Button
-          onClick={onLogin}
-          size="lg"
-          variant="outline"
-          className="!bg-[#121212] border-none hover:!bg-[#121212]/90 transition-all duration-300 px-8 py-6 text-lg font-medium tracking-wide relative z-10 min-w-[200px] rounded-md"
-        >
-          Start Chatting
-        </Button>
+      <div className="flex gap-4 relative">
+        <div className="relative">
+          <motion.div
+            className="absolute -inset-[1px] rounded-md"
+            style={{
+              background:
+                "linear-gradient(90deg, transparent, rgba(239, 68, 68, 0.8), transparent)",
+              backgroundSize: "200% 100%",
+            }}
+            animate={{
+              backgroundPosition: ["200% 0", "-200% 0"],
+            }}
+            transition={{
+              duration: 4,
+              repeat: Infinity,
+              ease: "linear",
+            }}
+          />
+          <Button
+            onClick={onLogin}
+            size="lg"
+            variant="destructive"
+            className="hover:!bg-destructive/90 transition-all duration-300 px-8 py-6 text-lg font-medium tracking-wide relative z-10 min-w-[200px] rounded-md"
+          >
+            Start Chatting
+          </Button>
+        </div>
+
+        <Link href={PUMP_FUN_LINK} target="_blank" rel="noopener noreferrer">
+          <Button
+            size="lg"
+            variant="outline"
+            className="!bg-[#121212] border-destructive hover:!bg-[#121212]/90 transition-colors shadow-[0_4px_20px_-1px] shadow-destructive/40 px-8 py-6 text-lg font-medium tracking-wide flex items-center gap-2 group"
+          >
+            <Image
+              src="/pump-logo.webp"
+              alt="Pump.fun"
+              width={20}
+              height={20}
+              className="w-5 h-5"
+            />
+            Buy on Pump.fun
+            <ExternalLink
+              size={16}
+              className="text-white/60 group-hover:text-white transition-colors"
+            />
+          </Button>
+        </Link>
       </div>
 
       {/* App Preview */}

@@ -5,9 +5,9 @@ const nextConfig: NextConfig = {
   transpilePackages: ["@repo/brainpower-agent"],
 
   images: {
-    loader: "custom",
-    loaderFile: "./app/utils/bunny-image-loader.ts",
-    domains: ["brainpower.b-cdn.net"],
+    // loader: "custom",
+    // loaderFile: "./app/utils/bunny-image-loader.ts",
+    // domains: ["brainpower.b-cdn.net"],
     remotePatterns: [
       {
         protocol: "https",

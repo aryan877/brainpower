@@ -1,7 +1,7 @@
+import { SectionHeader } from "@/components/ui/SectionHeader";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState, useCallback, useMemo } from "react";
-import { SectionHeader } from "@/components/ui/SectionHeader";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 export function Footer() {
   const [imageHeight, setImageHeight] = useState<number>(0);
