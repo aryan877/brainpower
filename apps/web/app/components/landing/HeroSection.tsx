@@ -187,8 +187,8 @@ export function HeroSection({ onLogin }: HeroSectionProps) {
         </p>
       </div>
 
-      <div className="flex gap-4 relative">
-        <div className="relative">
+      <div className="flex flex-col sm:flex-row gap-4 relative items-center w-full sm:w-auto justify-center">
+        <div className="relative w-full sm:w-auto">
           <motion.div
             className="absolute -inset-[1px] rounded-md"
             style={{
@@ -215,7 +215,12 @@ export function HeroSection({ onLogin }: HeroSectionProps) {
           </Button>
         </div>
 
-        <Link href={PUMP_FUN_LINK} target="_blank" rel="noopener noreferrer">
+        <Link
+          href={PUMP_FUN_LINK}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="w-full sm:w-auto"
+        >
           <Button
             size="lg"
             variant="outline"
