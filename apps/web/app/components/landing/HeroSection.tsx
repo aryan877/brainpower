@@ -187,8 +187,8 @@ export function HeroSection({ onLogin }: HeroSectionProps) {
         </p>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-4 relative items-center w-full sm:w-auto justify-center">
-        <div className="relative w-full sm:w-auto">
+      <div className="flex flex-col md:flex-row gap-4 relative items-center justify-center w-full max-w-xs md:max-w-md mx-auto">
+        <div className="relative w-full md:w-auto">
           <motion.div
             className="absolute -inset-[1px] rounded-md"
             style={{
@@ -209,7 +209,7 @@ export function HeroSection({ onLogin }: HeroSectionProps) {
             onClick={onLogin}
             size="lg"
             variant="destructive"
-            className="hover:!bg-destructive/90 transition-all duration-300 px-8 py-6 text-lg font-medium tracking-wide relative z-10 min-w-[200px] rounded-md"
+            className="hover:!bg-destructive/90 transition-all duration-300 px-8 py-6 text-lg font-medium tracking-wide relative z-10 w-full md:w-auto md:min-w-[200px] rounded-md"
           >
             Start Chatting
           </Button>
@@ -219,12 +219,12 @@ export function HeroSection({ onLogin }: HeroSectionProps) {
           href={PUMP_FUN_LINK}
           target="_blank"
           rel="noopener noreferrer"
-          className="w-full sm:w-auto"
+          className="w-full md:w-auto"
         >
           <Button
             size="lg"
             variant="outline"
-            className="!bg-[#121212] border-destructive hover:!bg-[#121212]/90 transition-colors shadow-[0_4px_20px_-1px] shadow-destructive/40 px-8 py-6 text-lg font-medium tracking-wide flex items-center gap-2 group"
+            className="!bg-[#121212] border-destructive hover:!bg-[#121212]/90 transition-colors shadow-[0_4px_20px_-1px] shadow-destructive/40 px-8 py-6 text-lg font-medium tracking-wide flex items-center justify-center md:justify-center gap-2 group w-full md:w-auto"
           >
             <Image
               src="/pump-logo.webp"
