@@ -1,15 +1,15 @@
 import {
-  PublicKey,
-  Transaction,
-  TransactionInstruction,
-} from "@solana/web3.js";
-import { BrainPowerAgent } from "src/agent/index.js";
-import {
   AccountLayout,
   createCloseAccountInstruction,
   TOKEN_2022_PROGRAM_ID,
   TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
+import {
+  PublicKey,
+  Transaction,
+  TransactionInstruction,
+} from "@solana/web3.js";
+import { BrainPowerAgent } from "src/agent/index.js";
 
 /**
  * Close Empty SPL Token accounts of the agent
@@ -45,6 +45,11 @@ export async function closeEmptyTokenAccounts(
         size: 0,
       };
     }
+
+    // Set fee payer and recent blockhash
+    transaction.feePayer = agent.wallet_address;
+    const { blockhash } = await agent.connection.getLatestBlockhash();
+    transaction.recentBlockhash = blockhash;
 
     const signature = await agent.signAndSendTransaction(transaction);
 
