@@ -38,7 +38,7 @@ app.use(
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
-  max: 100, // 100 requests per minute
+  max: 10, // 10 requests per minute
   message: {
     error: {
       code: ErrorCode.RATE_LIMIT_ERROR,

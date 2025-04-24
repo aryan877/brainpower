@@ -1,18 +1,18 @@
+import { openai } from "@ai-sdk/openai";
+import { createSolanaTools } from "@repo/brainpower-agent";
+import { smoothStream, streamText } from "ai";
 import { Response } from "express";
-import { ChatThread } from "../models/ChatThread.js";
+import { nanoid } from "nanoid";
+import { assistantPrompt } from "../const/prompt.js";
 import { AuthenticatedRequest } from "../middleware/auth/index.js";
 import {
-  NotFoundError,
   APIError,
   ErrorCode,
+  NotFoundError,
 } from "../middleware/errors/types.js";
-import { getUserCluster, getUserId } from "../utils/userIdentification.js";
-import { createSolanaTools } from "@repo/brainpower-agent";
-import { streamText, smoothStream } from "ai";
+import { ChatThread } from "../models/ChatThread.js";
 import { generateBrainpowerAgent } from "../utils/generateBrainpowerAgent.js";
-import { assistantPrompt } from "../const/prompt.js";
-import { openai } from "@ai-sdk/openai";
-import { nanoid } from "nanoid";
+import { getUserCluster, getUserId } from "../utils/userIdentification.js";
 
 export const getThreads = async (req: AuthenticatedRequest, res: Response) => {
   const userId = getUserId(req);
@@ -73,17 +73,33 @@ export const sendMessage = async (req: AuthenticatedRequest, res: Response) => {
   // Create an AbortController that will be triggered when the request is aborted
   const controller = new AbortController();
   const { signal } = controller;
-
-  // Add abort handler to clean up when the request is closed
-  req.on("close", () => {
-    controller.abort();
-  });
+  const requestId = nanoid(8); // Unique ID for logging this request
 
   const userId = getUserId(req);
   const cluster = getUserCluster(req);
   const { messages, threadId } = req.body;
 
+  console.info(
+    `[${requestId}] sendMessage: Started for userId=${userId}, threadId=${threadId}, cluster=${cluster}`
+  );
+
+  // Add abort handler to clean up when the request is closed
+  req.on("close", () => {
+    console.warn(
+      `[${requestId}] sendMessage: Client closed connection for userId=${userId}, threadId=${threadId}. Aborting.`
+    );
+    if (!signal.aborted) {
+      controller.abort();
+    }
+  });
+
+  // Optional: Log message count or first message for context, avoid logging full content if sensitive
+  // console.debug(`[${requestId}] sendMessage: Received ${messages?.length} messages. First message role: ${messages?.[0]?.role}`);
+
   try {
+    console.info(
+      `[${requestId}] sendMessage: Finding chat thread for userId=${userId}, threadId=${threadId}`
+    );
     const chatThread = await ChatThread.findOne({
       threadId,
       userId,
@@ -91,27 +107,49 @@ export const sendMessage = async (req: AuthenticatedRequest, res: Response) => {
     });
 
     if (!chatThread) {
+      console.warn(
+        `[${requestId}] sendMessage: Chat thread not found for userId=${userId}, threadId=${threadId}`
+      );
       throw new NotFoundError("Thread not found");
     }
+    console.info(
+      `[${requestId}] sendMessage: Chat thread found for userId=${userId}, threadId=${threadId}`
+    );
 
     // Update title if first user message and no title exists
-    if (!chatThread.title && messages.length > 0) {
+    if (!chatThread.title && messages?.length > 0) {
       const firstUserMessage = messages.find(
         (msg: { role: string; content: string }) => msg.role === "user"
       );
       if (firstUserMessage) {
-        chatThread.title = firstUserMessage.content.slice(0, 100);
+        const newTitle = firstUserMessage.content.slice(0, 100);
+        console.info(
+          `[${requestId}] sendMessage: Updating thread title for userId=${userId}, threadId=${threadId} to "${newTitle}"`
+        );
+        chatThread.title = newTitle;
+        // Use try-catch for save operation if needed for finer error handling
         await chatThread.save();
+        console.info(
+          `[${requestId}] sendMessage: Thread title updated successfully for userId=${userId}, threadId=${threadId}`
+        );
       }
     }
 
+    const walletAddress = req.user?.walletAddress || "";
+    console.info(
+      `[${requestId}] sendMessage: Generating Brainpower agent for address=${walletAddress}, cluster=${cluster}`
+    );
     const agent = generateBrainpowerAgent({
-      address: req.user?.walletAddress || "",
+      address: walletAddress,
       cluster: cluster,
     });
 
+    console.info(`[${requestId}] sendMessage: Creating Solana tools`);
     const tools = createSolanaTools(agent);
 
+    console.info(
+      `[${requestId}] sendMessage: Calling streamText API for userId=${userId}, threadId=${threadId}`
+    );
     const result = streamText({
       model: openai("gpt-4o"),
       messages,
@@ -124,66 +162,182 @@ export const sendMessage = async (req: AuthenticatedRequest, res: Response) => {
         delayInMs: 15,
       }),
       abortSignal: signal,
+      // Optional: Add more detailed callbacks for debugging streamText lifecycle
+      // onStart: () => console.info(`[${requestId}] streamText: Stream started`),
+      // onFinish: (result) => console.info(`[${requestId}] streamText: Stream finished. Result:`, result.finishReason),
+      // onError: (error) => console.error(`[${requestId}] streamText: Error during stream:`, error),
     });
 
+    console.info(
+      `[${requestId}] sendMessage: Converting result to data stream response for userId=${userId}, threadId=${threadId}`
+    );
     const streamResponse = result.toDataStreamResponse();
     const stream = streamResponse.body;
 
     if (!stream) {
+      console.error(
+        `[${requestId}] sendMessage: Failed to get stream body for userId=${userId}, threadId=${threadId}`
+      );
       throw new APIError(
         500,
         ErrorCode.INTERNAL_SERVER_ERROR,
         "No stream available"
       );
     }
+    console.info(
+      `[${requestId}] sendMessage: Stream body obtained, getting reader for userId=${userId}, threadId=${threadId}`
+    );
 
     const reader = stream.getReader();
+    console.info(
+      `[${requestId}] sendMessage: Starting stream read loop for userId=${userId}, threadId=${threadId}`
+    );
     try {
       while (true) {
-        const { done, value } = await reader.read();
-        if (done) {
-          res.end();
-          break;
-        }
-        // Check if the request was aborted
+        // Check for abort *before* reading to potentially avoid unnecessary work
         if (signal.aborted) {
-          reader.releaseLock();
-          res.end();
+          console.warn(
+            `[${requestId}] sendMessage: Abort signal detected before read for userId=${userId}, threadId=${threadId}.`
+          );
+          // Attempt to release lock gracefully, ignore error if already released
+          try {
+            await reader.cancel();
+            reader.releaseLock();
+          } catch {}
+          if (!res.writableEnded) {
+            res.end();
+          }
           return;
         }
-        res.write(value);
+
+        const { done, value } = await reader.read();
+
+        if (done) {
+          console.info(
+            `[${requestId}] sendMessage: Stream finished successfully for userId=${userId}, threadId=${threadId}`
+          );
+          if (!res.writableEnded) {
+            res.end();
+          }
+          break;
+        }
+
+        // Check for abort *after* reading (in case it happened during the read)
+        if (signal.aborted) {
+          console.warn(
+            `[${requestId}] sendMessage: Abort signal detected after read for userId=${userId}, threadId=${threadId}.`
+          );
+          // Attempt to release lock gracefully, ignore error if already released
+          try {
+            reader.releaseLock();
+          } catch {}
+          if (!res.writableEnded) {
+            res.end();
+          }
+          return;
+        }
+
+        // console.debug(`[${requestId}] sendMessage: Writing chunk for userId=${userId}, threadId=${threadId}`); // Very verbose
+        if (!res.writableEnded) {
+          res.write(value);
+        } else {
+          console.warn(
+            `[${requestId}] sendMessage: Attempted to write to ended response stream for userId=${userId}, threadId=${threadId}. Aborting source stream.`
+          );
+          if (!signal.aborted) controller.abort(); // Abort the source stream
+          // Attempt to release lock gracefully, ignore error if already released
+          try {
+            reader.releaseLock();
+          } catch {}
+          break; // Exit loop
+        }
       }
     } catch (error) {
-      reader.releaseLock();
-      console.error("Stream error:", error);
-      if (!res.headersSent) {
+      console.error(
+        `[${requestId}] sendMessage: Error during stream read loop for userId=${userId}, threadId=${threadId}:`,
+        error
+      );
+      // Attempt to release lock gracefully, ignore error if already released
+      try {
+        reader.releaseLock();
+      } catch {}
+      if (!res.headersSent && !res.writableEnded) {
+        console.error(
+          `[${requestId}] sendMessage: Throwing APIError due to stream processing failure.`
+        );
         throw new APIError(
           500,
           ErrorCode.INTERNAL_SERVER_ERROR,
           "Stream processing failed",
-          error instanceof Error ? error.message : undefined
+          error instanceof Error ? error.message : String(error)
         );
+      } else if (!res.writableEnded) {
+        console.warn(
+          `[${requestId}] sendMessage: Headers already sent or stream ended, cannot throw error. Ending response.`
+        );
+        res.end();
       }
-      res.end();
+    } finally {
+      // Final check to ensure the reader lock is released if the loop exits unexpectedly
+      // Although handled in done/abort/catch, this is a safeguard.
+      try {
+        reader.releaseLock();
+        // console.debug(`[${requestId}] sendMessage: Stream reader lock released in read loop finally block.`);
+      } catch (e) {
+        // Ignore error if lock was already released or reader is invalid
+      }
     }
   } catch (error) {
-    if (!res.headersSent) {
-      // If it's already an APIError, rethrow it
+    console.error(
+      `[${requestId}] sendMessage: Error in main handler for userId=${userId}, threadId=${threadId}:`,
+      error
+    );
+    if (!res.headersSent && !res.writableEnded) {
+      // If it's already an APIError, rethrow it after logging
       if (error instanceof APIError) {
-        throw error;
+        console.error(
+          `[${requestId}] sendMessage: APIError caught: ${error.message}`,
+          error
+        );
+        throw error; // Rethrow the original APIError to be handled by error middleware
       }
 
       // For other errors, wrap them in APIError
+      console.error(
+        `[${requestId}] sendMessage: Non-APIError caught, wrapping in APIError:`,
+        error
+      );
       throw new APIError(
         500,
         ErrorCode.INTERNAL_SERVER_ERROR,
         error instanceof Error ? error.message : "An unexpected error occurred",
         error instanceof Error ? error.stack : undefined
       );
+    } else {
+      console.warn(
+        `[${requestId}] sendMessage: Error occurred but headers already sent or response ended for userId=${userId}, threadId=${threadId}. Cannot send error response. Error:`,
+        error
+      );
+      // Ensure the connection is closed if possible
+      if (!res.writableEnded) {
+        res.end();
+      }
     }
   } finally {
-    // Clean up
-    controller.abort();
+    // Clean up the AbortController if it wasn't already aborted (e.g., by client closing connection)
+    if (!signal.aborted) {
+      console.info(
+        `[${requestId}] sendMessage: Aborting controller in finally block for userId=${userId}, threadId=${threadId}`
+      );
+      controller.abort();
+    } else {
+      console.info(
+        `[${requestId}] sendMessage: Controller already aborted, skipping abort in finally block for userId=${userId}, threadId=${threadId}`
+      );
+    }
+    console.info(
+      `[${requestId}] sendMessage: Finished processing for userId=${userId}, threadId=${threadId}`
+    );
   }
 };
 
