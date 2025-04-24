@@ -28,7 +28,7 @@
     "@solana/buffer-layout": "^4.0.1",
     "@solana/spl-token": "^0.4.9",
     "@solana/web3.js": "^1.98.0",
-    "ai": "^4.0.22",
+    "ai": "^4.3.9",
     "axios": "^1.7.9",
     "bn.js": "^5.2.1",
     "bs58": "^6.0.0",

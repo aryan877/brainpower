@@ -1,4 +1,4 @@
-import { openai } from "@ai-sdk/openai";
+import { createAzure } from "@ai-sdk/azure";
 import { createSolanaTools } from "@repo/brainpower-agent";
 import { smoothStream, streamText } from "ai";
 import { Response } from "express";
@@ -13,6 +13,11 @@ import {
 import { ChatThread } from "../models/ChatThread.js";
 import { generateBrainpowerAgent } from "../utils/generateBrainpowerAgent.js";
 import { getUserCluster, getUserId } from "../utils/userIdentification.js";
+
+const azure = createAzure({
+  resourceName: process.env.AZURE_OPENAI_RESOURCE_NAME,
+  apiKey: process.env.AZURE_OPENAI_API_KEY,
+});
 
 export const getThreads = async (req: AuthenticatedRequest, res: Response) => {
   const userId = getUserId(req);
@@ -151,16 +156,13 @@ export const sendMessage = async (req: AuthenticatedRequest, res: Response) => {
       `[${requestId}] sendMessage: Calling streamText API for userId=${userId}, threadId=${threadId}`
     );
     const result = streamText({
-      model: openai("gpt-4o"),
+      model: azure("gpt-4o"),
       messages,
       experimental_toolCallStreaming: true,
       maxSteps: 5,
       system: assistantPrompt,
       tools,
-      experimental_transform: smoothStream({
-        chunking: "word",
-        delayInMs: 15,
-      }),
+      experimental_transform: smoothStream(),
       abortSignal: signal,
       // Optional: Add more detailed callbacks for debugging streamText lifecycle
       // onStart: () => console.info(`[${requestId}] streamText: Stream started`),
